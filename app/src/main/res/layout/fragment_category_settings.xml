@@ -112,14 +112,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
-                <CheckBox
-                    android:id="@+id/checkbox_delete_category"
-                    android:text="@string/category_settings_delete_checkbox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
                 <Button
-                    android:enabled="false"
                     android:id="@+id/btn_delete_category"
                     android:text="@string/category_settings_delete"
                     android:layout_width="match_parent"

@@ -20,11 +20,12 @@
     <string name="category_settings_rename_empty">Der neue Name darf nicht leer sein</string>
     <string name="category_settings_rename_success">Der neue Name wurde gespeichert</string>
     <string name="category_settings_delete">Kategorie löschen</string>
-    <string name="category_settings_delete_checkbox">Ich bin mir sicher, dass ich diese Kategorie löschen möchte</string>
     <string name="category_settings_extra_time_title">Extrazeit</string>
     <string name="category_settings_extra_time_info">
         Die Extrazeit ermöglicht (sofern nicht durch entsprechende Regeln eingschränkt) die Nutzung über die normale Nutzungsdauer hinaus. Sie wird erst nach dem Verbrauch der regulären Zeit verbraucht und verfällt sonst nicht.
     </string>
     <string name="category_settings_extra_time_change">Extrazeit ändern</string>
     <string name="category_settings_extra_time_change_toast">Die neue Extrazeit wurde gespeichert</string>
+
+    <string name="category_settings_delete_dialog">Möchten Sie die Kategorie %s löschen?</string>
 </resources>

@@ -66,8 +66,7 @@ class CategorySettingsFragment : Fragment() {
             }
         })
 
-        checkbox_delete_category.setOnCheckedChangeListener { _, isChecked -> btn_delete_category.isEnabled = isChecked }
-        btn_delete_category.setOnClickListener { doDeleteCategory() }
+        btn_delete_category.setOnClickListener { deleteCategory() }
 
         edit_category_title_go.setOnClickListener { doRenameCategory() }
         edit_category_title.setOnEditorActionListener { _, actionId, _ ->
@@ -126,9 +125,9 @@ class CategorySettingsFragment : Fragment() {
         }
     }
 
-    private fun doDeleteCategory() {
-        auth.tryDispatchParentAction(DeleteCategoryAction(
-                categoryId = params.categoryId
-        ))
+    private fun deleteCategory() {
+        if (auth.requestAuthenticationOrReturnTrue()) {
+            DeleteCategoryDialogFragment.newInstance(params).show(fragmentManager!!)
+        }
     }
 }
