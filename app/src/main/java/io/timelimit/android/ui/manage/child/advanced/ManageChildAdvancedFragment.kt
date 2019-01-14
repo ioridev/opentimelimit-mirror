@@ -119,11 +119,11 @@ class ManageChildAdvancedFragment : Fragment() {
             })
         }
 
-        DeleteChildView.bind(
-                model = auth,
-                view = binding.deleteChild,
-                childId = params.childId
-        )
+        binding.deleteUserButton.setOnClickListener {
+            if (auth.requestAuthenticationOrReturnTrue()) {
+                DeleteChildDialogFragment.newInstance(params.childId).show(fragmentManager!!)
+            }
+        }
 
         return binding.root
     }

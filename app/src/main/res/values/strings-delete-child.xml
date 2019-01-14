@@ -15,6 +15,6 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
 <resources>
-    <string name="delete_child_title">Delete child user</string>
-    <string name="delete_child_confirmation_checkbox">I am sure that I would like to delete this child user</string>
+    <string name="delete_child_title">Delete user</string>
+    <string name="delete_child_text">Are you sure that you want to delete the child user %s?</string>
 </resources>

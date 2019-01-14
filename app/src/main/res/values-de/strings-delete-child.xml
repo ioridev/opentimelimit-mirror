@@ -15,6 +15,6 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
 <resources>
-    <string name="delete_child_title">Kind-Benutzer löschen</string>
-    <string name="delete_child_confirmation_checkbox">Ich möchte diesen Kind-Benutzer wirklich löschen</string>
+    <string name="delete_child_title">Benutzer löschen</string>
+    <string name="delete_child_text">Sind Sie sich sicher, dass Sie den Kind-Benutzer %s löschen möchten?</string>
 </resources>
