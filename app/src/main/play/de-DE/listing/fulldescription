@@ -1,0 +1,11 @@
+Mit Open TimeLimit kann die Nutzungsdauer flexibel beschränkt werden. Es gibt frei wählbare Sperrzeiten, um z.B. zu verhindern, dass zu spät noch gespielt wird. Dabei können je nach App andere Regeln festgelegt werden.
+
+Es kann eine Extrazeit festgelegt werden, z.B. als Belohnung. Diese kann frei eingeteilt werden und wird automatisch verbraucht, sobald die reguläre Zeit vorbei ist. Es ist zusätzlich möglich, die Nutzung der Extrazeit einzuschränken.
+
+Die Zeitbegrenzungen können vorübergehend deaktiviert werden.
+
+Je nach Android-Version verwendet TimeLimit die Berechtigung zum Nutzungsdatenzugriff oder die "GET_TASKS"-Berechtigung. Diese werden ausschließlich zur Erkennung der momentan genutzten App verwendet. Auf der Basis der momentan genutzten App erfolgt eine Sperrung, eine Freigabe oder eine Berechnung der verbleibenden Nutzungsdauer.
+
+Die Geräte-Administrator-Berechtigung wird genutzt, um ein Deinstallieren von TimeLimit zu erkennen.
+
+TimeLimit verwendet den Benachrichtigungszugriff, um auch die Benachrichtigungen von gesperrten Apps zu sperren. Es erfolgt keine Speicherung von Benachrichtigungen oder deren Inhalten.

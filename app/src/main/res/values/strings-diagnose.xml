@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation version 3 of the License.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <https://www.gnu.org/licenses/>.
+-->
+<resources>
+    <string name="diagnose_clock_title">System clock</string>
+
+    <string name="diagnose_clock_epoch_seconds">Epochal seconds: %d</string>
+    <string name="diagnose_clock_timezone">Time zone: %s</string>
+    <string name="diagnose_clock_time_of_day">Time of day: %s</string>
+    <string name="diagnose_clock_date">Date: %s</string>
+    <string name="diagnose_clock_day_of_week">Day of week (0 = monday, ...): %d</string>
+    <string name="diagnose_clock_day_of_epoch">Day of epoch: %d</string>
+    <string name="diagnose_clock_minute_of_week">Minute of week: %d</string>
+</resources>
