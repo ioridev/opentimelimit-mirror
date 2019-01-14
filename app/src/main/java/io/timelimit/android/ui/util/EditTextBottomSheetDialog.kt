@@ -41,6 +41,12 @@ abstract class EditTextBottomSheetDialog: DialogFragment() {
         }
     }
 
+    fun didInitField() {
+        binding.editText.setSelection(binding.editText.text.length)
+        binding.editText.requestFocus()
+        inputMethodManager.showSoftInput(binding.editText, 0)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = EditTextBottomSheetDialogBinding.inflate(inflater, container, false)
 

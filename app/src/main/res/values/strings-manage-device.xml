@@ -69,5 +69,6 @@
     <string name="manage_device_downgrade_title">Downgrade</string>
     <string name="manage_device_downgrade_text">On this device, a newer version of TimeLimit was replaced by an older one</string>
 
+    <string name="manage_device_rename">Rename device</string>
     <string name="manage_device_rename_toast_empty">The name of an device must not be empty.</string>
 </resources>

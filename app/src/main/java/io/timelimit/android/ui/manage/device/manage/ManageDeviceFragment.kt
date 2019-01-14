@@ -53,32 +53,12 @@ import io.timelimit.android.ui.main.AuthenticationFab
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
 
 class ManageDeviceFragment : Fragment(), FragmentWithCustomTitle {
-    companion object {
-        private const val IS_EDITING_DEVICE_TITLE = "a"
-    }
-
     private val activity: ActivityViewModelHolder by lazy { getActivity() as ActivityViewModelHolder }
     private val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
     private val auth: ActivityViewModel by lazy { activity.getActivityViewModel() }
     private val args: ManageDeviceFragmentArgs by lazy { ManageDeviceFragmentArgs.fromBundle(arguments!!) }
     private val deviceEntry: LiveData<Device?> by lazy {
         logic.database.device().getDeviceById(args.deviceId)
-    }
-
-    private var isEditingDeviceTitle = MutableLiveData<Boolean>().apply { value = false }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        if (savedInstanceState != null) {
-            isEditingDeviceTitle.value = savedInstanceState.getBoolean(IS_EDITING_DEVICE_TITLE)
-        }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-
-        outState.putBoolean(IS_EDITING_DEVICE_TITLE, isEditingDeviceTitle.value!!)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -185,27 +165,9 @@ class ManageDeviceFragment : Fragment(), FragmentWithCustomTitle {
                 }
             }
 
-            override fun startEditDeviceTitle() {
+            override fun editDeviceTitle() {
                 if (auth.requestAuthenticationOrReturnTrue()) {
-                    binding.newDeviceTitleText.setText(binding.deviceTitle)
-                    isEditingDeviceTitle.value = true
-                }
-            }
-
-            override fun doEditDeviceTitle() {
-                val newDeviceTitle = binding.newDeviceTitleText.text.toString()
-
-                if (newDeviceTitle.isBlank()) {
-                    Snackbar.make(binding.newDeviceTitleText, R.string.manage_device_rename_toast_empty, Snackbar.LENGTH_SHORT).show()
-                } else {
-                    if (auth.tryDispatchParentAction(
-                                    UpdateDeviceNameAction(
-                                            deviceId = args.deviceId,
-                                            name = newDeviceTitle
-                                    )
-                            )) {
-                        isEditingDeviceTitle.value = false
-                    }
+                    UpdateDeviceTitleDialogFragment.newInstance(args.deviceId).show(fragmentManager!!)
                 }
             }
 
@@ -284,8 +246,6 @@ class ManageDeviceFragment : Fragment(), FragmentWithCustomTitle {
             binding.isThisDevice = ownDeviceId == args.deviceId
         })
 
-        isEditingDeviceTitle.observe(this, Observer { binding.isEditingDeviceTitle = it })
-
         ManageDeviceIntroduction.bind(
                 view = binding.introduction,
                 database = logic.database,
@@ -323,7 +283,6 @@ interface ManageDeviceFragmentHandlers {
     fun openUsageStatsSettings()
     fun openNotificationAccessSettings()
     fun manageDeviceAdmin()
-    fun startEditDeviceTitle()
-    fun doEditDeviceTitle()
+    fun editDeviceTitle()
     fun showAuthenticationScreen()
 }
