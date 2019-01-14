@@ -24,6 +24,7 @@
     <string name="generic_delete">Löschen</string>
     <string name="generic_retry">Erneut versuchen</string>
     <string name="generic_go">Los</string>
+    <string name="generic_manage_card">Verwaltung</string>
 
     <plurals name="generic_plural_app">
         <item quantity="one">%d App</item>
