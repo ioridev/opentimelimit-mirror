@@ -93,7 +93,7 @@ class MainFragment : Fragment(), OverviewFragmentParentHandlers, AboutFragmentPa
                             val user = logic.deviceUserEntry.waitForNullableValue()
 
                             if (user?.type == UserType.Child) {
-                                if (!fragmentManager!!.isStateSaved) {
+                                if (fragmentManager?.isStateSaved == false) {
                                     openManageChildScreen(user.id)
                                 }
                             }
