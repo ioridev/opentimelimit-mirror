@@ -72,18 +72,8 @@
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:labelFor="@+id/edit_category_title"
                     android:textAppearance="?android:textAppearanceLarge"
                     android:text="@string/category_settings_rename"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <EditText
-                    android:inputType="text"
-                    tools:text="Allowed Apps"
-                    android:id="@+id/edit_category_title"
-                    android:singleLine="true"
-                    android:imeOptions="actionGo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 

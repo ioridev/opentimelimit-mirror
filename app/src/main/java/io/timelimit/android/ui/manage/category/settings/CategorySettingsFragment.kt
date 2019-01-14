@@ -16,22 +16,16 @@
 package io.timelimit.android.ui.manage.category.settings
 
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.Transformations
 import com.google.android.material.snackbar.Snackbar
 import io.timelimit.android.R
-import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
-import io.timelimit.android.sync.actions.DeleteCategoryAction
 import io.timelimit.android.sync.actions.SetCategoryExtraTimeAction
-import io.timelimit.android.sync.actions.UpdateCategoryTitleAction
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.category.ManageCategoryFragmentArgs
@@ -58,26 +52,10 @@ class CategorySettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val categoryEntry = appLogic.database.category().getCategoryByChildIdAndId(params.childId, params.categoryId)
-        val categoryTitle = Transformations.map(categoryEntry) { it?.title }.ignoreUnchanged()
-
-        categoryTitle.observe(this, Observer {
-            if (it != null) {
-                edit_category_title.setText(it)
-            }
-        })
 
         btn_delete_category.setOnClickListener { deleteCategory() }
 
-        edit_category_title_go.setOnClickListener { doRenameCategory() }
-        edit_category_title.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_GO) {
-                doRenameCategory()
-
-                true
-            } else {
-                false
-            }
-        }
+        edit_category_title_go.setOnClickListener { renameCategory() }
 
         categoryEntry.observe(this, Observer {
             if (it != null) {
@@ -105,23 +83,9 @@ class CategorySettingsFragment : Fragment() {
         }
     }
 
-    private fun doRenameCategory() {
-        val newTitle = edit_category_title.text.toString()
-
-        if (TextUtils.isEmpty(newTitle)) {
-            Snackbar.make(edit_category_title, R.string.category_settings_rename_empty, Snackbar.LENGTH_SHORT).show()
-            return
-        }
-
-        if (
-                auth.tryDispatchParentAction(
-                        UpdateCategoryTitleAction(
-                                categoryId = params.categoryId,
-                                newTitle = newTitle
-                        )
-                )
-        ) {
-            Snackbar.make(edit_category_title, R.string.category_settings_rename_success, Snackbar.LENGTH_SHORT).show()
+    private fun renameCategory() {
+        if (auth.requestAuthenticationOrReturnTrue()) {
+            RenameCategoryDialogFragment.newInstance(params).show(fragmentManager!!)
         }
     }
 

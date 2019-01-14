@@ -18,7 +18,6 @@
     <string name="category_settings">Verwaltung</string>
     <string name="category_settings_rename">Kategorie umbenennen</string>
     <string name="category_settings_rename_empty">Der neue Name darf nicht leer sein</string>
-    <string name="category_settings_rename_success">Der neue Name wurde gespeichert</string>
     <string name="category_settings_delete">Kategorie löschen</string>
     <string name="category_settings_extra_time_title">Extrazeit</string>
     <string name="category_settings_extra_time_info">
