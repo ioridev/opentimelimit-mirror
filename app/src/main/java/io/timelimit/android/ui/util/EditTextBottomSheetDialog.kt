@@ -25,6 +25,7 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import io.timelimit.android.async.Threads
 import io.timelimit.android.databinding.EditTextBottomSheetDialogBinding
 
 abstract class EditTextBottomSheetDialog: DialogFragment() {
@@ -36,8 +37,10 @@ abstract class EditTextBottomSheetDialog: DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?) = BottomSheetDialog(context!!, theme).apply {
         setOnShowListener {
-            binding.editText.requestFocus()
-            inputMethodManager.showSoftInput(binding.editText, 0)
+            Threads.mainThreadHandler.post {
+                binding.editText.requestFocus()
+                inputMethodManager.showSoftInput(binding.editText, 0)
+            }
         }
     }
 
