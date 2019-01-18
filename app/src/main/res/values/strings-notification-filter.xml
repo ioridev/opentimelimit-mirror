@@ -16,4 +16,5 @@
 -->
 <resources>
     <string name="notification_filter_not_blocked_title">TimeLimit has blocked a notification</string>
+    <string name="notification_filter_blocking_failed_title">TimeLimit could not block a notification</string>
 </resources>

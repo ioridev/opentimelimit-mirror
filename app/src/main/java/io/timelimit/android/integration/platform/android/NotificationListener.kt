@@ -57,7 +57,16 @@ class NotificationListener: NotificationListenerService() {
 
         runAsync {
             if (shouldRemoveNotification(sbn) == NotificationHandling.Replace) {
-                cancelNotification(sbn.key)
+                val success = try {
+                    cancelNotification(sbn.key)
+
+                    true
+                } catch (ex: SecurityException) {
+                    // this occurs when the notification access is revoked
+                    // while this function is running
+
+                    false
+                }
 
                 notificationManager.notify(
                         sbn.packageName,
@@ -65,7 +74,12 @@ class NotificationListener: NotificationListenerService() {
                         NotificationCompat.Builder(this@NotificationListener, NotificationChannels.BLOCKED_NOTIFICATIONS_NOTIFICATION)
                                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                                 .setSmallIcon(R.drawable.ic_stat_block)
-                                .setContentTitle(getString(R.string.notification_filter_not_blocked_title))
+                                .setContentTitle(
+                                        if (success)
+                                            getString(R.string.notification_filter_not_blocked_title)
+                                        else
+                                            getString(R.string.notification_filter_blocking_failed_title)
+                                )
                                 .setContentText(queryAppTitleCache.query(sbn.packageName))
                                 .setLocalOnly(true)
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
