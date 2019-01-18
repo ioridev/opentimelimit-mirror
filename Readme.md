@@ -8,3 +8,8 @@ with all networking related features removed.
 ### Building
 
 Open it with Android Studio and press the Run button.
+
+### Screenshots
+
+![overview screen](./app/src/main/play/en-US/listing/phoneScreenshots/1.png)
+![time limit rule screen](./app/src/main/play/en-US/listing/phoneScreenshots/2.png)
