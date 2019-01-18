@@ -45,3 +45,6 @@
 -keepclassmembernames class kotlinx.** {
     volatile <fields>;
 }
+
+# readable stack traces
+-keepattributes SourceFile,LineNumberTable
