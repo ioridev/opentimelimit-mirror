@@ -56,7 +56,9 @@ class NotificationListener: NotificationListenerService() {
         }
 
         runAsync {
-            if (shouldRemoveNotification(sbn) == NotificationHandling.Replace) {
+            val reason = shouldRemoveNotification(sbn)
+
+            if (reason != BlockingReason.None) {
                 val success = try {
                     cancelNotification(sbn.key)
 
@@ -80,7 +82,18 @@ class NotificationListener: NotificationListenerService() {
                                         else
                                             getString(R.string.notification_filter_blocking_failed_title)
                                 )
-                                .setContentText(queryAppTitleCache.query(sbn.packageName))
+                                .setContentText(
+                                        queryAppTitleCache.query(sbn.packageName) +
+                                                " - " +
+                                                when (reason) {
+                                                    BlockingReason.NotPartOfAnCategory -> getString(R.string.lock_reason_short_no_category)
+                                                    BlockingReason.TemporarilyBlocked -> getString(R.string.lock_reason_short_temporarily_blocked)
+                                                    BlockingReason.TimeOver -> getString(R.string.lock_reason_short_time_over)
+                                                    BlockingReason.TimeOverExtraTimeCanBeUsedLater -> getString(R.string.lock_reason_short_time_over)
+                                                    BlockingReason.BlockedAtThisTime -> getString(R.string.lock_reason_short_blocked_time_area)
+                                                    BlockingReason.None -> throw IllegalStateException()
+                                                }
+                                )
                                 .setLocalOnly(true)
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                                 .build()
@@ -95,26 +108,26 @@ class NotificationListener: NotificationListenerService() {
         // not interesting but required for old android versions
     }
 
-    private suspend fun shouldRemoveNotification(sbn: StatusBarNotification): NotificationHandling {
+    private suspend fun shouldRemoveNotification(sbn: StatusBarNotification): BlockingReason {
         if (sbn.packageName == packageName || sbn.isOngoing) {
-            return NotificationHandling.Keep
+            return BlockingReason.None
         }
 
         val blockingReason = blockingReasonUtil.getBlockingReason(sbn.packageName).waitForNonNullValue()
 
         if (blockingReason == BlockingReason.None) {
-            return NotificationHandling.Keep
+            return BlockingReason.None
         }
 
         if (isSystemApp(sbn.packageName) && blockingReason == BlockingReason.NotPartOfAnCategory) {
-            return NotificationHandling.Keep
+            return BlockingReason.None
         }
 
         if (BuildConfig.DEBUG) {
             Log.d(LOG_TAG, "blocking notification of ${sbn.packageName} because $blockingReason")
         }
 
-        return NotificationHandling.Replace
+        return blockingReason
     }
 
     private fun isSystemApp(packageName: String): Boolean {
@@ -126,8 +139,4 @@ class NotificationListener: NotificationListenerService() {
             return false
         }
     }
-}
-
-enum class NotificationHandling {
-    Replace, Keep
 }

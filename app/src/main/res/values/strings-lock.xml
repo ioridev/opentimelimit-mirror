@@ -59,4 +59,9 @@
         This App is part of a category whose time limit was reached.
         There is still extra time, but the usage limit for the extra time was reached, too.
     </string>
+
+    <string name="lock_reason_short_no_category">no category</string>
+    <string name="lock_reason_short_temporarily_blocked">temporarily blocked</string>
+    <string name="lock_reason_short_time_over">time over</string>
+    <string name="lock_reason_short_blocked_time_area">blocked time area</string>
 </resources>

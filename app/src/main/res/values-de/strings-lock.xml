@@ -55,4 +55,9 @@
         Diese App ist in einer Kategorie, deren maximale Nutzungszeit erreicht wurde.
         Es gab noch Extra-Zeit, aber die maximale Nutzung der Extra-Zeit wurde erreicht.
     </string>
+
+    <string name="lock_reason_short_no_category">keine Kategorie</string>
+    <string name="lock_reason_short_temporarily_blocked">vorübergehend gesperrt</string>
+    <string name="lock_reason_short_time_over">Zeit verbraucht</string>
+    <string name="lock_reason_short_blocked_time_area">Sperrzeit</string>
 </resources>
