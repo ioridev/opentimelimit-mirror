@@ -31,6 +31,7 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
         private const val TYPE_ITEM = 0
         private const val TYPE_ADD = 1
         private const val TYPE_INTRO = 2
+        private const val TYPE_MANIPULATION_WARNING = 3
     }
 
     var categories: List<ManageChildCategoriesListItem>? by Delegates.observable(null as List<ManageChildCategoriesListItem>?) { _, _, _ -> notifyDataSetChanged() }
@@ -48,6 +49,7 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
             is CategoryItem -> item.category.id.hashCode()
             CreateCategoryItem -> item.hashCode()
             CategoriesIntroductionHeader -> item.hashCode()
+            ManipulationWarningCategoryItem -> item.hashCode()
         }.toLong()
     }
 
@@ -55,6 +57,7 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
         is CategoryItem -> TYPE_ITEM
         CreateCategoryItem -> TYPE_ADD
         CategoriesIntroductionHeader -> TYPE_INTRO
+        ManipulationWarningCategoryItem -> TYPE_MANIPULATION_WARNING
     }
 
     override fun getItemCount() = categories?.size ?: 0
@@ -88,6 +91,12 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
             IntroViewHolder(
                     LayoutInflater.from(parent.context)
                             .inflate(R.layout.category_list_intro, parent, false)
+            )
+
+        TYPE_MANIPULATION_WARNING ->
+            ManipulationWarningViewHolder(
+                    LayoutInflater.from(parent.context)
+                            .inflate(R.layout.manage_child_manipulation_warning, parent, false)
             )
 
         else -> throw IllegalStateException()
@@ -126,6 +135,9 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
             CategoriesIntroductionHeader -> {
                 // nothing to do
             }
+            ManipulationWarningCategoryItem -> {
+                // nothing to do
+            }
         }.let {  }
     }
 }
@@ -133,6 +145,7 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
 sealed class ViewHolder(view: View): RecyclerView.ViewHolder(view)
 class AddViewHolder(view: View): ViewHolder(view)
 class IntroViewHolder(view: View): ViewHolder(view)
+class ManipulationWarningViewHolder(view: View): ViewHolder(view)
 class ItemViewHolder(val binding: CategoryRichCardBinding): ViewHolder(binding.root)
 
 interface Handlers {

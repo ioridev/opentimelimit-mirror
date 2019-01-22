@@ -32,4 +32,9 @@
         Sie können mehrere Apps und Einschränkungen je Kategorie wählen.
         Das ermöglicht es z.B., eine Zeitbegrenzung für alle Spiele festzulegen.
     </string>
+
+    <string name="manage_child_manipulation_text">
+        Es gab eine Manipulation.
+        Gehen Sie zurück zur Übersicht und öffnen Sie den Geräte-Eintrag für Details.
+    </string>
 </resources>

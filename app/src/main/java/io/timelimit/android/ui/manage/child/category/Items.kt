@@ -20,6 +20,7 @@ import io.timelimit.android.data.model.Category
 sealed class ManageChildCategoriesListItem
 object CategoriesIntroductionHeader: ManageChildCategoriesListItem()
 object CreateCategoryItem: ManageChildCategoriesListItem()
+object ManipulationWarningCategoryItem: ManageChildCategoriesListItem()
 data class CategoryItem(
         val category: Category,
         val isBlockedTimeNow: Boolean,

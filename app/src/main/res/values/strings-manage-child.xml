@@ -32,4 +32,10 @@
         You can select multiple Apps and limits per category.
         This allows for example to set one limit for all games.
     </string>
+
+    <string name="manage_child_manipulation_title" translatable="false">@string/manage_device_manipulation_title</string>
+    <string name="manage_child_manipulation_text">
+        There was a manipulation.
+        Go back to the overview and open the device entry for details.
+    </string>
 </resources>

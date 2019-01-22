@@ -40,6 +40,10 @@ class ManageChildCategoriesModel(application: Application): AndroidViewModel(app
         }
     }
 
+    private val childDevices = childId.switchMap { logic.database.device().getDevicesByUserId(it) }
+
+    private val hasChildDevicesWithManipulation = childDevices.map { devices -> devices.find { device -> device.hasAnyManipulation } != null }.ignoreUnchanged()
+
     private val childEntry = childId.switchMap { logic.database.user().getChildUserByIdLive(it) }
 
     private val childTimezone = childEntry.mapToTimezone()
@@ -113,12 +117,22 @@ class ManageChildCategoriesModel(application: Application): AndroidViewModel(app
 
     private val hasShownHint = logic.database.config().wereHintsShown(HintsToShow.CATEGORIES_INTRODUCTION)
 
-    val listContent = hasShownHint.switchMap { hasShownHint ->
+    private val listContentStep1 = hasShownHint.switchMap { hasShownHint ->
         categoryItems.map { categoryItems ->
             if (hasShownHint) {
                 categoryItems + listOf(CreateCategoryItem)
             } else {
                 listOf(CategoriesIntroductionHeader) + categoryItems + listOf(CreateCategoryItem)
+            }
+        }
+    }
+
+    val listContent = hasChildDevicesWithManipulation.switchMap { hasChildDevicesWithManipulation ->
+        listContentStep1.map { listContent ->
+            if (hasChildDevicesWithManipulation) {
+                listOf(ManipulationWarningCategoryItem) + listContent
+            } else {
+                listContent
             }
         }
     }
