@@ -97,7 +97,8 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             password = "",
                             type = UserType.Child,
                             timeZone = timeZone,
-                            disableLimitsUntil = 0
+                            disableLimitsUntil = 0,
+                            categoryForNotAssignedApps = ""
                     )
 
                     appLogic.database.user().addUserSync(child)
@@ -112,7 +113,8 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             password = PasswordHashing.hashSync(parentPassword),
                             type = UserType.Parent,
                             timeZone = timeZone,
-                            disableLimitsUntil = 0
+                            disableLimitsUntil = 0,
+                            categoryForNotAssignedApps = ""
                     )
 
                     appLogic.database.user().addUserSync(parent)

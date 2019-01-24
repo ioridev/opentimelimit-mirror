@@ -37,7 +37,10 @@ data class User(
         val timeZone: String,
         // 0 = time limits enabled
         @ColumnInfo(name = "disable_limits_until")
-        val disableLimitsUntil: Long
+        val disableLimitsUntil: Long,
+        @ColumnInfo(name = "category_for_not_assigned_apps")
+        // empty or invalid = no category
+        val categoryForNotAssignedApps: String
 ): JsonSerializable {
     companion object {
         private const val ID = "id"
@@ -46,6 +49,7 @@ data class User(
         private const val TYPE = "type"
         private const val TIMEZONE = "timeZone"
         private const val DISABLE_LIMITS_UNTIL = "disableLimitsUntil"
+        private const val CATEGORY_FOR_NOT_ASSIGNED_APPS = "categoryForNotAssignedApps"
 
         fun parse(reader: JsonReader): User {
             var id: String? = null
@@ -54,6 +58,7 @@ data class User(
             var type: UserType? = null
             var timeZone: String? = null
             var disableLimitsUntil: Long? = null
+            var categoryForNotAssignedApps = ""
 
             reader.beginObject()
             while (reader.hasNext()) {
@@ -64,6 +69,7 @@ data class User(
                     TYPE -> type = UserTypeJson.parse(reader.nextString())
                     TIMEZONE -> timeZone = reader.nextString()
                     DISABLE_LIMITS_UNTIL -> disableLimitsUntil = reader.nextLong()
+                    CATEGORY_FOR_NOT_ASSIGNED_APPS -> categoryForNotAssignedApps = reader.nextString()
                     else -> reader.skipValue()
                 }
             }
@@ -75,7 +81,8 @@ data class User(
                     password = password!!,
                     type = type!!,
                     timeZone = timeZone!!,
-                    disableLimitsUntil = disableLimitsUntil!!
+                    disableLimitsUntil = disableLimitsUntil!!,
+                    categoryForNotAssignedApps = categoryForNotAssignedApps
             )
         }
     }
@@ -94,6 +101,10 @@ data class User(
         if (timeZone.isEmpty()) {
             throw IllegalArgumentException()
         }
+
+        if (categoryForNotAssignedApps.isNotEmpty()) {
+            IdGenerator.assertIdValid(categoryForNotAssignedApps)
+        }
     }
 
     override fun serialize(writer: JsonWriter) {
@@ -105,6 +116,7 @@ data class User(
         writer.name(TYPE).value(UserTypeJson.serialize(type))
         writer.name(TIMEZONE).value(timeZone)
         writer.name(DISABLE_LIMITS_UNTIL).value(disableLimitsUntil)
+        writer.name(CATEGORY_FOR_NOT_ASSIGNED_APPS).value(categoryForNotAssignedApps)
 
         writer.endObject()
     }

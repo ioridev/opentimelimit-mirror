@@ -128,7 +128,8 @@ object LocalDatabaseParentActionDispatcher {
                             type = action.userType,
                             timeZone = action.timeZone,
                             password = if (action.password == null) "" else action.password,
-                            disableLimitsUntil = 0
+                            disableLimitsUntil = 0,
+                            categoryForNotAssignedApps = ""
                     ))
                 }
                 is UpdateCategoryBlockedTimesAction -> {

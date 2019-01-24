@@ -31,7 +31,7 @@ import io.timelimit.android.data.model.*
     TimeLimitRule::class,
     ConfigurationItem::class,
     TemporarilyAllowedApp::class
-], version = 1)
+], version = 2)
 abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database {
     companion object {
         private val lock = Object()
@@ -66,6 +66,9 @@ abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database 
             )
                     .setJournalMode(JournalMode.TRUNCATE)
                     .fallbackToDestructiveMigration()
+                    .addMigrations(
+                            DatabaseMigrations.MIGRATE_TO_V2
+                    )
                     .build()
         }
     }
