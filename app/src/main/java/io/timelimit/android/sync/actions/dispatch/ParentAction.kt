@@ -264,6 +264,22 @@ object LocalDatabaseParentActionDispatcher {
 
                     database.device().updateDeviceEntry(deviceEntry)
                 }
+                is SetCategoryForUnusedApps -> {
+                    DatabaseValidation.assertChildExists(database, action.childId)
+
+                    if (action.categoryId.isNotEmpty()) {
+                        val category = database.category().getCategoryByIdSync(action.categoryId)!!
+
+                        if (category.childId != action.childId) {
+                            throw IllegalArgumentException("category does not belong to child")
+                        }
+                    }
+
+                    database.user().updateCategoryForUnassignedApps(
+                            categoryId = action.categoryId,
+                            childId = action.childId
+                    )
+                }
             }.let { }
 
             database.setTransactionSuccessful()

@@ -65,6 +65,9 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <include android:id="@+id/category_for_unassigned_apps"
+                layout="@layout/manage_category_for_unassigned_apps" />
+
             <androidx.cardview.widget.CardView
                 app:cardUseCompatPadding="true"
                 android:layout_width="match_parent"

@@ -49,6 +49,15 @@ class CategorySettingsFragment : Fragment() {
 
         val categoryEntry = appLogic.database.category().getCategoryByChildIdAndId(params.childId, params.categoryId)
 
+        ManageCategoryForUnassignedApps.bind(
+                binding = binding.categoryForUnassignedApps,
+                lifecycleOwner = this,
+                categoryId = params.categoryId,
+                childId = params.childId,
+                database = appLogic.database,
+                auth = auth
+        )
+
         binding.btnDeleteCategory.setOnClickListener { deleteCategory() }
         binding.editCategoryTitleGo.setOnClickListener { renameCategory() }
 

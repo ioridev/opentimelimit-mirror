@@ -126,6 +126,17 @@ data class UpdateCategoryTemporarilyBlockedAction(val categoryId: String, val bl
         IdGenerator.assertIdValid(categoryId)
     }
 }
+data class SetCategoryForUnusedApps(val childId: String, val categoryId: String): ParentAction() {
+    // category id can be empty
+
+    init {
+        IdGenerator.assertIdValid(childId)
+
+        if (categoryId.isNotEmpty()) {
+            IdGenerator.assertIdValid(categoryId)
+        }
+    }
+}
 
 // DeviceDao
 

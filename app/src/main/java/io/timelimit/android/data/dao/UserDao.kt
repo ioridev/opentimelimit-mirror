@@ -59,4 +59,7 @@ abstract class UserDao {
 
     @Query("SELECT * FROM user LIMIT :pageSize OFFSET :offset")
     abstract fun getUserPageSync(offset: Int, pageSize: Int): List<User>
+
+    @Query("UPDATE user SET category_for_not_assigned_apps = :categoryId WHERE id = :childId")
+    abstract fun updateCategoryForUnassignedApps(childId: String, categoryId: String)
 }
