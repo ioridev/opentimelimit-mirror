@@ -22,4 +22,6 @@
     <string name="category_apps_add_dialog_show_sys_apps">Systemapps anzeigen</string>
 
     <string name="category_apps_item_removed_toast">%s wurde entfernt</string>
+
+    <string name="category_apps_add_dialog_already_assigned_to">Bereits zugeordnet zu %s</string>
 </resources>

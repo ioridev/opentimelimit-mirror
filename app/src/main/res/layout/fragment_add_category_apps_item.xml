@@ -51,8 +51,7 @@
 
             <ImageView
                 android:id="@+id/icon"
-                tools:tint="#000"
-                tools:src="@drawable/ic_launcher_foreground"
+                tools:src="@mipmap/ic_launcher"
                 android:layout_margin="8dp"
                 android:layout_gravity="center_vertical"
                 android:layout_width="@android:dimen/app_icon_size"
@@ -74,8 +73,9 @@
                 <TextView
                     android:visibility="@{TextUtils.isEmpty(currentCategoryTitle) ? View.GONE : View.VISIBLE}"
                     android:textAppearance="?android:textAppearanceMedium"
-                    tools:text="Erlaubte Spiele"
-                    android:text="@{currentCategoryTitle}"
+                    tools:text="@string/category_apps_add_dialog_already_assigned_to"
+                    android:textColor="@color/colorPrimary"
+                    android:text="@{@string/category_apps_add_dialog_already_assigned_to(currentCategoryTitle)}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
