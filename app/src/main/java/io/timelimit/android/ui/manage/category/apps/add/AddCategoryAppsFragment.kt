@@ -97,7 +97,17 @@ class AddCategoryAppsFragment : DialogFragment() {
             apps ->
 
             apps?.sortedBy { app -> app.title.toLowerCase() }
-        }.observe(this, Observer { adapter.data = it })
+        }.observe(this, Observer {
+            val selectedPackageNames = adapter.selectedApps
+            val visiblePackageNames = it?.map { it.packageName }?.toSet() ?: emptySet()
+            val hiddenSelectedPackageNames = selectedPackageNames.toMutableSet().apply { removeAll(visiblePackageNames) }.size
+
+            adapter.data = it
+            binding.hiddenEntries = if (hiddenSelectedPackageNames == 0)
+                null
+            else
+                resources.getQuantityString(R.plurals.category_apps_add_dialog_hidden_entries, hiddenSelectedPackageNames, hiddenSelectedPackageNames)
+        })
 
         database.category().getCategoriesByChildId(params.childId)
                 .switchMap { categories ->

@@ -21,6 +21,10 @@
     <string name="category_apps_add_dialog_filter_hint">Nach Apps suchen</string>
     <string name="category_apps_add_dialog_show_sys_apps">Systemapps anzeigen</string>
     <string name="category_apps_add_dialog_select_all">Alle auswählen</string>
+    <plurals name="category_apps_add_dialog_hidden_entries">
+        <item quantity="one">%d ausgeblendeten Eintrag ausgewählt</item>
+        <item quantity="other">%s ausgeblendete Einträge ausgewählt</item>
+    </plurals>
 
     <string name="category_apps_item_removed_toast">%s wurde entfernt</string>
 

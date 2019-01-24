@@ -18,32 +18,57 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="io.timelimit.android.ui.manage.category.apps.add.AddCategoryAppsFragment">
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <data>
+        <variable
+            name="hiddenEntries"
+            type="String" />
 
-        <com.google.android.material.appbar.AppBarLayout
+        <import type="android.text.TextUtils" />
+        <import type="android.view.View" />
+    </data>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:layout_weight="1"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <FrameLayout
-                android:background="?android:windowBackground"
-                app:layout_scrollFlags="scroll|enterAlways|snap"
-                android:orientation="vertical"
+            android:layout_height="0dp">
+
+            <com.google.android.material.appbar.AppBarLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+                <FrameLayout
+                    android:background="?android:windowBackground"
+                    app:layout_scrollFlags="scroll|enterAlways|snap"
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-                <include android:id="@+id/filter"
-                    layout="@layout/app_filter_view" />
+                    <include android:id="@+id/filter"
+                        layout="@layout/app_filter_view" />
 
-            </FrameLayout>
-        </com.google.android.material.appbar.AppBarLayout>
+                </FrameLayout>
+            </com.google.android.material.appbar.AppBarLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:id="@+id/recycler"
+            <androidx.recyclerview.widget.RecyclerView
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                android:id="@+id/recycler"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+        <TextView
+            android:padding="8dp"
+            android:textAppearance="?android:textAppearanceMedium"
+            tools:text="2 entries are hidden"
+            android:visibility="@{TextUtils.isEmpty(hiddenEntries) ? View.GONE : View.VISIBLE}"
+            android:text="@{hiddenEntries}"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="wrap_content" />
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
+    </LinearLayout>
 </layout>
