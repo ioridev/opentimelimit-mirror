@@ -20,6 +20,7 @@
     <string name="category_apps_add_dialog_btn_positive">Apps hinzufügen</string>
     <string name="category_apps_add_dialog_filter_hint">Nach Apps suchen</string>
     <string name="category_apps_add_dialog_show_sys_apps">Systemapps anzeigen</string>
+    <string name="category_apps_add_dialog_select_all">Alle auswählen</string>
 
     <string name="category_apps_item_removed_toast">%s wurde entfernt</string>
 

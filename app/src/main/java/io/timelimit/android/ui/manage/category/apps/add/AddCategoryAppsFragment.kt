@@ -133,7 +133,19 @@ class AddCategoryAppsFragment : DialogFragment() {
                     }
                 }
                 .setNegativeButton(R.string.generic_cancel, null)
+                .setNeutralButton(R.string.category_apps_add_dialog_select_all, null)
                 .create()
+                .apply {
+                    setOnShowListener {
+                        getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+                            adapter.selectedApps.addAll(
+                                    adapter.data?.map { it.packageName } ?: emptySet()
+                            )
+
+                            adapter.notifyDataSetChanged()
+                        }
+                    }
+                }
     }
 
     fun show(manager: FragmentManager) {
