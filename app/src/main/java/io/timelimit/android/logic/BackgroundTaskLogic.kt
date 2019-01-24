@@ -185,6 +185,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                 } else if (foregroundAppPackageName != null) {
                     val appCategory = appCategories.get(Pair(foregroundAppPackageName, categories.map { it.id })).waitForNullableValue()
                     val category = categories.find { it.id == appCategory?.categoryId }
+                            ?: categories.find { it.id == deviceUserEntry.categoryForNotAssignedApps }
 
                     if (category == null) {
                         usedTimeUpdateHelper?.commit(appLogic)

@@ -120,7 +120,18 @@ class BlockingReasonUtil(private val appLogic: AppLogic) {
             categoryEntry ->
 
             if (categoryEntry == null) {
-                liveDataFromValue(BlockingReason.NotPartOfAnCategory)
+                val defaultCategory = if (child.categoryForNotAssignedApps.isEmpty())
+                    liveDataFromValue(null as Category?)
+                else
+                    appLogic.database.category().getCategoryByChildIdAndId(child.id, child.categoryForNotAssignedApps)
+
+                defaultCategory.switchMap { categoryEntry2 ->
+                    if (categoryEntry2 == null) {
+                        liveDataFromValue(BlockingReason.NotPartOfAnCategory)
+                    } else {
+                        getBlockingReasonStep4Point5(categoryEntry2, child, timeZone)
+                    }
+                }
             } else if (categoryEntry.temporarilyBlocked) {
                 liveDataFromValue(BlockingReason.TemporarilyBlocked)
             } else {
