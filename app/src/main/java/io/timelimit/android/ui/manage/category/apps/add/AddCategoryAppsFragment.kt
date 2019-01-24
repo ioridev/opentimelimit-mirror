@@ -22,6 +22,7 @@ import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.timelimit.android.R
@@ -29,9 +30,7 @@ import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.databinding.FragmentAddCategoryAppsBinding
 import io.timelimit.android.extensions.showSafe
-import io.timelimit.android.livedata.map
-import io.timelimit.android.livedata.mergeLiveData
-import io.timelimit.android.livedata.switchMap
+import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.AddCategoryAppsAction
 import io.timelimit.android.ui.main.ActivityViewModel
@@ -80,26 +79,43 @@ class AddCategoryAppsFragment : DialogFragment() {
         val binding = FragmentAddCategoryAppsBinding.inflate(LayoutInflater.from(context))
         val filter = AppFilterView.getFilterLive(binding.filter)
 
+        val showAppsFromOtherCategories = MutableLiveData<Boolean>().apply { value = binding.showOtherCategoriesApps.isChecked }
+        binding.showOtherCategoriesApps.setOnCheckedChangeListener { _, isChecked -> showAppsFromOtherCategories.value = isChecked }
+
         binding.recycler.layoutManager = LinearLayoutManager(context)
         binding.recycler.adapter = adapter
 
-        mergeLiveData(
-                filter,
-                database.app().getApps()
-                        .map { apps -> apps.distinctBy { app -> app.packageName } }
-        ).map {
-            searchTermAndApps ->
+        val childCategories = database.category().getCategoriesByChildId(params.childId)
+        val childCategoriesWithApps = childCategories.switchMap { categories ->
+            database.categoryApp().getCategoryApps(categories.map { it.id })
+                    .map { categoyApps -> categories to categoyApps }
+        }
 
-            val (search, apps) = searchTermAndApps
+        val packageNamesAssignedToOtherCategories = childCategoriesWithApps.map { (_, apps) ->
+            apps.filter { it.categoryId != params.categoryId }.map { it.packageName }.toSet()
+        }.ignoreUnchanged()
 
-            apps?.filter { search?.matches(it) == true }
-        }.map {
-            apps ->
-
-            apps?.sortedBy { app -> app.title.toLowerCase() }
+        filter.switchMap { filter ->
+            database.app().getApps()
+                    .map{ apps -> apps.distinctBy { app -> app.packageName } }
+                    .map { filter to it }
+        }.map { (search, apps) ->
+            apps.filter { search.matches(it) }
+        }.switchMap { apps ->
+            showAppsFromOtherCategories.switchMap { showOtherCategeories ->
+                if (showOtherCategeories) {
+                    liveDataFromValue(apps)
+                } else {
+                    packageNamesAssignedToOtherCategories.map { packagesFromOtherCategories ->
+                        apps.filterNot { packagesFromOtherCategories.contains(it.packageName) }
+                    }
+                }
+            }
+        }.map { apps ->
+            apps.sortedBy { app -> app.title.toLowerCase() }
         }.observe(this, Observer {
             val selectedPackageNames = adapter.selectedApps
-            val visiblePackageNames = it?.map { it.packageName }?.toSet() ?: emptySet()
+            val visiblePackageNames = it.map { it.packageName }.toSet()
             val hiddenSelectedPackageNames = selectedPackageNames.toMutableSet().apply { removeAll(visiblePackageNames) }.size
 
             adapter.data = it
@@ -109,22 +125,18 @@ class AddCategoryAppsFragment : DialogFragment() {
                 resources.getQuantityString(R.plurals.category_apps_add_dialog_hidden_entries, hiddenSelectedPackageNames, hiddenSelectedPackageNames)
         })
 
-        database.category().getCategoriesByChildId(params.childId)
-                .switchMap { categories ->
-                    val categoryById = categories.associateBy { it.id }
+        childCategoriesWithApps.map { (categories, apps) ->
+            val categoryById = categories.associateBy { it.id }
+            val categoryTitleByCategoryId = mutableMapOf<String, String>()
 
-                    database.categoryApp().getCategoryApps(categories.map { it.id }).map { apps ->
-                        val categoryTitleByCategoryId = mutableMapOf<String, String>()
+            apps.forEach {
+                categoryTitleByCategoryId[it.packageName] = categoryById[it.categoryId]?.title ?: ""
+            }
 
-                        apps.forEach {
-                            categoryTitleByCategoryId[it.packageName] = categoryById[it.categoryId]?.title ?: ""
-                        }
-
-                        categoryTitleByCategoryId
-                    }
-                }.observe(this, Observer {
-                    adapter.categoryTitleByPackageName = it
-                })
+            categoryTitleByCategoryId
+        }.observe(this, Observer {
+            adapter.categoryTitleByPackageName = it
+        })
 
         return AlertDialog.Builder(context!!, R.style.AppTheme)
                 .setView(binding.root)

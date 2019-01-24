@@ -40,7 +40,7 @@
             <com.google.android.material.appbar.AppBarLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-                <FrameLayout
+                <LinearLayout
                     android:background="?android:windowBackground"
                     app:layout_scrollFlags="scroll|enterAlways|snap"
                     android:orientation="vertical"
@@ -50,7 +50,14 @@
                     <include android:id="@+id/filter"
                         layout="@layout/app_filter_view" />
 
-                </FrameLayout>
+                    <CheckBox
+                        android:checked="true"
+                        android:id="@+id/show_other_categories_apps"
+                        android:text="@string/category_apps_add_dialog_show_assigned_to_other_category"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
             </com.google.android.material.appbar.AppBarLayout>
 
             <androidx.recyclerview.widget.RecyclerView
