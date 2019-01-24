@@ -124,6 +124,7 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
                 } else {
                     null
                 }
+                binding.usedForAppsWithoutCategory = item.usedForNotAssignedApps
 
                 binding.card.setOnClickListener { handlers?.onCategoryClicked(item.category) }
 

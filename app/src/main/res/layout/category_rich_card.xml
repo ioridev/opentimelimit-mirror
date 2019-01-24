@@ -35,6 +35,10 @@
             name="remainingTimeToday"
             type="String" />
 
+        <variable
+            name="usedForAppsWithoutCategory"
+            type="boolean" />
+
         <import type="android.text.TextUtils" />
         <import type="android.view.View" />
     </data>
@@ -57,6 +61,13 @@
                 android:textAppearance="?android:textAppearanceLarge"
                 android:text="@{title}"
                 tools:text="Erlaubte Apps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:textAppearance="?android:textAppearanceMedium"
+                android:visibility="@{usedForAppsWithoutCategory ? View.VISIBLE : View.GONE}"
+                android:text="@string/manage_child_category_for_unassigned_apps"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 

@@ -38,4 +38,6 @@
         There was a manipulation.
         Go back to the overview and open the device entry for details.
     </string>
+
+    <string name="manage_child_category_for_unassigned_apps">used for Apps without category</string>
 </resources>
