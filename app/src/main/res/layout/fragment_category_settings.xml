@@ -13,84 +13,89 @@
     You should have received a copy of the GNU General Public License
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="io.timelimit.android.ui.manage.category.settings.CategorySettingsFragment">
-    <LinearLayout
-        android:padding="8dp"
-        android:orientation="vertical"
+
+    <ScrollView
+        android:id="@+id/scroll"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
-        <androidx.cardview.widget.CardView
-            app:cardUseCompatPadding="true"
+        <LinearLayout
+            android:padding="8dp"
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-            <LinearLayout
-                android:padding="8dp"
-                android:orientation="vertical"
+
+            <androidx.cardview.widget.CardView
+                app:cardUseCompatPadding="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-
-                <TextView
-                    android:text="@string/category_settings_extra_time_title"
-                    android:textAppearance="?android:textAppearanceLarge"
+                <LinearLayout
+                    android:padding="8dp"
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content">
 
-                <TextView
-                    android:textAppearance="?android:textAppearanceMedium"
-                    android:text="@string/category_settings_extra_time_info"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <TextView
+                        android:text="@string/category_settings_extra_time_title"
+                        android:textAppearance="?android:textAppearanceLarge"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <io.timelimit.android.ui.view.SelectTimeSpanView
-                    android:id="@+id/extra_time_selection"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <TextView
+                        android:textAppearance="?android:textAppearanceMedium"
+                        android:text="@string/category_settings_extra_time_info"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <Button
-                    android:id="@+id/extra_time_btn_ok"
-                    android:text="@string/category_settings_extra_time_change"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    <io.timelimit.android.ui.view.SelectTimeSpanView
+                        android:id="@+id/extra_time_selection"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+                    <Button
+                        android:id="@+id/extra_time_btn_ok"
+                        android:text="@string/category_settings_extra_time_change"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
 
-        <androidx.cardview.widget.CardView
-            app:cardUseCompatPadding="true"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <LinearLayout
-                android:padding="8dp"
-                android:orientation="vertical"
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                app:cardUseCompatPadding="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-
-                <TextView
-                    android:textAppearance="?android:textAppearanceLarge"
-                    android:text="@string/generic_manage_card"
+                <LinearLayout
+                    android:padding="8dp"
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content">
 
-                <Button
-                    android:id="@+id/edit_category_title_go"
-                    android:text="@string/category_settings_rename"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <TextView
+                        android:textAppearance="?android:textAppearanceLarge"
+                        android:text="@string/generic_manage_card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <Button
-                    android:id="@+id/btn_delete_category"
-                    android:text="@string/category_settings_delete"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <Button
+                        android:id="@+id/edit_category_title_go"
+                        android:text="@string/category_settings_rename"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+                    <Button
+                        android:id="@+id/btn_delete_category"
+                        android:text="@string/category_settings_delete"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-    </LinearLayout>
-</ScrollView>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+    </ScrollView>
+</layout>

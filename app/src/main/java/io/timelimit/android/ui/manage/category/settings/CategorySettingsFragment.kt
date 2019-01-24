@@ -23,13 +23,13 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import com.google.android.material.snackbar.Snackbar
 import io.timelimit.android.R
+import io.timelimit.android.databinding.FragmentCategorySettingsBinding
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.SetCategoryExtraTimeAction
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.category.ManageCategoryFragmentArgs
-import kotlinx.android.synthetic.main.fragment_category_settings.*
 
 class CategorySettingsFragment : Fragment() {
     companion object {
@@ -45,30 +45,25 @@ class CategorySettingsFragment : Fragment() {
     private val auth: ActivityViewModel by lazy { getActivityViewModel(activity!!) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_category_settings, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        val binding = FragmentCategorySettingsBinding.inflate(inflater, container, false)
 
         val categoryEntry = appLogic.database.category().getCategoryByChildIdAndId(params.childId, params.categoryId)
 
-        btn_delete_category.setOnClickListener { deleteCategory() }
-
-        edit_category_title_go.setOnClickListener { renameCategory() }
+        binding.btnDeleteCategory.setOnClickListener { deleteCategory() }
+        binding.editCategoryTitleGo.setOnClickListener { renameCategory() }
 
         categoryEntry.observe(this, Observer {
             if (it != null) {
                 val roundedCurrentTimeInMillis = (it.extraTimeInMillis / (1000 * 60)) * (1000 * 60)
 
-                if (extra_time_selection.timeInMillis != roundedCurrentTimeInMillis) {
-                    extra_time_selection.timeInMillis = roundedCurrentTimeInMillis
+                if (binding.extraTimeSelection.timeInMillis != roundedCurrentTimeInMillis) {
+                    binding.extraTimeSelection.timeInMillis = roundedCurrentTimeInMillis
                 }
             }
         })
 
-        extra_time_btn_ok.setOnClickListener {
-            val newExtraTime = extra_time_selection.timeInMillis
+        binding.extraTimeBtnOk.setOnClickListener {
+            val newExtraTime = binding.extraTimeSelection.timeInMillis
 
             if (
                     auth.tryDispatchParentAction(
@@ -78,9 +73,11 @@ class CategorySettingsFragment : Fragment() {
                             )
                     )
             ) {
-                Snackbar.make(view, R.string.category_settings_extra_time_change_toast, Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, R.string.category_settings_extra_time_change_toast, Snackbar.LENGTH_SHORT).show()
             }
         }
+
+        return binding.root
     }
 
     private fun renameCategory() {
