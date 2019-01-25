@@ -83,6 +83,7 @@ object LocalDatabaseParentActionDispatcher {
                     database.timeLimitRules().deleteTimeLimitRulesByCategory(action.categoryId)
                     database.usedTimes().deleteUsedTimeItems(action.categoryId)
                     database.categoryApp().deleteCategoryAppsByCategoryId(action.categoryId)
+                    database.user().removeAsCategoryForUnassignedApps(action.categoryId)
                     database.category().deleteCategory(action.categoryId)
                 }
                 is UpdateCategoryTitleAction -> {

@@ -62,4 +62,7 @@ abstract class UserDao {
 
     @Query("UPDATE user SET category_for_not_assigned_apps = :categoryId WHERE id = :childId")
     abstract fun updateCategoryForUnassignedApps(childId: String, categoryId: String)
+
+    @Query("UPDATE user SET category_for_not_assigned_apps = \"\" WHERE category_for_not_assigned_apps = :categoryId")
+    abstract fun removeAsCategoryForUnassignedApps(categoryId: String)
 }
