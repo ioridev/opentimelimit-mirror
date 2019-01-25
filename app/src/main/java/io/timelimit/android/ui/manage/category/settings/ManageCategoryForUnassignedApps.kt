@@ -6,7 +6,7 @@ import io.timelimit.android.data.Database
 import io.timelimit.android.databinding.ManageCategoryForUnassignedAppsBinding
 import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.map
-import io.timelimit.android.sync.actions.SetCategoryForUnusedApps
+import io.timelimit.android.sync.actions.SetCategoryForUnassignedApps
 import io.timelimit.android.ui.main.ActivityViewModel
 
 object ManageCategoryForUnassignedApps {
@@ -28,14 +28,14 @@ object ManageCategoryForUnassignedApps {
 
             if (chosen == true) {
                 auth.tryDispatchParentAction(
-                        SetCategoryForUnusedApps(
+                        SetCategoryForUnassignedApps(
                                 childId = childId,
                                 categoryId = ""
                         )
                 )
             } else if (chosen == false) {
                 auth.tryDispatchParentAction(
-                        SetCategoryForUnusedApps(
+                        SetCategoryForUnassignedApps(
                                 childId = childId,
                                 categoryId = categoryId
                         )

@@ -126,7 +126,7 @@ data class UpdateCategoryTemporarilyBlockedAction(val categoryId: String, val bl
         IdGenerator.assertIdValid(categoryId)
     }
 }
-data class SetCategoryForUnusedApps(val childId: String, val categoryId: String): ParentAction() {
+data class SetCategoryForUnassignedApps(val childId: String, val categoryId: String): ParentAction() {
     // category id can be empty
 
     init {

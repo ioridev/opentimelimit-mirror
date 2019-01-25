@@ -264,7 +264,7 @@ object LocalDatabaseParentActionDispatcher {
 
                     database.device().updateDeviceEntry(deviceEntry)
                 }
-                is SetCategoryForUnusedApps -> {
+                is SetCategoryForUnassignedApps -> {
                     DatabaseValidation.assertChildExists(database, action.childId)
 
                     if (action.categoryId.isNotEmpty()) {
