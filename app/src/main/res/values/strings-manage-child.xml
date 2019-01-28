@@ -40,4 +40,5 @@
     </string>
 
     <string name="manage_child_category_for_unassigned_apps">used for Apps without category</string>
+    <string name="manage_child_category_is_child">Child category of %s</string>
 </resources>

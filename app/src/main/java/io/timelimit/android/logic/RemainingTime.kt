@@ -30,6 +30,17 @@ data class RemainingTime(val includingExtraTime: Long, val default: Long) {
     }
 
     companion object {
+        fun min(a: RemainingTime?, b: RemainingTime?): RemainingTime? = if (a == null) {
+            b
+        } else if (b == null) {
+            a
+        } else {
+            RemainingTime(
+                    includingExtraTime = Math.min(a.includingExtraTime, b.includingExtraTime),
+                    default = Math.min(a.default, b.default)
+            )
+        }
+
         private fun getRulesRelatedToDay(dayOfWeek: Int, rules: List<TimeLimitRule>): List<TimeLimitRule> {
             return rules.filter { (it.dayMask.toInt() and (1 shl dayOfWeek)) != 0 }
         }

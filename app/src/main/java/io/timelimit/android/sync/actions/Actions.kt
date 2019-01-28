@@ -137,6 +137,17 @@ data class SetCategoryForUnassignedApps(val childId: String, val categoryId: Str
         }
     }
 }
+data class SetParentCategory(val categoryId: String, val parentCategory: String): ParentAction() {
+    // parent category id can be empty
+
+    init {
+        IdGenerator.assertIdValid(categoryId)
+
+        if (parentCategory.isNotEmpty()) {
+            IdGenerator.assertIdValid(parentCategory)
+        }
+    }
+}
 
 // DeviceDao
 

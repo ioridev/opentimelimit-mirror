@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.ui.manage.child.apps.assign
+package io.timelimit.android.ui.manage.category.settings
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -26,70 +26,55 @@ import androidx.lifecycle.Observer
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import io.timelimit.android.R
 import io.timelimit.android.data.Database
-import io.timelimit.android.data.model.App
 import io.timelimit.android.data.model.Category
-import io.timelimit.android.data.model.CategoryApp
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.databinding.BottomSheetSelectionListBinding
 import io.timelimit.android.extensions.showSafe
-import io.timelimit.android.livedata.map
-import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
-import io.timelimit.android.sync.actions.AddCategoryAppsAction
-import io.timelimit.android.sync.actions.RemoveCategoryAppsAction
+import io.timelimit.android.sync.actions.SetParentCategory
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 
-class AssignAppCategoryDialogFragment: BottomSheetDialogFragment() {
+class SelectParentCategoryDialogFragment: BottomSheetDialogFragment() {
     companion object {
-        private const val EXTRA_CHILD_ID = "childId"
-        private const val EXTRA_PACKAGE_NAME = "packageName"
-        private const val TAG = "AssignAppCategoryDialogFragment"
+        private const val DIALOG_TAG = "SelectParentCategoryDialogFragment"
+        private const val CATEGORY_ID = "categoryId"
+        private const val CHILD_ID = "childId"
 
-        fun newInstance(childId: String, appPackageName: String) = AssignAppCategoryDialogFragment().apply {
+        fun newInstance(childId: String, categoryId: String) = SelectParentCategoryDialogFragment().apply {
             arguments = Bundle().apply {
-                putString(EXTRA_CHILD_ID, childId)
-                putString(EXTRA_PACKAGE_NAME, appPackageName)
+                putString(CHILD_ID, childId)
+                putString(CATEGORY_ID, categoryId)
             }
         }
     }
 
-    val childId: String by lazy { arguments!!.getString(EXTRA_CHILD_ID) }
-    val appPackageName: String by lazy { arguments!!.getString(EXTRA_PACKAGE_NAME) }
+    val childId: String by lazy { arguments!!.getString(CHILD_ID) }
+    val categoryId: String by lazy { arguments!!.getString(CATEGORY_ID) }
 
     val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
     val database: Database by lazy { logic.database }
     val auth: ActivityViewModel by lazy { (activity as ActivityViewModelHolder).getActivityViewModel() }
 
-    val matchingAppEntries: LiveData<List<App>> by lazy {
-        database.app().getAppsByPackageName(appPackageName)
-    }
-
     val childCategoryEntries: LiveData<List<Category>> by lazy {
         database.category().getCategoriesByChildId(childId)
-    }
-
-    val categoryAppEntry: LiveData<CategoryApp?> by lazy {
-        childCategoryEntries.switchMap { childCategories ->
-            database.categoryApp().getCategoryApp(
-                    categoryIds = childCategories.map { it.id },
-                    packageName = appPackageName
-            )
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        auth.authenticatedUser.observe(this, Observer {
-            if (it?.second?.type != UserType.Parent) {
+        childCategoryEntries.observe(this, Observer { categories ->
+            val ownCategory = categories.find { it.id == categoryId }
+            val hasSubCategories = categories.find { it.parentCategoryId == categoryId } != null
+
+            if (ownCategory == null || hasSubCategories) {
                 dismissAllowingStateLoss()
             }
         })
 
-        matchingAppEntries.observe(this, Observer {
-            if (it.isEmpty()) {
+        auth.authenticatedUser.observe(this, Observer {
+            if (it?.second?.type != UserType.Parent) {
                 dismissAllowingStateLoss()
             }
         })
@@ -98,16 +83,15 @@ class AssignAppCategoryDialogFragment: BottomSheetDialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = BottomSheetSelectionListBinding.inflate(inflater, container, false)
 
+        binding.title = getString(R.string.category_settings_parent_category_title)
+
         val list = binding.list
 
-        childCategoryEntries.switchMap { categories ->
-            categoryAppEntry.map { appCategory ->
-                categories to appCategory
-            }
-        }.observe(this, Observer { (categories, appCategory) ->
+        childCategoryEntries.observe(this, Observer { categories ->
             list.removeAllViews()
 
-            val hasCategory = appCategory != null && categories.find { it.id == appCategory.categoryId } != null
+            val ownCategory = categories.find { it.id == categoryId }
+            val ownParentCategory = categories.find { it.id == ownCategory?.parentCategoryId }
 
             fun buildRow(): CheckedTextView = LayoutInflater.from(context!!).inflate(
                     android.R.layout.simple_list_item_single_choice,
@@ -116,15 +100,18 @@ class AssignAppCategoryDialogFragment: BottomSheetDialogFragment() {
             ) as CheckedTextView
 
             categories.forEach { category ->
-                buildRow().let { row ->
+                if (category.id != categoryId) {
+                    val row = buildRow()
+
                     row.text = category.title
-                    row.isChecked = category.id == appCategory?.categoryId
+                    row.isChecked = category.id == ownCategory?.parentCategoryId
+                    row.isEnabled = categories.find { it.id == category.parentCategoryId } == null
                     row.setOnClickListener {
-                        if (appCategory?.categoryId != category.id) {
+                        if (!row.isChecked) {
                             auth.tryDispatchParentAction(
-                                    AddCategoryAppsAction(
-                                            categoryId = category.id,
-                                            packageNames = listOf(appPackageName)
+                                    SetParentCategory(
+                                            categoryId = categoryId,
+                                            parentCategory = category.id
                                     )
                             )
                         }
@@ -137,14 +124,15 @@ class AssignAppCategoryDialogFragment: BottomSheetDialogFragment() {
             }
 
             buildRow().let { row ->
-                row.setText(R.string.child_apps_unassigned)
-                row.isChecked = !hasCategory
+                row.setText(R.string.category_settings_parent_category_none)
+                row.isChecked = ownParentCategory == null
+
                 row.setOnClickListener {
-                    if (appCategory != null) {
+                    if (!row.isChecked) {
                         auth.tryDispatchParentAction(
-                                RemoveCategoryAppsAction(
-                                        categoryId = appCategory.categoryId,
-                                        packageNames = listOf(appPackageName)
+                                SetParentCategory(
+                                        categoryId = categoryId,
+                                        parentCategory = ""
                                 )
                         )
                     }
@@ -156,12 +144,8 @@ class AssignAppCategoryDialogFragment: BottomSheetDialogFragment() {
             }
         })
 
-        matchingAppEntries.observe(this, Observer {
-            binding.title = it.firstOrNull()?.title
-        })
-
         return binding.root
     }
 
-    fun show(fragmentManager: FragmentManager) = showSafe(fragmentManager, TAG)
+    fun show(fragmentManager: FragmentManager) = showSafe(fragmentManager, DIALOG_TAG)
 }

@@ -22,18 +22,35 @@ import io.timelimit.android.livedata.waitForNullableValue
 import io.timelimit.android.sync.actions.AddUsedTimeAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 
-class UsedTimeItemBatchUpdateHelper(val date: DateInTimezone, val categoryId: String, var cachedItem: UsedTimeItem?) {
+class UsedTimeItemBatchUpdateHelper(
+        val date: DateInTimezone,
+        val childCategoryId: String,
+        val parentCategoryId: String?,
+        var cachedItemChild: UsedTimeItem?,
+        var cachedItemParent: UsedTimeItem?
+) {
     companion object {
         suspend fun eventuallyUpdateInstance(
                 date: DateInTimezone,
-                categoryId: String,
+                childCategoryId: String,
+                parentCategoryId: String?,
                 oldInstance: UsedTimeItemBatchUpdateHelper?,
-                usedTimeItemForDay: UsedTimeItem?,
+                usedTimeItemForDayChild: UsedTimeItem?,
+                usedTimeItemForDayParent: UsedTimeItem?,
                 logic: AppLogic
         ): UsedTimeItemBatchUpdateHelper {
-            if (oldInstance != null && oldInstance.date == date && oldInstance.categoryId == categoryId) {
-                if (oldInstance.cachedItem != usedTimeItemForDay) {
-                    oldInstance.cachedItem = usedTimeItemForDay
+            if (
+                    oldInstance != null &&
+                    oldInstance.date == date &&
+                    oldInstance.childCategoryId == childCategoryId &&
+                    oldInstance.parentCategoryId == parentCategoryId
+            ) {
+                if (oldInstance.cachedItemChild != usedTimeItemForDayChild) {
+                    oldInstance.cachedItemChild = usedTimeItemForDayChild
+                }
+
+                if (oldInstance.cachedItemParent != usedTimeItemForDayParent) {
+                    oldInstance.cachedItemParent = usedTimeItemForDayParent
                 }
 
                 return oldInstance
@@ -44,8 +61,10 @@ class UsedTimeItemBatchUpdateHelper(val date: DateInTimezone, val categoryId: St
 
                 return UsedTimeItemBatchUpdateHelper(
                         date = date,
-                        categoryId = categoryId,
-                        cachedItem = usedTimeItemForDay
+                        childCategoryId = childCategoryId,
+                        parentCategoryId = parentCategoryId,
+                        cachedItemChild = usedTimeItemForDayChild,
+                        cachedItemParent = usedTimeItemForDayParent
                 )
             }
         }
@@ -66,18 +85,18 @@ class UsedTimeItemBatchUpdateHelper(val date: DateInTimezone, val categoryId: St
         }
     }
 
-    fun getTotalUsedTime(): Long {
-        val cachedItem = cachedItem
-
-        return (if (cachedItem == null) 0 else cachedItem.usedMillis) + timeToAdd
-    }
+    fun getTotalUsedTimeChild(): Long = (cachedItemChild?.usedMillis ?: 0) + timeToAdd
+    fun getTotalUsedTimeParent(): Long = (cachedItemParent?.usedMillis ?: 0) + timeToAdd
 
     fun getCachedExtraTimeToSubtract(): Int {
         return extraTimeToSubtract
     }
 
     suspend fun queryCurrentStatusFromDatabase(database: Database) {
-        cachedItem = database.usedTimes().getUsedTimeItem(categoryId, date.dayOfEpoch).waitForNullableValue()
+        cachedItemChild = database.usedTimes().getUsedTimeItem(childCategoryId, date.dayOfEpoch).waitForNullableValue()
+        cachedItemParent = parentCategoryId?.let {
+            database.usedTimes().getUsedTimeItem(parentCategoryId, date.dayOfEpoch).waitForNullableValue()
+        }
     }
 
     suspend fun commit(logic: AppLogic) {
@@ -86,7 +105,7 @@ class UsedTimeItemBatchUpdateHelper(val date: DateInTimezone, val categoryId: St
         } else {
             ApplyActionUtil.applyAppLogicAction(
                     AddUsedTimeAction(
-                            categoryId = categoryId,
+                            categoryId = childCategoryId,
                             timeToAdd = timeToAdd,
                             dayOfEpoch = date.dayOfEpoch,
                             extraTimeToSubtract = extraTimeToSubtract

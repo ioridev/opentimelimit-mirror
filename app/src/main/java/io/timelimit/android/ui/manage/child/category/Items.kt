@@ -26,5 +26,6 @@ data class CategoryItem(
         val isBlockedTimeNow: Boolean,
         val remainingTimeToday: Long?,
         val usedTimeToday: Long,
-        val usedForNotAssignedApps: Boolean
+        val usedForNotAssignedApps: Boolean,
+        val parentCategoryTitle: String?
 ): ManageChildCategoriesListItem()

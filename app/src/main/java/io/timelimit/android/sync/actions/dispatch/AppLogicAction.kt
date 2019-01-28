@@ -33,34 +33,46 @@ object LocalDatabaseAppLogicActionDispatcher {
         try {
             when(action) {
                 is AddUsedTimeAction -> {
-                    DatabaseValidation.assertCategoryExists(database, action.categoryId)
+                    val categoryEntry = database.category().getCategoryByIdSync(action.categoryId)!!
+                    val parentCategoryEntry = if (categoryEntry.parentCategoryId.isNotEmpty())
+                        database.category().getCategoryByIdSync(categoryEntry.parentCategoryId)
+                    else
+                        null
 
-                    // try to update
-                    val updatedRows = database.usedTimes().addUsedTime(
-                            categoryId = action.categoryId,
-                            timeToAdd = action.timeToAdd,
-                            dayOfEpoch = action.dayOfEpoch
-                    )
-
-                    if (updatedRows == 0) {
-                        // create new entry
-
-                        database.usedTimes().insertUsedTime(UsedTimeItem(
-                                categoryId = action.categoryId,
-                                dayOfEpoch = action.dayOfEpoch,
-                                usedMillis = action.timeToAdd.toLong()
-                        ))
-                    }                        // required to make this compile
-
-
-                    if (action.extraTimeToSubtract != 0) {
-                        database.category().subtractCategoryExtraTime(
-                                categoryId = action.categoryId,
-                                removedExtraTime = action.extraTimeToSubtract
+                    fun handleAddUsedTime(categoryId: String) {
+                        // try to update
+                        val updatedRows = database.usedTimes().addUsedTime(
+                                categoryId = categoryId,
+                                timeToAdd = action.timeToAdd,
+                                dayOfEpoch = action.dayOfEpoch
                         )
-                    } else {
-                        // required to make this compile
+
+                        if (updatedRows == 0) {
+                            // create new entry
+
+                            database.usedTimes().insertUsedTime(UsedTimeItem(
+                                    categoryId = categoryId,
+                                    dayOfEpoch = action.dayOfEpoch,
+                                    usedMillis = action.timeToAdd.toLong()
+                            ))
+                        }
+
+
+                        if (action.extraTimeToSubtract != 0) {
+                            database.category().subtractCategoryExtraTime(
+                                    categoryId = categoryId,
+                                    removedExtraTime = action.extraTimeToSubtract
+                            )
+                        }
                     }
+
+                    handleAddUsedTime(categoryEntry.id)
+
+                    if (parentCategoryEntry?.childId == categoryEntry.childId) {
+                        handleAddUsedTime(parentCategoryEntry.id)
+                    }
+
+                    null
                 }
                 is AddInstalledAppsAction -> {
                     database.app().addAppsSync(

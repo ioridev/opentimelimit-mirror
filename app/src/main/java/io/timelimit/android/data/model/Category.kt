@@ -42,7 +42,9 @@ data class Category(
         @ColumnInfo(name = "extra_time")
         val extraTimeInMillis: Long,
         @ColumnInfo(name = "temporarily_blocked")
-        val temporarilyBlocked: Boolean
+        val temporarilyBlocked: Boolean,
+        @ColumnInfo(name = "parent_category_id")
+        val parentCategoryId: String
 ): JsonSerializable {
     companion object {
         const val MINUTES_PER_DAY = 60 * 24
@@ -54,6 +56,7 @@ data class Category(
         private const val BLOCKED_MINUTES_IN_WEEK = "blockedMinutesInWeek"
         private const val EXTRA_TIME_IN_MILLIS = "extraTimeInMillis"
         private const val TEMPORARILY_BLOCKED = "temporarilyBlocked"
+        private const val PARENT_CATEGORY_ID = "parentCategoryId"
 
         fun parse(reader: JsonReader): Category {
             var id: String? = null
@@ -62,6 +65,8 @@ data class Category(
             var blockedMinutesInWeek: ImmutableBitmask? = null
             var extraTimeInMillis: Long? = null
             var temporarilyBlocked: Boolean? = null
+            // this field was added later so it has got a default value
+            var parentCategoryId = ""
 
             reader.beginObject()
 
@@ -73,6 +78,7 @@ data class Category(
                     BLOCKED_MINUTES_IN_WEEK -> blockedMinutesInWeek = ImmutableBitmaskJson.parse(reader.nextString(), BLOCKED_MINUTES_IN_WEEK_LENGTH)
                     EXTRA_TIME_IN_MILLIS -> extraTimeInMillis = reader.nextLong()
                     TEMPORARILY_BLOCKED -> temporarilyBlocked = reader.nextBoolean()
+                    PARENT_CATEGORY_ID -> parentCategoryId = reader.nextString()
                     else -> reader.skipValue()
                 }
             }
@@ -85,7 +91,8 @@ data class Category(
                     title = title!!,
                     blockedMinutesInWeek = blockedMinutesInWeek!!,
                     extraTimeInMillis = extraTimeInMillis!!,
-                    temporarilyBlocked = temporarilyBlocked!!
+                    temporarilyBlocked = temporarilyBlocked!!,
+                    parentCategoryId = parentCategoryId
             )
         }
     }
@@ -112,6 +119,7 @@ data class Category(
         writer.name(BLOCKED_MINUTES_IN_WEEK).value(ImmutableBitmaskJson.serialize(blockedMinutesInWeek))
         writer.name(EXTRA_TIME_IN_MILLIS).value(extraTimeInMillis)
         writer.name(TEMPORARILY_BLOCKED).value(temporarilyBlocked)
+        writer.name(PARENT_CATEGORY_ID).value(parentCategoryId)
 
         writer.endObject()
     }

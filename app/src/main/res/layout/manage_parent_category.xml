@@ -20,38 +20,18 @@
 
     <data>
         <variable
-            name="title"
-            type="String" />
-
-        <variable
-            name="isBlockedTimeNow"
-            type="Boolean" />
-
-        <variable
-            name="usedTimeToday"
-            type="String" />
-
-        <variable
-            name="remainingTimeToday"
-            type="String" />
-
-        <variable
-            name="usedForAppsWithoutCategory"
+            name="isParentCategory"
             type="boolean" />
 
         <variable
             name="parentCategoryTitle"
             type="String" />
 
-        <import type="android.text.TextUtils" />
         <import type="android.view.View" />
+        <import type="android.text.TextUtils" />
     </data>
 
     <androidx.cardview.widget.CardView
-        android:foreground="?selectableItemBackground"
-        android:id="@+id/card"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
         app:cardUseCompatPadding="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -62,47 +42,37 @@
             android:layout_height="wrap_content">
 
             <TextView
+                android:text="@string/category_settings_parent_category_title"
                 android:textAppearance="?android:textAppearanceLarge"
-                android:text="@{title}"
-                tools:text="Erlaubte Apps"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
             <TextView
+                android:text="@string/category_settings_parent_category_intro"
                 android:textAppearance="?android:textAppearanceMedium"
-                android:visibility="@{usedForAppsWithoutCategory ? View.VISIBLE : View.GONE}"
-                android:text="@string/manage_child_category_for_unassigned_apps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+
+            <TextView
+                android:visibility="@{isParentCategory ? View.VISIBLE : View.GONE}"
+                android:text="@string/category_settings_parent_category_already_used_as_parent"
+                android:textAppearance="?android:textAppearanceMedium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
             <TextView
-                android:textAppearance="?android:textAppearanceMedium"
                 android:visibility="@{TextUtils.isEmpty(parentCategoryTitle) ? View.GONE : View.VISIBLE}"
-                tools:text="@string/manage_child_category_is_child"
-                android:text="@{@string/manage_child_category_is_child(parentCategoryTitle)}"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:visibility="@{TextUtils.isEmpty(usedTimeToday) ? View.GONE : View.VISIBLE}"
-                android:text="@{usedTimeToday}"
-                tools:text="2 Minuten benutzt"
+                tools:text="@string/category_settings_parent_category_assigned_to"
+                android:text="@{@string/category_settings_parent_category_assigned_to(parentCategoryTitle)}"
                 android:textAppearance="?android:textAppearanceMedium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <TextView
-                android:visibility="@{TextUtils.isEmpty(remainingTimeToday) ? View.GONE : View.VISIBLE}"
-                android:text="@{remainingTimeToday}"
-                tools:text="5 Minuten verbleibend"
-                android:textAppearance="?android:textAppearanceMedium"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:visibility="@{TextUtils.isEmpty(remainingTimeToday) ? View.VISIBLE : View.GONE}"
-                android:textAppearance="?android:textAppearanceMedium"
-                android:text="@string/manage_child_category_no_time_limits"
+            <Button
+                android:id="@+id/select_parent_button"
+                android:enabled="@{!isParentCategory}"
+                android:text="@string/category_settings_parent_category_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 

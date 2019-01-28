@@ -73,7 +73,8 @@ object LocalDatabaseParentActionDispatcher {
                             // nothing blocked by default
                             blockedMinutesInWeek = ImmutableBitmask(BitSet()),
                             extraTimeInMillis = 0,
-                            temporarilyBlocked = false
+                            temporarilyBlocked = false,
+                            parentCategoryId = ""
                     ))
                 }
                 is DeleteCategoryAction -> {
@@ -104,13 +105,24 @@ object LocalDatabaseParentActionDispatcher {
                     database.category().updateCategoryExtraTime(action.categoryId, action.newExtraTime)
                 }
                 is IncrementCategoryExtraTimeAction -> {
-                    DatabaseValidation.assertCategoryExists(database, action.categoryId)
-
                     if (action.addedExtraTime < 0) {
                         throw IllegalArgumentException("invalid added extra time")
                     }
 
+                    val category = database.category().getCategoryByIdSync(action.categoryId)
+                            ?: throw IllegalArgumentException("category ${action.categoryId} does not exist")
+
                     database.category().incrementCategoryExtraTime(action.categoryId, action.addedExtraTime)
+
+                    if (category.parentCategoryId.isNotEmpty()) {
+                        val parentCategory = database.category().getCategoryByIdSync(category.parentCategoryId)
+
+                        if (parentCategory?.childId == category.childId) {
+                            database.category().incrementCategoryExtraTime(parentCategory.id, action.addedExtraTime)
+                        }
+                    }
+
+                    null
                 }
                 is UpdateCategoryTemporarilyBlockedAction -> {
                     DatabaseValidation.assertCategoryExists(database, action.categoryId)
@@ -279,6 +291,29 @@ object LocalDatabaseParentActionDispatcher {
                     database.user().updateCategoryForUnassignedApps(
                             categoryId = action.categoryId,
                             childId = action.childId
+                    )
+                }
+                is SetParentCategory -> {
+                    val category = database.category().getCategoryByIdSync(action.categoryId)!!
+
+                    if (action.parentCategory.isNotEmpty()) {
+                        val categories = database.category().getCategoriesByChildIdSync(category.childId)
+
+                        val parentCategoryItem = categories.find { it.id == action.parentCategory }
+                                ?: throw IllegalArgumentException("selected parent category does not exist")
+
+                        if (parentCategoryItem.parentCategoryId.isNotEmpty()) {
+                            throw IllegalArgumentException("can not set a category as parent which itself has got a parent")
+                        }
+
+                        if (categories.find { it.parentCategoryId == action.categoryId } != null) {
+                            throw IllegalArgumentException("can not make category a child category if it is already a parent category")
+                        }
+                    }
+
+                    database.category().updateParentCategory(
+                            categoryId = action.categoryId,
+                            parentCategoryId = action.parentCategory
                     )
                 }
             }.let { }

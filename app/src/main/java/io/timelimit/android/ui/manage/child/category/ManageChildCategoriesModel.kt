@@ -87,10 +87,10 @@ class ManageChildCategoriesModel(application: Application): AndroidViewModel(app
                             val firstDayOfWeek = childDate.dayOfEpoch - childDate.dayOfWeek
 
                             categories.map { category ->
-
                                 val rules = rulesByCategoryId[category.id] ?: emptyList()
                                 val usedTimeItemsForCategory = usedTimesByCategory[category.id]
                                         ?: emptyList()
+                                val parentCategory = categories.find { it.id == category.parentCategoryId }
 
                                 CategoryItem(
                                         category = category,
@@ -110,7 +110,8 @@ class ManageChildCategoriesModel(application: Application): AndroidViewModel(app
                                         )?.includingExtraTime,
                                         usedTimeToday = usedTimeItemsForCategory.find { item -> item.dayOfEpoch == childDate.dayOfEpoch }?.usedMillis
                                                 ?: 0,
-                                        usedForNotAssignedApps = categoryForUnassignedApps == category.id
+                                        usedForNotAssignedApps = categoryForUnassignedApps == category.id,
+                                        parentCategoryTitle = parentCategory?.title
                                 )
                             }
                         }

@@ -129,20 +129,22 @@ class BlockingReasonUtil(private val appLogic: AppLogic) {
                     if (categoryEntry2 == null) {
                         liveDataFromValue(BlockingReason.NotPartOfAnCategory)
                     } else {
-                        getBlockingReasonStep4Point5(categoryEntry2, child, timeZone)
+                        getBlockingReasonStep4Point5(categoryEntry2, child, timeZone, false)
                     }
                 }
-            } else if (categoryEntry.temporarilyBlocked) {
-                liveDataFromValue(BlockingReason.TemporarilyBlocked)
             } else {
-                getBlockingReasonStep4Point5(categoryEntry, child, timeZone)
+                getBlockingReasonStep4Point5(categoryEntry, child, timeZone, false)
             }
         }
     }
 
-    private fun getBlockingReasonStep4Point5(category: Category, child: User, timeZone: TimeZone): LiveData<BlockingReason> {
+    private fun getBlockingReasonStep4Point5(category: Category, child: User, timeZone: TimeZone, isParentCategory: Boolean): LiveData<BlockingReason> {
         if (BuildConfig.DEBUG) {
             Log.d(LOG_TAG, "step 4.5")
+        }
+
+        if (category.temporarilyBlocked) {
+            return liveDataFromValue(BlockingReason.TemporarilyBlocked)
         }
 
         val areLimitsDisabled: LiveData<Boolean>
@@ -162,6 +164,18 @@ class BlockingReasonUtil(private val appLogic: AppLogic) {
                 liveDataFromValue(BlockingReason.None)
             } else {
                 getBlockingReasonStep5(category, timeZone)
+            }
+        }.switchMap { result ->
+            if (result == BlockingReason.None && (!isParentCategory) && category.parentCategoryId.isNotEmpty()) {
+                appLogic.database.category().getCategoryByChildIdAndId(child.id, category.parentCategoryId).switchMap { parentCategory ->
+                    if (parentCategory == null) {
+                        liveDataFromValue(BlockingReason.None)
+                    } else {
+                        getBlockingReasonStep4Point5(parentCategory, child, timeZone, true)
+                    }
+                }
+            } else {
+                liveDataFromValue(result)
             }
         }
     }

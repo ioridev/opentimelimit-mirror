@@ -19,7 +19,7 @@
 
     <data>
         <variable
-            name="appTitle"
+            name="title"
             type="String" />
     </data>
 
@@ -31,13 +31,13 @@
         <TextView
             android:textAppearance="?android:textAppearanceLarge"
             android:padding="8dp"
-            android:text="@{appTitle}"
+            android:text="@{title}"
             tools:text="Systemeinstellungen"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
         <LinearLayout
-            android:id="@+id/category_list"
+            android:id="@+id/list"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">

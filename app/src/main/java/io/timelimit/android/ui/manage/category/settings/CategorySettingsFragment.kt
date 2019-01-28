@@ -58,6 +58,16 @@ class CategorySettingsFragment : Fragment() {
                 auth = auth
         )
 
+        ParentCategoryView.bind(
+                binding = binding.parentCategory,
+                lifecycleOwner = this,
+                categoryId = params.categoryId,
+                childId = params.childId,
+                database = appLogic.database,
+                fragmentManager = fragmentManager!!,
+                auth = auth
+        )
+
         binding.btnDeleteCategory.setOnClickListener { deleteCategory() }
         binding.editCategoryTitleGo.setOnClickListener { renameCategory() }
 

@@ -186,6 +186,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                     val appCategory = appCategories.get(Pair(foregroundAppPackageName, categories.map { it.id })).waitForNullableValue()
                     val category = categories.find { it.id == appCategory?.categoryId }
                             ?: categories.find { it.id == deviceUserEntry.categoryForNotAssignedApps }
+                    val parentCategory = categories.find { it.id == category?.parentCategoryId }
 
                     if (category == null) {
                         usedTimeUpdateHelper?.commit(appLogic)
@@ -196,7 +197,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                         ))
                         appLogic.platformIntegration.setSuspendedApps(listOf(foregroundAppPackageName), true)
                         appLogic.platformIntegration.showAppLockScreen(foregroundAppPackageName)
-                    } else if (category.temporarilyBlocked) {
+                    } else if (category.temporarilyBlocked or (parentCategory?.temporarilyBlocked == true)) {
                         usedTimeUpdateHelper?.commit(appLogic)
 
                         appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
@@ -218,7 +219,8 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                             ))
                         } else if (
                         // check blocked time areas
-                                (category.blockedMinutesInWeek.read(minuteOfWeek))
+                                (category.blockedMinutesInWeek.read(minuteOfWeek)) or
+                                (parentCategory?.blockedMinutesInWeek?.read(minuteOfWeek) == true)
                         ) {
                             usedTimeUpdateHelper?.commit(appLogic)
 
@@ -230,8 +232,11 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                         } else {
                             // check time limits
                             val rules = timeLimitRules.get(category.id).waitForNonNullValue()
+                            val parentRules = parentCategory?.let {
+                                timeLimitRules.get(it.id).waitForNonNullValue()
+                            } ?: emptyList()
 
-                            if (rules.isEmpty()) {
+                            if (rules.isEmpty() and parentRules.isEmpty()) {
                                 // unlimited
                                 usedTimeUpdateHelper?.commit(appLogic)
 
@@ -241,32 +246,60 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                                 ))
                             } else {
                                 val usedTimes = usedTimesOfCategoryAndWeekByFirstDayOfWeek.get(Pair(category.id, nowDate.dayOfEpoch - nowDate.dayOfWeek)).waitForNonNullValue()
+                                val parentUsedTimes = parentCategory?.let {
+                                    usedTimesOfCategoryAndWeekByFirstDayOfWeek.get(Pair(it.id, nowDate.dayOfEpoch - nowDate.dayOfWeek)).waitForNonNullValue()
+                                } ?: SparseArray()
 
                                 val newUsedTimeItemBatchUpdateHelper = UsedTimeItemBatchUpdateHelper.eventuallyUpdateInstance(
                                         date = nowDate,
-                                        categoryId = category.id,
+                                        childCategoryId = category.id,
+                                        parentCategoryId = parentCategory?.id,
                                         oldInstance = usedTimeUpdateHelper,
-                                        usedTimeItemForDay = usedTimes.get(nowDate.dayOfWeek),
+                                        usedTimeItemForDayChild = usedTimes.get(nowDate.dayOfWeek),
+                                        usedTimeItemForDayParent = parentUsedTimes.get(nowDate.dayOfWeek),
                                         logic = appLogic
                                 )
                                 usedTimeUpdateHelper = newUsedTimeItemBatchUpdateHelper
 
-                                val usedTimesSparseArray = SparseLongArray()
+                                fun buildUsedTimesSparseArray(items: SparseArray<UsedTimeItem>, isParentCategory: Boolean): SparseLongArray {
+                                    val result = SparseLongArray()
 
-                                for (i in 0..6) {
-                                    val usedTimesItem = usedTimes[i]?.usedMillis
+                                    for (i in 0..6) {
+                                        val usedTimesItem = items[i]?.usedMillis
 
-                                    if (newUsedTimeItemBatchUpdateHelper.date.dayOfWeek == i) {
-                                        usedTimesSparseArray.put(i, newUsedTimeItemBatchUpdateHelper.getTotalUsedTime())
-                                    } else {
-                                        usedTimesSparseArray.put(i, (if (usedTimesItem != null) usedTimesItem else 0))
+                                        if (newUsedTimeItemBatchUpdateHelper.date.dayOfWeek == i) {
+                                            result.put(
+                                                    i,
+                                                    if (isParentCategory)
+                                                        newUsedTimeItemBatchUpdateHelper.getTotalUsedTimeParent()
+                                                    else
+                                                        newUsedTimeItemBatchUpdateHelper.getTotalUsedTimeChild()
+                                            )
+                                        } else {
+                                            result.put(i, usedTimesItem ?: 0)
+                                        }
                                     }
+
+                                    return result
                                 }
 
-                                val remaining = RemainingTime.getRemainingTime(
-                                        nowDate.dayOfWeek, usedTimesSparseArray, rules,
+                                val remainingChild = RemainingTime.getRemainingTime(
+                                        nowDate.dayOfWeek,
+                                        buildUsedTimesSparseArray(usedTimes, isParentCategory = false),
+                                        rules,
                                         Math.max(0, category.extraTimeInMillis - newUsedTimeItemBatchUpdateHelper.getCachedExtraTimeToSubtract())
                                 )
+
+                                val remainingParent = parentCategory?.let {
+                                    RemainingTime.getRemainingTime(
+                                            nowDate.dayOfWeek,
+                                            buildUsedTimesSparseArray(parentUsedTimes, isParentCategory = true),
+                                            parentRules,
+                                            Math.max(0, parentCategory.extraTimeInMillis - newUsedTimeItemBatchUpdateHelper.getCachedExtraTimeToSubtract())
+                                    )
+                                }
+
+                                val remaining = RemainingTime.min(remainingChild, remainingParent)
 
                                 if (remaining == null) {
                                     // unlimited

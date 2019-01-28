@@ -65,6 +65,9 @@ abstract class CategoryDao {
 
     @Query("SELECT id, child_id, temporarily_blocked FROM category")
     abstract fun getAllCategoriesShortInfo(): LiveData<List<CategoryShortInfo>>
+
+    @Query("UPDATE category SET parent_category_id = :parentCategoryId WHERE id = :categoryId")
+    abstract fun updateParentCategory(categoryId: String, parentCategoryId: String)
 }
 
 data class CategoryShortInfo(

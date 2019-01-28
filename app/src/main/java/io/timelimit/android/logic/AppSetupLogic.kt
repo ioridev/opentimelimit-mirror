@@ -136,7 +136,8 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             title = defaultCategories.allowedAppsTitle,
                             blockedMinutesInWeek = ImmutableBitmask((BitSet())),
                             extraTimeInMillis = 0,
-                            temporarilyBlocked = false
+                            temporarilyBlocked = false,
+                            parentCategoryId = ""
                     ))
 
                     appLogic.database.category().addCategory(Category(
@@ -145,7 +146,8 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             title = defaultCategories.allowedGamesTitle,
                             blockedMinutesInWeek = defaultCategories.allowedGamesBlockedTimes,
                             extraTimeInMillis = 0,
-                            temporarilyBlocked = false
+                            temporarilyBlocked = false,
+                            parentCategoryId = ""
                     ))
 
                     // add default allowed apps

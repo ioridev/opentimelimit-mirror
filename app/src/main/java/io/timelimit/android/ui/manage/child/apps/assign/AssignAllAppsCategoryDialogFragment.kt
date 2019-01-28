@@ -28,7 +28,7 @@ import io.timelimit.android.R
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.Category
 import io.timelimit.android.data.model.UserType
-import io.timelimit.android.databinding.AssignAppDialogBinding
+import io.timelimit.android.databinding.BottomSheetSelectionListBinding
 import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
@@ -73,10 +73,10 @@ class AssignAllAppsCategoryDialogFragment: BottomSheetDialogFragment() {
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val binding = AssignAppDialogBinding.inflate(inflater, container, false)
-        val list = binding.categoryList
+        val binding = BottomSheetSelectionListBinding.inflate(inflater, container, false)
+        val list = binding.list
 
-        binding.appTitle = resources.getQuantityString(R.plurals.generic_plural_app, appPackageNames.size, appPackageNames.size)
+        binding.title = resources.getQuantityString(R.plurals.generic_plural_app, appPackageNames.size, appPackageNames.size)
 
         childCategoryEntries.observe(this, Observer { categories ->
             fun buildRow(): CheckedTextView = LayoutInflater.from(context!!).inflate(
