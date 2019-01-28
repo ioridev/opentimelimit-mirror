@@ -77,5 +77,37 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+        <LinearLayout
+            style="?android:buttonBarStyle"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                style="?android:buttonBarButtonStyle"
+                android:layout_weight="1"
+                android:text="@string/category_apps_add_dialog_select_all"
+                android:id="@+id/select_all_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <Button
+                style="?android:buttonBarButtonStyle"
+                android:layout_weight="1"
+                android:text="@string/generic_cancel"
+                android:id="@+id/cancel_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <Button
+                style="?android:buttonBarButtonStyle"
+                android:layout_weight="1"
+                android:text="@string/category_apps_add_dialog_btn_positive"
+                android:id="@+id/add_apps_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
     </LinearLayout>
 </layout>

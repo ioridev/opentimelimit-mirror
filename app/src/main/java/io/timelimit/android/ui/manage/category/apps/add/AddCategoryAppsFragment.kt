@@ -30,7 +30,10 @@ import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.databinding.FragmentAddCategoryAppsBinding
 import io.timelimit.android.extensions.showSafe
-import io.timelimit.android.livedata.*
+import io.timelimit.android.livedata.ignoreUnchanged
+import io.timelimit.android.livedata.liveDataFromValue
+import io.timelimit.android.livedata.map
+import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.AddCategoryAppsAction
 import io.timelimit.android.ui.main.ActivityViewModel
@@ -138,36 +141,36 @@ class AddCategoryAppsFragment : DialogFragment() {
             adapter.categoryTitleByPackageName = it
         })
 
+        binding.addAppsButton.setOnClickListener {
+            val packageNames = adapter.selectedApps.toList()
+
+            if (packageNames.isNotEmpty()) {
+                auth.tryDispatchParentAction(
+                        AddCategoryAppsAction(
+                                categoryId = params.categoryId,
+                                packageNames = packageNames
+                        )
+                )
+            }
+
+            dismiss()
+        }
+
+        binding.cancelButton.setOnClickListener {
+            dismiss()
+        }
+
+        binding.selectAllButton.setOnClickListener {
+            adapter.selectedApps.addAll(
+                    adapter.data?.map { it.packageName } ?: emptySet()
+            )
+
+            adapter.notifyDataSetChanged()
+        }
+
         return AlertDialog.Builder(context!!, R.style.AppTheme)
                 .setView(binding.root)
-                .setPositiveButton(R.string.category_apps_add_dialog_btn_positive) {
-                    _, _->
-
-                    val packageNames = adapter.selectedApps.toList()
-
-                    if (packageNames.isNotEmpty()) {
-                        auth.tryDispatchParentAction(
-                                AddCategoryAppsAction(
-                                        categoryId = params.categoryId,
-                                        packageNames = packageNames
-                                )
-                        )
-                    }
-                }
-                .setNegativeButton(R.string.generic_cancel, null)
-                .setNeutralButton(R.string.category_apps_add_dialog_select_all, null)
                 .create()
-                .apply {
-                    setOnShowListener {
-                        getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
-                            adapter.selectedApps.addAll(
-                                    adapter.data?.map { it.packageName } ?: emptySet()
-                            )
-
-                            adapter.notifyDataSetChanged()
-                        }
-                    }
-                }
     }
 
     fun show(manager: FragmentManager) {
