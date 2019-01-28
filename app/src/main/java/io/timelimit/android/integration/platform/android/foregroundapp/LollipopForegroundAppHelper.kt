@@ -21,44 +21,54 @@ import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.os.Build
+import io.timelimit.android.async.Threads
+import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 class LollipopForegroundAppHelper(private val context: Context) : ForegroundAppHelper() {
+    companion object {
+        private val foregroundAppThread: Executor by lazy { Executors.newSingleThreadExecutor() }
+    }
+
     private val usageStatsManager = context.getSystemService(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) Context.USAGE_STATS_SERVICE else "usagestats") as UsageStatsManager
     private val appOpsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
 
     @Throws(SecurityException::class)
-    override fun getForegroundAppPackage(): String? {
+    override suspend fun getForegroundAppPackage(): String? {
         if (getPermissionStatus() == RuntimePermissionStatus.NotGranted) {
             throw SecurityException()
         }
 
-        val time = System.currentTimeMillis()
-        // query data for last 7 days
-        val usageEvents = usageStatsManager.queryEvents(time - 1000 * 60 * 60 * 24 * 7, time)
+        return foregroundAppThread.executeAndWait {
+            val time = System.currentTimeMillis()
+            // query data for last 7 days
+            val usageEvents = usageStatsManager.queryEvents(time - 1000 * 60 * 60 * 24 * 7, time)
 
-        if (usageEvents != null) {
-            val event = UsageEvents.Event()
+            if (usageEvents != null) {
+                val event = UsageEvents.Event()
 
-            var lastTime: Long = 0
-            var lastPackage: String? = null
+                var lastTime: Long = 0
+                var lastPackage: String? = null
 
-            while (usageEvents.hasNextEvent()) {
-                usageEvents.getNextEvent(event)
+                while (usageEvents.hasNextEvent()) {
+                    usageEvents.getNextEvent(event)
 
-                if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) {
-                    if (event.timeStamp > lastTime) {
-                        lastTime = event.timeStamp
-                        lastPackage = event.packageName
+                    if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                        if (event.timeStamp > lastTime) {
+                            lastTime = event.timeStamp
+                            lastPackage = event.packageName
+                        }
                     }
                 }
+
+                lastPackage
+            } else {
+                null
             }
-
-            return lastPackage
         }
-
-        return null
     }
 
     override fun getPermissionStatus(): RuntimePermissionStatus {

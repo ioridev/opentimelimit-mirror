@@ -80,7 +80,7 @@ class DummyIntegration(
         }
     }
 
-    override fun getForegroundAppPackageName(): String? {
+    override suspend fun getForegroundAppPackageName(): String? {
         if (foregroundAppPermission == RuntimePermissionStatus.NotGranted) {
             throw SecurityException()
         }

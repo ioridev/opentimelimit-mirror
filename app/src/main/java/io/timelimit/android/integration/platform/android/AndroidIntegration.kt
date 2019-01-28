@@ -90,7 +90,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
         return AdminStatus.getAdminStatus(context, policyManager)
     }
 
-    override fun getForegroundAppPackageName(): String? {
+    override suspend fun getForegroundAppPackageName(): String? {
         return foregroundAppHelper.getForegroundAppPackage()
     }
 

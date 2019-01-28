@@ -20,7 +20,7 @@ import android.os.Build
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
 
 abstract class ForegroundAppHelper {
-    abstract fun getForegroundAppPackage(): String?
+    abstract suspend fun getForegroundAppPackage(): String?
     abstract fun getPermissionStatus(): RuntimePermissionStatus
 
     companion object {
