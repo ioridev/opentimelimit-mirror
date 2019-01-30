@@ -81,9 +81,11 @@ class CategoryTimeLimitRulesFragment : Fragment(), EditTimeLimitRuleDialogFragme
 
         rules
                 .map { rules ->
-                    rules.sortedBy { it.dayMask }
+                    rules.sortedBy { it.dayMask }.map { TimeLimitRuleRuleItem(it) }
                 }
-                .observe(this, Observer { adapter.data = it })
+                .observe(this, Observer {
+                    adapter.data = it + listOf(AddTimeLimitRuleItem)
+                })
 
         usedTimeItems.observe(this, Observer {
             usedTimes ->

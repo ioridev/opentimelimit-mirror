@@ -33,7 +33,7 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
         private const val TYPE_ADD = 2
     }
 
-    var data: List<TimeLimitRule>? by Delegates.observable(null as List<TimeLimitRule>?) { _, _, _ -> notifyDataSetChanged() }
+    var data: List<TimeLimitRuleItem> by Delegates.observable(emptyList()) { _, _, _ -> notifyDataSetChanged() }
     var usedTimes: List<Long>? by Delegates.observable(null as List<Long>?) { _, _, _ -> notifyDataSetChanged() }
     var handlers: Handlers? = null
 
@@ -41,28 +41,23 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
         setHasStableIds(true)
     }
 
-    private fun getItem(position: Int): TimeLimitRule {
-        return data!![position]
-    }
+    private fun getItem(position: Int): TimeLimitRuleItem = data[position]
 
-    override fun getItemId(position: Int): Long = when {
-        position == data!!.size -> 1
-        else -> getItem(position).id.hashCode().toLong()
-    }
+    override fun getItemId(position: Int): Long {
+        val item = getItem(position)
 
-    override fun getItemCount(): Int {
-        val data = this.data
-
-        if (data == null) {
-            return 0
+        return if (item is TimeLimitRuleRuleItem) {
+            item.rule.id.hashCode()
         } else {
-            return data.size + 1
-        }
+            item.hashCode()
+        }.toLong()
     }
 
-    override fun getItemViewType(position: Int) = when {
-        position == data!!.size -> TYPE_ADD
-        else -> TYPE_ITEM
+    override fun getItemCount(): Int = data.size
+
+    override fun getItemViewType(position: Int) = when (getItem(position)) {
+        AddTimeLimitRuleItem -> TYPE_ADD
+        is TimeLimitRuleRuleItem -> TYPE_ITEM
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
@@ -91,34 +86,39 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        if (position == data!!.size) {
-            // nothing to do
-        } else {
-            val item = getItem(position)
-            val binding = (holder as ItemViewHolder).view
-            val dayNames = binding.root.resources.getStringArray(R.array.days_of_week_array)
-            val usedTime = usedTimes?.mapIndexed { index, value ->
-                if (item.dayMask.toInt() and (1 shl index) != 0) {
-                    value
-                } else {
-                    0
-                }
-            }?.sum()?.toInt() ?: 0
+        val item = getItem(position)
 
-            binding.maxTimeString = TimeTextUtil.time(item.maximumTimeInMillis, binding.root.context)
-            binding.usageAsText = TimeTextUtil.used(usedTime, binding.root.context)
-            binding.usageProgressInPercent = if (item.maximumTimeInMillis > 0)
-                (usedTime * 100 / item.maximumTimeInMillis)
-            else
-                100
-            binding.daysString = JoinUtil.join(
-                    dayNames.filterIndexed { index, _ -> (item.dayMask.toInt() and (1 shl index)) != 0 },
-                    binding.root.context
-            )
-            binding.appliesToExtraTime = item.applyToExtraTimeUsage
-            binding.card.setOnClickListener { handlers?.onTimeLimitRuleClicked(item) }
+        when (item) {
+            AddTimeLimitRuleItem -> {
+                // nothing to do
+            }
+            is TimeLimitRuleRuleItem -> {
+                val rule = item.rule
+                val binding = (holder as ItemViewHolder).view
+                val dayNames = binding.root.resources.getStringArray(R.array.days_of_week_array)
+                val usedTime = usedTimes?.mapIndexed { index, value ->
+                    if (rule.dayMask.toInt() and (1 shl index) != 0) {
+                        value
+                    } else {
+                        0
+                    }
+                }?.sum()?.toInt() ?: 0
 
-            binding.executePendingBindings()
+                binding.maxTimeString = TimeTextUtil.time(rule.maximumTimeInMillis, binding.root.context)
+                binding.usageAsText = TimeTextUtil.used(usedTime, binding.root.context)
+                binding.usageProgressInPercent = if (rule.maximumTimeInMillis > 0)
+                    (usedTime * 100 / rule.maximumTimeInMillis)
+                else
+                    100
+                binding.daysString = JoinUtil.join(
+                        dayNames.filterIndexed { index, _ -> (rule.dayMask.toInt() and (1 shl index)) != 0 },
+                        binding.root.context
+                )
+                binding.appliesToExtraTime = rule.applyToExtraTimeUsage
+                binding.card.setOnClickListener { handlers?.onTimeLimitRuleClicked(rule) }
+
+                binding.executePendingBindings()
+            }
         }
     }
 }
