@@ -41,7 +41,7 @@ object FifteenMinutesOfWeekItems: BlockedTimeItems() {
         val hour = itemWithinDay / itemsPerHour
         val itemInHour = itemWithinDay % itemsPerHour
 
-        return MinuteTile(day, hour, itemInHour * 15, 15)
+        return MinuteTile(day, hour, itemInHour * minutesPerTile, minutesPerTile)
     }
 
     override fun getDayOfPosition(position: Int): Int {
@@ -50,7 +50,7 @@ object FifteenMinutesOfWeekItems: BlockedTimeItems() {
 
     override fun getPositionOfItem(item: Item) = when(item) {
         is DayHeader -> item.day * itemsPerDay
-        is HourHeader -> item.day * itemsPerDay + 0 + itemsPerHour * item.hour
-        is MinuteTile -> item.day * itemsPerDay + 0 + itemsPerHour * item.hour + 1 + item.minute * 15
+        is HourHeader -> item.day * itemsPerDay + 1 + itemsPerHour * item.hour
+        is MinuteTile -> item.day * itemsPerDay + 1 + itemsPerHour * item.hour + 0 + item.minute / minutesPerTile
     }
 }

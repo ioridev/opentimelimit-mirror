@@ -225,9 +225,19 @@ class BlockedTimeAreasFragment : Fragment() {
         }
 
         detailed_mode.setOnCheckedChangeListener { _, isChecked ->
-            items.value = when (isChecked) {
+            val oldValue = items.value
+            val newValue = when (isChecked) {
                 true -> MinuteOfWeekItems
                 false -> FifteenMinutesOfWeekItems
+            }
+
+            if (oldValue != newValue) {
+                val currentlyVisiblePosition = layoutManager.findFirstVisibleItemPosition()
+                val currentlyVisibleItem = oldValue!!.getItemAtPosition(currentlyVisiblePosition)
+                val newVisiblePosition = newValue.getPositionOfItem(currentlyVisibleItem)
+
+                items.value = newValue
+                layoutManager.scrollToPositionWithOffset(newVisiblePosition, 0)
             }
         }
     }
