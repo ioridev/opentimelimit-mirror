@@ -23,6 +23,7 @@ import io.timelimit.android.R
 import io.timelimit.android.data.model.TimeLimitRule
 import io.timelimit.android.databinding.AddItemViewBinding
 import io.timelimit.android.databinding.FragmentCategoryTimeLimitRuleItemBinding
+import io.timelimit.android.databinding.TimeLimitRuleIntroductionBinding
 import io.timelimit.android.util.JoinUtil
 import io.timelimit.android.util.TimeTextUtil
 import kotlin.properties.Delegates
@@ -31,6 +32,7 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
     companion object {
         private const val TYPE_ITEM = 1
         private const val TYPE_ADD = 2
+        private const val TYPE_INTRO = 3
     }
 
     var data: List<TimeLimitRuleItem> by Delegates.observable(emptyList()) { _, _, _ -> notifyDataSetChanged() }
@@ -58,6 +60,7 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
     override fun getItemViewType(position: Int) = when (getItem(position)) {
         AddTimeLimitRuleItem -> TYPE_ADD
         is TimeLimitRuleRuleItem -> TYPE_ITEM
+        TimeLimitRuleIntroductionItem -> TYPE_INTRO
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
@@ -82,6 +85,19 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
                     }.root
             )
         }
+        TYPE_INTRO -> {
+            ViewHolder(
+                    TimeLimitRuleIntroductionBinding.inflate(
+                            LayoutInflater.from(parent.context),
+                            parent,
+                            false
+                    ).apply {
+                        okButton.setOnClickListener {
+                            handlers?.onConfirmIntroduction()
+                        }
+                    }.root
+            )
+        }
         else -> throw IllegalStateException()
     }
 
@@ -90,6 +106,9 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
 
         when (item) {
             AddTimeLimitRuleItem -> {
+                // nothing to do
+            }
+            is TimeLimitRuleIntroductionItem -> {
                 // nothing to do
             }
             is TimeLimitRuleRuleItem -> {
@@ -119,7 +138,7 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
 
                 binding.executePendingBindings()
             }
-        }
+        }.let { /* require handling all paths */ }
     }
 }
 
@@ -129,4 +148,5 @@ class ItemViewHolder(val view: FragmentCategoryTimeLimitRuleItemBinding): ViewHo
 interface Handlers {
     fun onTimeLimitRuleClicked(rule: TimeLimitRule)
     fun onAddTimeLimitRuleClicked()
+    fun onConfirmIntroduction()
 }

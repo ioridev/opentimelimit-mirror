@@ -25,8 +25,10 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import io.timelimit.android.R
+import io.timelimit.android.async.Threads
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.extensions.getDateLive
+import io.timelimit.android.data.model.HintsToShow
 import io.timelimit.android.data.model.TimeLimitRule
 import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.switchMap
@@ -79,13 +81,23 @@ class CategoryTimeLimitRulesFragment : Fragment(), EditTimeLimitRuleDialogFragme
             )
         }
 
-        rules
-                .map { rules ->
-                    rules.sortedBy { it.dayMask }.map { TimeLimitRuleRuleItem(it) }
+        val hasHiddenIntro = database.config().wereHintsShown(HintsToShow.TIME_LIMIT_RULE_INTRODUCTION)
+
+        rules.map { rules ->
+            rules.sortedBy { it.dayMask }.map { TimeLimitRuleRuleItem(it) }
+        }.switchMap {
+            val baseList = it + listOf(AddTimeLimitRuleItem)
+
+            hasHiddenIntro.map { hasHiddenIntro ->
+                if (hasHiddenIntro) {
+                    baseList
+                } else {
+                    listOf(TimeLimitRuleIntroductionItem) + baseList
                 }
-                .observe(this, Observer {
-                    adapter.data = it + listOf(AddTimeLimitRuleItem)
-                })
+            }
+        }.observe(this, Observer {
+            adapter.data = it
+        })
 
         usedTimeItems.observe(this, Observer {
             usedTimes ->
@@ -103,6 +115,12 @@ class CategoryTimeLimitRulesFragment : Fragment(), EditTimeLimitRuleDialogFragme
             override fun onAddTimeLimitRuleClicked() {
                 if (auth.requestAuthenticationOrReturnTrue()) {
                     EditTimeLimitRuleDialogFragment.newInstance(params.categoryId, this@CategoryTimeLimitRulesFragment).show(fragmentManager!!)
+                }
+            }
+
+            override fun onConfirmIntroduction() {
+                Threads.database.execute {
+                    database.config().setHintsShownSync(HintsToShow.TIME_LIMIT_RULE_INTRODUCTION)
                 }
             }
         }

@@ -16,6 +16,13 @@
 -->
 <resources>
     <string name="category_time_limit_rules">time limit rules</string>
+    <string name="category_time_limit_rules_about">
+        Here you can configure time limit rules.
+        Every rule describes one limit.
+        Rules at which multiple days are checked
+        limit the total usage duration during a week at all selected days.
+        Rules at which only one day is checked only limit the selected day.
+    </string>
     <string name="category_time_limit_rules_applied_to_extra_time">is applied to extra time, too</string>
     <string name="category_time_limit_rule_dialog_new">Create rule</string>
     <string name="category_time_limit_rule_dialog_edit">Edit rule</string>

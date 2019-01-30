@@ -4,4 +4,5 @@ import io.timelimit.android.data.model.TimeLimitRule
 
 sealed class TimeLimitRuleItem
 object AddTimeLimitRuleItem: TimeLimitRuleItem()
+object TimeLimitRuleIntroductionItem: TimeLimitRuleItem()
 data class TimeLimitRuleRuleItem(val rule: TimeLimitRule): TimeLimitRuleItem()
