@@ -177,7 +177,7 @@ class LockFragment : Fragment() {
                     button.setOnClickListener {
                         if (auth.requestAuthenticationOrReturnTrue()) {
                             CreateCategoryDialogFragment
-                                    .newInstance(ManageChildFragmentArgs.Builder(user.id).build())
+                                    .newInstance(ManageChildFragmentArgs(childId = user.id))
                                     .show(fragmentManager!!)
                         }
                     }
