@@ -104,4 +104,9 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
             }
         }
     }
+
+    override fun onBackPressed() {
+        // do nothing because going back would open the blocked app again
+        // super.onBackPressed()
+    }
 }

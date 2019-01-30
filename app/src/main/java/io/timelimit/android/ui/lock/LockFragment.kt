@@ -91,6 +91,8 @@ class LockFragment : Fragment() {
             binding.appTitle = "???"
         }
 
+        binding.appIcon.setImageDrawable(logic.platformIntegration.getAppIcon(packageName))
+
         blockingReason.observe(this, Observer {
             if (it == BlockingReason.None) {
                 activity!!.finish()

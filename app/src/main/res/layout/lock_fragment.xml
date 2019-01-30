@@ -88,33 +88,46 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                     <LinearLayout
-                        android:padding="8dp"
-                        android:orientation="vertical"
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
-                        <TextView
-                            android:textAppearance="?android:textAppearanceMedium"
-                            tools:text="Evil App"
-                            android:text="@{appTitle}"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
+                        <ImageView
+                            android:id="@+id/app_icon"
+                            tools:src="@mipmap/ic_launcher"
+                            android:layout_margin="8dp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp" />
 
-                        <TextView
-                            tools:text="verbotene Apps"
-                            android:visibility="@{TextUtils.isEmpty(appCategoryTitle) ? View.GONE : View.VISIBLE}"
-                            android:textAppearance="?android:textAppearanceMedium"
-                            android:text="@{appCategoryTitle}"
+                        <LinearLayout
+                            android:padding="8dp"
+                            android:orientation="vertical"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
+                            android:layout_height="wrap_content">
+                            <TextView
+                                android:textAppearance="?android:textAppearanceMedium"
+                                tools:text="Evil App"
+                                android:text="@{appTitle}"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
 
-                        <TextView
-                            tools:text="com.evil.app"
-                            android:textAppearance="?android:textAppearanceMedium"
-                            android:text="@{packageName}"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
+                            <TextView
+                                tools:text="verbotene Apps"
+                                android:visibility="@{TextUtils.isEmpty(appCategoryTitle) ? View.GONE : View.VISIBLE}"
+                                android:textAppearance="?android:textAppearanceMedium"
+                                android:text="@{appCategoryTitle}"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
 
+                            <TextView
+                                tools:text="com.evil.app"
+                                android:textAppearance="?android:textAppearanceSmall"
+                                android:text="@{packageName}"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+
+                        </LinearLayout>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
