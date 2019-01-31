@@ -1,0 +1,4 @@
+- show blocking reason when a notification was blocked
+- allow setting a category for unassigned Apps
+- nesting of categories
+- UI changes
