@@ -21,7 +21,6 @@ import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.os.Build
-import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
 import java.util.concurrent.Executor
@@ -36,6 +35,11 @@ class LollipopForegroundAppHelper(private val context: Context) : ForegroundAppH
     private val usageStatsManager = context.getSystemService(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) Context.USAGE_STATS_SERVICE else "usagestats") as UsageStatsManager
     private val appOpsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
 
+    private var lastQueryTime: Long = 0
+    private var lastPackage: String? = null
+    private var lastPackageTime: Long = 0
+    private val event = UsageEvents.Event()
+
     @Throws(SecurityException::class)
     override suspend fun getForegroundAppPackage(): String? {
         if (getPermissionStatus() == RuntimePermissionStatus.NotGranted) {
@@ -43,31 +47,42 @@ class LollipopForegroundAppHelper(private val context: Context) : ForegroundAppH
         }
 
         return foregroundAppThread.executeAndWait {
-            val time = System.currentTimeMillis()
-            // query data for last 7 days
-            val usageEvents = usageStatsManager.queryEvents(time - 1000 * 60 * 60 * 24 * 7, time)
+            val now = System.currentTimeMillis()
 
-            if (usageEvents != null) {
-                val event = UsageEvents.Event()
+            if (lastQueryTime > now) {
+                // if the time went backwards, forget everything
+                lastQueryTime = 0
+                lastPackage = null
+                lastPackageTime = 0
+            }
 
-                var lastTime: Long = 0
-                var lastPackage: String? = null
+            val queryStartTime = if (lastQueryTime == 0L) {
+                // query data for last 7 days
+                now - 1000 * 60 * 60 * 24 * 7
+            } else {
+                // query data since last query
+                // note: when the duration is too small, Android returns no data
+                //       due to that, 1 second more than required is queried
+                //       which seems to provide all data
+                lastQueryTime - 1000
+            }
 
+            usageStatsManager.queryEvents(queryStartTime, now)?.let { usageEvents ->
                 while (usageEvents.hasNextEvent()) {
                     usageEvents.getNextEvent(event)
 
                     if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) {
-                        if (event.timeStamp > lastTime) {
-                            lastTime = event.timeStamp
+                        if (event.timeStamp > lastPackageTime) {
+                            lastPackageTime = event.timeStamp
                             lastPackage = event.packageName
                         }
                     }
                 }
-
-                lastPackage
-            } else {
-                null
             }
+
+            lastQueryTime = now
+
+            lastPackage
         }
     }
 
