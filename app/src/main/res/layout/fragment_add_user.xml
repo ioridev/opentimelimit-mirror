@@ -22,7 +22,7 @@
 
     <data></data>
 
-    <ViewFlipper
+    <io.timelimit.android.ui.view.SafeViewFlipper
         android:layout_width="match_parent"
         android:id="@+id/flipper"
         android:layout_height="match_parent">
@@ -101,5 +101,5 @@
         <include layout="@layout/circular_progress_indicator" />
 
         <include android:id="@+id/missing_auth_view" layout="@layout/fragment_add_user_missing_authentication" />
-    </ViewFlipper>
+    </io.timelimit.android.ui.view.SafeViewFlipper>
 </layout>

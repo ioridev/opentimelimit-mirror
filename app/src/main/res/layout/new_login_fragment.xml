@@ -15,7 +15,7 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
-    <ViewFlipper
+    <io.timelimit.android.ui.view.SafeViewFlipper
         android:measureAllChildren="false"
         android:id="@+id/switcher"
         android:layout_width="match_parent"
@@ -27,5 +27,5 @@
         <include android:id="@+id/enter_password"
             layout="@layout/new_login_fragment_password" />
 
-    </ViewFlipper>
+    </io.timelimit.android.ui.view.SafeViewFlipper>
 </layout>
