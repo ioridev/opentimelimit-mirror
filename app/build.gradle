@@ -63,7 +63,7 @@ android {
 }
 
 dependencies {
-    def nav_version = "1.0.0-alpha11"
+    def nav_version = "1.0.0-beta01"
     def room_version = "2.0.0"
     def paging_version = "2.1.0"
 
