@@ -18,6 +18,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="io.timelimit.android.ui.manage.child.advanced.ManageChildAdvancedFragment">
 
+    <data>
+        <variable
+            name="timezone"
+            type="String" />
+    </data>
+
     <ScrollView
         android:id="@+id/scroll"
         android:layout_width="match_parent"
@@ -78,6 +84,39 @@
                 android:id="@+id/disable_time_limits"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
+
+            <androidx.cardview.widget.CardView
+                app:cardUseCompatPadding="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:padding="8dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:text="@string/manage_child_timezone_title"
+                        android:textAppearance="?android:textAppearanceLarge"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:textAppearance="?android:textAppearanceMedium"
+                        tools:text="GMT"
+                        android:text="@{timezone}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <Button
+                        android:id="@+id/change_timezone_button"
+                        android:text="@string/manage_child_timezone_change_button"
+                        android:layout_gravity="end"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
                 app:cardUseCompatPadding="true"

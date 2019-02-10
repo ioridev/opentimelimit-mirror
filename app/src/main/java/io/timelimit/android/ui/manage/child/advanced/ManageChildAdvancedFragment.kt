@@ -35,6 +35,8 @@ import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.child.ManageChildFragmentArgs
 import io.timelimit.android.ui.manage.child.advanced.managedisabletimelimits.ManageDisableTimelimitsViewHelper
+import io.timelimit.android.ui.manage.child.advanced.timezone.SetChildTimezoneDialogFragment
+import java.util.*
 
 class ManageChildAdvancedFragment : Fragment() {
     companion object {
@@ -117,6 +119,21 @@ class ManageChildAdvancedFragment : Fragment() {
             }.observe(this, Observer {
                 binding.disableTimeLimits.disableTimeLimitsUntilString = it
             })
+        }
+
+        run {
+            // timezone
+            childEntry.observe(this, Observer {
+                binding.timezone = TimeZone.getTimeZone(it?.timeZone ?: "").displayName
+            })
+
+            binding.changeTimezoneButton.setOnClickListener {
+                if (auth.requestAuthenticationOrReturnTrue()) {
+                    SetChildTimezoneDialogFragment.newInstance(
+                            childId = params.childId
+                    ).show(fragmentManager!!)
+                }
+            }
         }
 
         binding.deleteUserButton.setOnClickListener {

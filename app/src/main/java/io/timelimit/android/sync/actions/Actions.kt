@@ -275,3 +275,13 @@ data class UpdateDeviceNameAction(val deviceId: String, val name: String): Paren
         }
     }
 }
+
+data class SetUserTimezoneAction(val userId: String, val timezone: String): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(userId)
+
+        if (timezone.isBlank()) {
+            throw IllegalArgumentException("tried to set timezone to empty")
+        }
+    }
+}

@@ -65,4 +65,7 @@ abstract class UserDao {
 
     @Query("UPDATE user SET category_for_not_assigned_apps = \"\" WHERE category_for_not_assigned_apps = :categoryId")
     abstract fun removeAsCategoryForUnassignedApps(categoryId: String)
+
+    @Query("UPDATE user SET timezone = :timezone WHERE id = :userId")
+    abstract fun updateUserTimezone(userId: String, timezone: String)
 }

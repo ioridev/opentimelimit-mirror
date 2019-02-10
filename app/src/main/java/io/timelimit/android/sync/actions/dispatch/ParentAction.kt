@@ -316,6 +316,14 @@ object LocalDatabaseParentActionDispatcher {
                             parentCategoryId = action.parentCategory
                     )
                 }
+                is SetUserTimezoneAction -> {
+                    DatabaseValidation.assertUserExists(database, action.userId)
+
+                    database.user().updateUserTimezone(
+                            userId = action.userId,
+                            timezone = action.timezone
+                    )
+                }
             }.let { }
 
             database.setTransactionSuccessful()
