@@ -30,10 +30,8 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
-import com.google.android.material.snackbar.Snackbar
 import io.timelimit.android.R
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.databinding.FragmentManageDeviceBinding
@@ -46,7 +44,6 @@ import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.SetDeviceUserAction
-import io.timelimit.android.sync.actions.UpdateDeviceNameAction
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticationFab
@@ -265,6 +262,12 @@ class ManageDeviceFragment : Fragment(), FragmentWithCustomTitle {
                 lifecycleOwner = this,
                 device = deviceEntry,
                 user = userEntry
+        )
+
+        ManageDeviceTroubleshooting.bind(
+                view = binding.troubleshootingView,
+                userEntry = userEntry,
+                lifecycleOwner = this
         )
 
         return binding.root

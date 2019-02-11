@@ -379,6 +379,9 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <include android:id="@+id/troubleshooting_view"
+                    layout="@layout/manage_device_troubleshooting_view" />
+
             </LinearLayout>
         </ScrollView>
 
