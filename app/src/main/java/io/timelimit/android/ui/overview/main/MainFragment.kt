@@ -112,7 +112,7 @@ class MainFragment : Fragment(), OverviewFragmentParentHandlers, AboutFragmentPa
                 R.id.main_tab_overview -> 0
                 R.id.main_tab_uninstall -> 1
                 R.id.main_tab_about -> 2
-                else -> throw IllegalStateException()
+                else -> 0
             }
 
             true

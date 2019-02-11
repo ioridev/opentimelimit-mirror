@@ -81,7 +81,7 @@ class ManageCategoryFragment : Fragment(), FragmentWithCustomTitle {
                 R.id.manage_category_tab_blocked_time_areas -> 2
                 R.id.manage_category_tab_usage_log -> 3
                 R.id.manage_category_tab_settings -> 4
-                else -> throw IllegalStateException()
+                else -> 0
             }
 
             true

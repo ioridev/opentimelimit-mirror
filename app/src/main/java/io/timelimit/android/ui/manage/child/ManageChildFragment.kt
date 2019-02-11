@@ -83,7 +83,7 @@ class ManageChildFragment : Fragment(), FragmentWithCustomTitle {
                 R.id.manage_child_tab_categories -> 0
                 R.id.manage_child_tab_apps -> 1
                 R.id.manage_child_tab_manage -> 2
-                else -> throw IllegalStateException()
+                else -> 0
             }
 
             true
