@@ -233,11 +233,16 @@ class BlockedTimeAreasFragment : Fragment() {
 
             if (oldValue != newValue) {
                 val currentlyVisiblePosition = layoutManager.findFirstVisibleItemPosition()
-                val currentlyVisibleItem = oldValue!!.getItemAtPosition(currentlyVisiblePosition)
-                val newVisiblePosition = newValue.getPositionOfItem(currentlyVisibleItem)
 
-                items.value = newValue
-                layoutManager.scrollToPositionWithOffset(newVisiblePosition, 0)
+                if (currentlyVisiblePosition == RecyclerView.NO_POSITION) {
+                    items.value = newValue
+                } else {
+                    val currentlyVisibleItem = oldValue!!.getItemAtPosition(currentlyVisiblePosition)
+                    val newVisiblePosition = newValue.getPositionOfItem(currentlyVisibleItem)
+
+                    items.value = newValue
+                    layoutManager.scrollToPositionWithOffset(newVisiblePosition, 0)
+                }
             }
         }
     }
