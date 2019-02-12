@@ -134,7 +134,9 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
             view.applyToExtraTime = newRule.applyToExtraTimeUsage
             view.timeSpan.timeInMillis = newRule.maximumTimeInMillis.toLong()
 
-            view.timeSpan.maxDays = Math.max(0, (0..6).map { (newRule.dayMask.toInt() shr it) and 1 }.sum() - 1)
+            val affectedDays = Math.max(0, (0..6).map { (newRule.dayMask.toInt() shr it) and 1 }.sum())
+            view.timeSpan.maxDays = affectedDays - 1
+            view.affectsMultipleDays = affectedDays >= 2
         }
 
         bindRule()

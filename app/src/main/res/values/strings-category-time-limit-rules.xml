@@ -31,4 +31,9 @@
     <string name="category_time_limit_rules_snackbar_created">Rule was created</string>
     <string name="category_time_limit_rules_snackbar_updated">Rule was modified</string>
     <string name="category_time_limit_rules_snackbar_deleted">Rule was deleted</string>
+
+    <string name="category_time_limit_rules_warning_multiple_days">This rule
+        will limit the total usage duration during one week at the selected days.
+        If you want it per day, create one rule per day.
+    </string>
 </resources>

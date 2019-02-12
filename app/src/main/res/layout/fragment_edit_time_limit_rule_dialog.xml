@@ -30,6 +30,10 @@
             name="handlers"
             type="io.timelimit.android.ui.manage.category.timelimit_rules.edit.Handlers" />
 
+        <variable
+            name="affectsMultipleDays"
+            type="boolean" />
+
         <import type="android.view.View" />
     </data>
 
@@ -72,6 +76,13 @@
 
         <io.timelimit.android.ui.view.SelectTimeSpanView
             android:id="@+id/time_span"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:visibility="@{affectsMultipleDays ? View.VISIBLE : View.GONE}"
+            android:textAppearance="?android:textAppearanceSmall"
+            android:text="@string/category_time_limit_rules_warning_multiple_days"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 

@@ -31,4 +31,9 @@
     <string name="category_time_limit_rules_snackbar_created">Regel wurde erstellt</string>
     <string name="category_time_limit_rules_snackbar_updated">Regel wurde geändert</string>
     <string name="category_time_limit_rules_snackbar_deleted">Regel wurde gelöscht</string>
+
+    <string name="category_time_limit_rules_warning_multiple_days">Diese Regel
+        wird die Gesamtnutzungsdauer in einer Woche an den gewählten Tagen einschränken.
+        Wenn Sei die Begrenzung je Tag wollen, dann erstellen Sie eine Regel je Tag.
+    </string>
 </resources>
