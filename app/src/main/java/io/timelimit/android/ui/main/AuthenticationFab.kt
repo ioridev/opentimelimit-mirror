@@ -87,7 +87,12 @@ object AuthenticationFab {
                     Log.d(LOG_TAG, "dismissing tap target view; view == null: ${tapTargetView == null}")
                 }
 
-                tapTargetView?.dismiss(false)
+                tapTargetView?.let {
+                    if (it.isLaidOut) {
+                        it.dismiss(false)
+                    }
+                }
+
                 tapTargetView = null
             }
         }
