@@ -64,7 +64,9 @@ class LollipopForegroundAppHelper(private val context: Context) : ForegroundAppH
                 // note: when the duration is too small, Android returns no data
                 //       due to that, 1 second more than required is queried
                 //       which seems to provide all data
-                lastQueryTime - 1000
+                // update: with 1 second, some App switching events were missed
+                //         it seems to always work with 1.5 seconds
+                lastQueryTime - 1500
             }
 
             usageStatsManager.queryEvents(queryStartTime, now)?.let { usageEvents ->
