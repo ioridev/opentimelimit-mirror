@@ -161,6 +161,12 @@ object LocalDatabaseAppLogicActionDispatcher {
                         }
                     }
 
+                    if (action.didReboot && device.considerRebootManipulation) {
+                        device = device.copy(
+                                manipulationDidReboot = true
+                        )
+                    }
+
                     database.device().updateDeviceEntry(device)
 
                     if (device.hasActiveManipulationWarning) {

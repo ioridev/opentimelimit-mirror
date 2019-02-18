@@ -24,7 +24,7 @@ class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         if (intent?.action == Intent.ACTION_BOOT_COMPLETED) {
             // this starts the logic (if not yet done)
-            DefaultAppLogic.with(context)
+            DefaultAppLogic.with(context).backgroundTaskLogic.reportDeviceReboot()
         }
     }
 }

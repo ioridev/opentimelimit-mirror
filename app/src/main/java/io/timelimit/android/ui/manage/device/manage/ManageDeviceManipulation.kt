@@ -41,6 +41,7 @@ object ManageDeviceManipulation {
             binding.hasManipulatedDeviceAdmin = device?.manipulationOfProtectionLevel ?: false
             binding.hasManipulatedUsageStatsAccess = device?.manipulationOfUsageStats ?: false
             binding.hasManipulatedNotificationAccess = device?.manipulationOfNotificationAccess ?: false
+            binding.hasManipulationReboot = device?.manipulationDidReboot ?: false
             binding.hasHadManipulation = (device?.hadManipulation ?: false) and (! (device?.hasActiveManipulationWarning ?: false))
             binding.hasAnyManipulation = device?.hasAnyManipulation ?: false
         })
@@ -61,6 +62,7 @@ object ManageDeviceManipulation {
                 binding.deviceAdminDisabledCheckbox,
                 binding.usageAccessCheckbox,
                 binding.notificationAccessCheckbox,
+                binding.rebootCheckbox,
                 binding.hadManipulationCheckbox
         )
 
@@ -79,6 +81,7 @@ object ManageDeviceManipulation {
                     ignoreDeviceAdminManipulationAttempt = binding.deviceAdminDisableAttemptCheckbox.isChecked && binding.hasTriedManipulatingDeviceAdmin == true,
                     ignoreDeviceAdminManipulation = binding.deviceAdminDisabledCheckbox.isChecked && binding.hasManipulatedDeviceAdmin == true,
                     ignoreAppDowngrade = binding.appVersionCheckbox.isChecked && binding.hasManipulatedAppVersion == true,
+                    ignoreReboot = binding.rebootCheckbox.isChecked && binding.hasManipulationReboot == true,
                     ignoreHadManipulation = binding.hadManipulationCheckbox.isChecked || (
                             device.hadManipulation and device.hasActiveManipulationWarning
                             ),

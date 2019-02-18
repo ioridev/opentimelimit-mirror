@@ -155,8 +155,19 @@ data class UpdateDeviceStatusAction(
         val newProtectionLevel: ProtectionLevel?,
         val newUsageStatsPermissionStatus: RuntimePermissionStatus?,
         val newNotificationAccessPermission: NewPermissionStatus?,
-        val newAppVersion: Int?
+        val newAppVersion: Int?,
+        val didReboot: Boolean
 ): AppLogicAction() {
+    companion object {
+        val empty = UpdateDeviceStatusAction(
+                newProtectionLevel = null,
+                newUsageStatsPermissionStatus = null,
+                newNotificationAccessPermission = null,
+                newAppVersion = null,
+                didReboot = false
+        )
+    }
+
     init {
         if (newAppVersion != null && newAppVersion < 0) {
             throw IllegalArgumentException()
@@ -171,6 +182,7 @@ data class IgnoreManipulationAction(
         val ignoreAppDowngrade: Boolean,
         val ignoreNotificationAccessManipulation: Boolean,
         val ignoreUsageStatsAccessManipulation: Boolean,
+        val ignoreReboot: Boolean,
         val ignoreHadManipulation: Boolean
 ): ParentAction() {
     init {
@@ -182,6 +194,7 @@ data class IgnoreManipulationAction(
             (!ignoreAppDowngrade) &&
             (!ignoreNotificationAccessManipulation) &&
             (!ignoreUsageStatsAccessManipulation) &&
+            (!ignoreReboot) &&
             (!ignoreHadManipulation)
 }
 
@@ -195,6 +208,12 @@ data class SetDeviceUserAction(val deviceId: String, val userId: String): Parent
         if (userId != "") {
             IdGenerator.assertIdValid(userId)
         }
+    }
+}
+
+data class SetConsiderRebootManipulationAction(val deviceId: String, val considerRebootManipulation: Boolean): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(deviceId)
     }
 }
 

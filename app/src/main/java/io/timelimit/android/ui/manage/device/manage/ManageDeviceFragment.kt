@@ -270,6 +270,13 @@ class ManageDeviceFragment : Fragment(), FragmentWithCustomTitle {
                 lifecycleOwner = this
         )
 
+        ManageDeviceRebootManipulationView.bind(
+                view = binding.deviceRebootManipulation,
+                lifecycleOwner = this,
+                deviceEntry = deviceEntry,
+                auth = auth
+        )
+
         return binding.root
     }
 

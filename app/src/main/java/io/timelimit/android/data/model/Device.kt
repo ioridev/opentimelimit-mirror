@@ -61,8 +61,12 @@ data class Device(
         val highestAppVersion: Int,
         @ColumnInfo(name = "tried_disabling_device_admin")
         val manipulationTriedDisablingDeviceAdmin: Boolean,
+        @ColumnInfo(name = "did_reboot")
+        val manipulationDidReboot: Boolean,
         @ColumnInfo(name = "had_manipulation")
-        val hadManipulation: Boolean
+        val hadManipulation: Boolean,
+        @ColumnInfo(name = "consider_reboot_manipulation")
+        val considerRebootManipulation: Boolean
 ): JsonSerializable {
     companion object {
         private const val ID = "id"
@@ -79,7 +83,9 @@ data class Device(
         private const val CURRENT_APP_VERSION = "ac"
         private const val HIGHEST_APP_VERSION = "am"
         private const val TRIED_DISABLING_DEVICE_ADMIN = "tdda"
+        private const val MANIPULATION_DID_REBOOT = "mdr"
         private const val HAD_MANIPULATION = "hm"
+        private const val CONSIDER_REBOOT_A_MANIPULATION = "cram"
 
         fun parse(reader: JsonReader): Device {
             var id: String? = null
@@ -96,7 +102,9 @@ data class Device(
             var currentAppVersion: Int? = null
             var highestAppVersion: Int? = null
             var manipulationTriedDisablingDeviceAdmin: Boolean? = null
+            var manipulationDidReboot: Boolean = false
             var hadManipulation: Boolean? = null
+            var considerRebootManipulation = false
 
             reader.beginObject()
 
@@ -116,7 +124,9 @@ data class Device(
                     CURRENT_APP_VERSION -> currentAppVersion = reader.nextInt()
                     HIGHEST_APP_VERSION -> highestAppVersion = reader.nextInt()
                     TRIED_DISABLING_DEVICE_ADMIN -> manipulationTriedDisablingDeviceAdmin = reader.nextBoolean()
+                    MANIPULATION_DID_REBOOT -> manipulationDidReboot = reader.nextBoolean()
                     HAD_MANIPULATION -> hadManipulation = reader.nextBoolean()
+                    CONSIDER_REBOOT_A_MANIPULATION -> considerRebootManipulation = reader.nextBoolean()
                     else -> reader.skipValue()
                 }
             }
@@ -138,7 +148,9 @@ data class Device(
                     currentAppVersion = currentAppVersion!!,
                     highestAppVersion = highestAppVersion!!,
                     manipulationTriedDisablingDeviceAdmin = manipulationTriedDisablingDeviceAdmin!!,
-                    hadManipulation = hadManipulation!!
+                    manipulationDidReboot = manipulationDidReboot,
+                    hadManipulation = hadManipulation!!,
+                    considerRebootManipulation = considerRebootManipulation
             )
         }
     }
@@ -184,7 +196,9 @@ data class Device(
         writer.name(CURRENT_APP_VERSION).value(currentAppVersion)
         writer.name(HIGHEST_APP_VERSION).value(highestAppVersion)
         writer.name(TRIED_DISABLING_DEVICE_ADMIN).value(manipulationTriedDisablingDeviceAdmin)
+        writer.name(MANIPULATION_DID_REBOOT).value(manipulationDidReboot)
         writer.name(HAD_MANIPULATION).value(hadManipulation)
+        writer.name(CONSIDER_REBOOT_A_MANIPULATION).value(considerRebootManipulation)
 
         writer.endObject()
     }
@@ -203,7 +217,8 @@ data class Device(
             manipulationOfUsageStats ||
             manipulationOfNotificationAccess ||
             manipulationOfAppVersion ||
-            manipulationTriedDisablingDeviceAdmin
+            manipulationTriedDisablingDeviceAdmin ||
+            manipulationDidReboot
 
     @Transient
     val hasAnyManipulation = hasActiveManipulationWarning || hadManipulation

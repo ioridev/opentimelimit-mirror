@@ -39,6 +39,10 @@
             type="Boolean" />
 
         <variable
+            name="hasManipulationReboot"
+            type="Boolean" />
+
+        <variable
             name="hasHadManipulation"
             type="Boolean" />
 
@@ -108,6 +112,13 @@
                 android:visibility="@{safeUnbox(hasManipulatedAppVersion) ? View.VISIBLE : View.GONE}"
                 android:id="@+id/app_version_checkbox"
                 android:text="@string/manage_device_manipulation_app_version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <CheckBox
+                android:visibility="@{safeUnbox(hasManipulationReboot) ? View.VISIBLE : View.GONE}"
+                android:id="@+id/reboot_checkbox"
+                android:text="@string/manage_device_manipulation_reboot"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 

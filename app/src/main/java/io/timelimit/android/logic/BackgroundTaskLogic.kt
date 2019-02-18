@@ -402,10 +402,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
         if (deviceEntry != null) {
             if (deviceEntry.currentAppVersion != currentAppVersion) {
                 ApplyActionUtil.applyAppLogicAction(
-                        UpdateDeviceStatusAction(
-                                newProtectionLevel = null,
-                                newUsageStatsPermissionStatus = null,
-                                newNotificationAccessPermission = null,
+                        UpdateDeviceStatusAction.empty.copy(
                                 newAppVersion = currentAppVersion
                         ),
                         appLogic
@@ -432,6 +429,21 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
     private val syncDeviceStatusLock = Mutex()
 
+    fun reportDeviceReboot() {
+        runAsync {
+            val deviceEntry = appLogic.deviceEntry.waitForNullableValue()
+
+            if (deviceEntry?.considerRebootManipulation == true) {
+                ApplyActionUtil.applyAppLogicAction(
+                        UpdateDeviceStatusAction.empty.copy(
+                                didReboot = true
+                        ),
+                        appLogic
+                )
+            }
+        }
+    }
+
     private suspend fun syncDeviceStatus() {
         syncDeviceStatusLock.withLock {
             val deviceEntry = appLogic.deviceEntry.waitForNullableValue()
@@ -441,14 +453,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                 val usageStatsPermission = appLogic.platformIntegration.getForegroundAppPermissionStatus()
                 val notificationAccess = appLogic.platformIntegration.getNotificationAccessPermissionStatus()
 
-                val emptyChanges = UpdateDeviceStatusAction(
-                        newProtectionLevel = null,
-                        newUsageStatsPermissionStatus = null,
-                        newNotificationAccessPermission = null,
-                        newAppVersion = null
-                )
-
-                var changes = emptyChanges
+                var changes = UpdateDeviceStatusAction.empty
 
                 if (protectionLevel != deviceEntry.currentProtectionLevel) {
                     changes = changes.copy(
@@ -472,7 +477,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                     )
                 }
 
-                if (changes != emptyChanges) {
+                if (changes != UpdateDeviceStatusAction.empty) {
                     ApplyActionUtil.applyAppLogicAction(changes, appLogic)
                 }
             }

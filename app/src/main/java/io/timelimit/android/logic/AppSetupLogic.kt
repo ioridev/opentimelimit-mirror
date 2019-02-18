@@ -82,7 +82,9 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             currentAppVersion = 0,
                             highestAppVersion = 0,
                             manipulationTriedDisablingDeviceAdmin = false,
-                            hadManipulation = false
+                            manipulationDidReboot = false,
+                            hadManipulation = false,
+                            considerRebootManipulation = false
                     )
 
                     appLogic.database.device().addDeviceSync(device)

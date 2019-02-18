@@ -379,6 +379,9 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <include android:id="@+id/device_reboot_manipulation"
+                    layout="@layout/manage_device_reboot_manipulation_view" />
+
                 <include android:id="@+id/troubleshooting_view"
                     layout="@layout/manage_device_troubleshooting_view" />
 

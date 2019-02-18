@@ -271,6 +271,10 @@ object LocalDatabaseParentActionDispatcher {
                         deviceEntry = deviceEntry.copy(highestUsageStatsPermission = deviceEntry.currentUsageStatsPermission)
                     }
 
+                    if (action.ignoreReboot) {
+                        deviceEntry = deviceEntry.copy(manipulationDidReboot = false)
+                    }
+
                     if (action.ignoreHadManipulation) {
                         deviceEntry = deviceEntry.copy(hadManipulation = false)
                     }
@@ -322,6 +326,16 @@ object LocalDatabaseParentActionDispatcher {
                     database.user().updateUserTimezone(
                             userId = action.userId,
                             timezone = action.timezone
+                    )
+                }
+                is SetConsiderRebootManipulationAction -> {
+                    val deviceEntry = database.device().getDeviceByIdSync(action.deviceId)
+                            ?: throw IllegalArgumentException("device not found")
+
+                    database.device().updateDeviceEntry(
+                            deviceEntry.copy(
+                                    considerRebootManipulation = action.considerRebootManipulation
+                            )
                     )
                 }
             }.let { }
