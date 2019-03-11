@@ -1,10 +1,1 @@
-Version 0.2.0:
-
-- Anzeigen des Grundes der Sperrung wenn eine Benachrichtigung blockiert wurde
-- Möglichkeit, eine Kategorie zu wählen, deren Einstellung für Apps ohne Kategorie gilt
-- Verschachtelung von Kategorien
-- Änderungen an der Oberfläche
-
-Version 0.2.1:
-
-- CPU-Auslastung reduziert
+automatische Löschung der gespeicherten Nutzungsdauern, wenn eine Woche vorbei ist
