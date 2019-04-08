@@ -1,1 +1,2 @@
-automatische Löschung der gespeicherten Nutzungsdauern, wenn eine Woche vorbei ist
+- Abschaltung vom Passwortschutz möglich
+- keine Passwortabfrage, wenn nur ein Elternteil ohne Passwort existiert

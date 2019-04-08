@@ -1,1 +1,2 @@
-deletion of saved usage durations when a week is over
+- allow disabling the password protection
+- no password prompt if there is only one parent user without password
