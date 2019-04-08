@@ -61,9 +61,11 @@ class SetupLocalModeFragment : Fragment() {
 
         binding.nextBtn.setOnClickListener {
             model.trySetupWithPassword(
-                    set_password_view.password.value!!
+                    binding.setPasswordView.readPassword()
             )
         }
+
+        binding.setPasswordView.allowNoPassword.value = true
 
         return binding.root
     }

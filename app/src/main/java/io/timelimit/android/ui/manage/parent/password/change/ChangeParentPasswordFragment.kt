@@ -67,7 +67,7 @@ class ChangeParentPasswordFragment : Fragment(), FragmentWithCustomTitle {
             model.changePassword(
                     parentUserId = params.parentUserId,
                     oldPassword = binding.oldPassword.text.toString(),
-                    newPassword = binding.newPassword.password.value!!
+                    newPassword = binding.newPassword.readPassword()
             )
         }
 
@@ -108,6 +108,8 @@ class ChangeParentPasswordFragment : Fragment(), FragmentWithCustomTitle {
                 }
             }.let {  }
         })
+
+        binding.newPassword.allowNoPassword.value = true
 
         return binding.root
     }

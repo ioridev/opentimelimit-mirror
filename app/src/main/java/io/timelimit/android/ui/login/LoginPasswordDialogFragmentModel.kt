@@ -23,6 +23,7 @@ import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.crypto.PasswordHashing
 import io.timelimit.android.livedata.castDown
+import io.timelimit.android.livedata.waitForNonNullValue
 import io.timelimit.android.livedata.waitForNullableValue
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
@@ -39,6 +40,25 @@ class LoginPasswordDialogFragmentModel(application: Application): AndroidViewMod
     private val loginLock = Mutex()
 
     val status = statusInternal.castDown()
+
+    fun tryDefaultLogin(model: ActivityViewModel) {
+        runAsync {
+            loginLock.withLock {
+                logic.database.user().getParentUsersLive().waitForNonNullValue().singleOrNull()?.let { user ->
+                    val emptyPasswordValid = Threads.crypto.executeAndWait { PasswordHashing.validateSync("", user.password) }
+
+                    if (emptyPasswordValid) {
+                        model.setAuthenticatedUser(AuthenticatedUser(
+                                userId = user.id,
+                                passwordHash = user.password
+                        ))
+
+                        statusInternal.value = LoginPasswordDialogFragmentStatus.Success
+                    }
+                }
+            }
+        }
+    }
 
     fun tryLogin(userId: String, password: String, model: ActivityViewModel) {
         runAsync {

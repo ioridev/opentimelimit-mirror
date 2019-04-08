@@ -25,6 +25,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import io.timelimit.android.databinding.ViewSetPasswordBinding
+import io.timelimit.android.livedata.and
+import io.timelimit.android.livedata.or
 import io.timelimit.android.util.PasswordValidator
 
 class SetPasswordView(context: Context, attributeSet: AttributeSet): FrameLayout(context, attributeSet) {
@@ -36,6 +38,14 @@ class SetPasswordView(context: Context, attributeSet: AttributeSet): FrameLayout
 
     val password = MutableLiveData<String>()
     val passwordRepeat = MutableLiveData<String>()
+    val allowNoPassword = MutableLiveData<Boolean>().apply { value = false }
+    val noPasswordChecked = MutableLiveData<Boolean>().apply { value = false }
+    val useEmptyPassword = allowNoPassword.and(noPasswordChecked)
+
+    fun readPassword() = if (useEmptyPassword.value!! == true)
+        ""
+    else
+        password.value!!
 
     init {
         password.value = ""
@@ -71,6 +81,20 @@ class SetPasswordView(context: Context, attributeSet: AttributeSet): FrameLayout
 
         password.observeForever { binding.password = it!! }
         passwordRepeat.observeForever() { binding.passwordRepeat = it!! }
+        allowNoPassword.observeForever { binding.allowNoPassword = it }
+        noPasswordChecked.observeForever {
+            binding.noPasswordChecked = it
+
+            if (binding.noPasswordCheckbox.isChecked != it) {
+                binding.noPasswordCheckbox.isChecked = it
+            }
+        }
+
+        binding.noPasswordCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked != noPasswordChecked.value) {
+                noPasswordChecked.value = isChecked
+            }
+        }
     }
 
     private val passwordQualityProblem: LiveData<String?> = Transformations.map(password) {
@@ -87,7 +111,7 @@ class SetPasswordView(context: Context, attributeSet: AttributeSet): FrameLayout
             (passwordValue.isNotEmpty() && it.isNotEmpty()) && passwordValue != it
         }
     }
-    val passwordOk: LiveData<Boolean> = Transformations.switchMap(password) {
+    val passwordOk: LiveData<Boolean> = useEmptyPassword.or(Transformations.switchMap(password) {
         val password1 = it
 
         Transformations.map(passwordRepeat) {
@@ -96,7 +120,7 @@ class SetPasswordView(context: Context, attributeSet: AttributeSet): FrameLayout
             password1.isNotEmpty() && password2.isNotEmpty() && (password1 == password2) &&
                     (PasswordValidator.validate(password1, context) == null)
         }
-    }
+    })
 
     init {
         passwordQualityProblem .observeForever { binding.passwordProblem = it }

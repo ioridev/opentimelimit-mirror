@@ -75,6 +75,8 @@ class AddUserFragment : Fragment() {
 
         val isPasswordOk = binding.password.passwordOk.or(isPasswordRequired.invert())
 
+        binding.password.allowNoPassword.value = true
+
         // username
 
         val username = binding.name.getTextLive()
@@ -94,7 +96,7 @@ class AddUserFragment : Fragment() {
                         name = binding.name.text.toString(),
                         type = userType.value!!,
                         password = when (userType.value!!) {
-                            UserType.Parent -> binding.password.password.value!!
+                            UserType.Parent -> binding.password.readPassword()
                             UserType.Child -> ""
                         },
                         model = auth

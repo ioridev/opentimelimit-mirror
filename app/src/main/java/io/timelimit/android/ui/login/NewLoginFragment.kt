@@ -56,6 +56,10 @@ class NewLoginFragment: DialogFragment() {
         if (savedInstanceState?.containsKey(SELECTED_USER_ID) == true) {
             selectedUserId.value = savedInstanceState.getString(SELECTED_USER_ID)
         }
+
+        if (savedInstanceState == null) {
+            model.tryDefaultLogin(getActivityViewModel(activity!!))
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?) = object: BottomSheetDialog(context!!, theme) {
