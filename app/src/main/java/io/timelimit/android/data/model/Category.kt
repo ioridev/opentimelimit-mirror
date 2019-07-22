@@ -44,7 +44,11 @@ data class Category(
         @ColumnInfo(name = "temporarily_blocked")
         val temporarilyBlocked: Boolean,
         @ColumnInfo(name = "parent_category_id")
-        val parentCategoryId: String
+        val parentCategoryId: String,
+        @ColumnInfo(name = "block_all_notifications")
+        val blockAllNotifications: Boolean,
+        @ColumnInfo(name = "time_warnings")
+        val timeWarnings: Int
 ): JsonSerializable {
     companion object {
         const val MINUTES_PER_DAY = 60 * 24
@@ -57,6 +61,8 @@ data class Category(
         private const val EXTRA_TIME_IN_MILLIS = "extraTimeInMillis"
         private const val TEMPORARILY_BLOCKED = "temporarilyBlocked"
         private const val PARENT_CATEGORY_ID = "parentCategoryId"
+        private const val BlOCK_ALL_NOTIFICATIONS = "blockAllNotifications"
+        private const val TIME_WARNINGS = "timeWarnings"
 
         fun parse(reader: JsonReader): Category {
             var id: String? = null
@@ -67,6 +73,8 @@ data class Category(
             var temporarilyBlocked: Boolean? = null
             // this field was added later so it has got a default value
             var parentCategoryId = ""
+            var blockAllNotifications = false
+            var timeWarnings = 0
 
             reader.beginObject()
 
@@ -79,6 +87,8 @@ data class Category(
                     EXTRA_TIME_IN_MILLIS -> extraTimeInMillis = reader.nextLong()
                     TEMPORARILY_BLOCKED -> temporarilyBlocked = reader.nextBoolean()
                     PARENT_CATEGORY_ID -> parentCategoryId = reader.nextString()
+                    BlOCK_ALL_NOTIFICATIONS -> blockAllNotifications = reader.nextBoolean()
+                    TIME_WARNINGS -> timeWarnings = reader.nextInt()
                     else -> reader.skipValue()
                 }
             }
@@ -92,7 +102,9 @@ data class Category(
                     blockedMinutesInWeek = blockedMinutesInWeek!!,
                     extraTimeInMillis = extraTimeInMillis!!,
                     temporarilyBlocked = temporarilyBlocked!!,
-                    parentCategoryId = parentCategoryId
+                    parentCategoryId = parentCategoryId,
+                    blockAllNotifications = blockAllNotifications,
+                    timeWarnings = timeWarnings
             )
         }
     }
@@ -120,7 +132,22 @@ data class Category(
         writer.name(EXTRA_TIME_IN_MILLIS).value(extraTimeInMillis)
         writer.name(TEMPORARILY_BLOCKED).value(temporarilyBlocked)
         writer.name(PARENT_CATEGORY_ID).value(parentCategoryId)
+        writer.name(BlOCK_ALL_NOTIFICATIONS).value(blockAllNotifications)
+        writer.name(TIME_WARNINGS).value(timeWarnings)
 
         writer.endObject()
     }
 }
+
+object CategoryTimeWarnings {
+    val durationToBitIndex = mapOf(
+            1000L * 60 to 0, // 1 minute
+            1000L * 60 * 3 to 1, // 3 minutes
+            1000L * 60 * 5 to 2, // 5 minutes
+            1000L * 60 * 10 to 3, // 10 minutes
+            1000L * 60 * 15 to 4 // 15 minutes
+    )
+
+    val durations = durationToBitIndex.keys
+}
+

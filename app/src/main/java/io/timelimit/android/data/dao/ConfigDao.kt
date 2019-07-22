@@ -112,4 +112,19 @@ abstract class ConfigDao {
 
     fun wasDeviceLockedSync() = getValueOfKeySync(ConfigurationItemType.WasDeviceLocked) == "true"
     fun setWasDeviceLockedSync(value: Boolean) = updateValueSync(ConfigurationItemType.WasDeviceLocked, if (value) "true" else "false")
+
+    fun getForegroundAppQueryIntervalAsync(): LiveData<Long> = getValueOfKeyAsync(ConfigurationItemType.ForegroundAppQueryRange).map { (it ?: "0").toLong() }
+    fun setForegroundAppQueryIntervalSync(interval: Long) {
+        if (interval < 0) {
+            throw IllegalArgumentException()
+        }
+
+        updateValueSync(ConfigurationItemType.ForegroundAppQueryRange, interval.toString())
+    }
+
+    fun getEnableAlternativeDurationSelectionAsync() = getValueOfKeyAsync(ConfigurationItemType.EnableAlternativeDurationSelection).map { it == "1" }
+    fun setEnableAlternativeDurationSelectionSync(enable: Boolean) = updateValueSync(ConfigurationItemType.EnableAlternativeDurationSelection, if (enable) "1" else "0")
+
+    fun setLastScreenOnTime(time: Long) = updateValueSync(ConfigurationItemType.LastScreenOnTime, time.toString())
+    fun getLastScreenOnTime() = getValueOfKeySync(ConfigurationItemType.LastScreenOnTime)?.toLong() ?: 0L
 }

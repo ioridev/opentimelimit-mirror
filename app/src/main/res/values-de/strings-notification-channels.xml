@@ -20,4 +20,7 @@
 
     <string name="notification_channel_blocked_notification_title">blockierte Benachrichtigungen</string>
     <string name="notification_channel_blocked_notification_text">Zeigt an, wann eine Benachrichtigung einer anderen App von TimeLimit blockiert wurde</string>
+
+    <string name="notification_channel_time_warning_title">Zeitwarnungen</string>
+    <string name="notification_channel_time_warning_text">Benachrichtigungen für Kinder, wenn nur noch wenig Zeit übrig ist</string>
 </resources>

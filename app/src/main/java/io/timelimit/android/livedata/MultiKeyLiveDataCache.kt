@@ -59,6 +59,41 @@ class SingleItemLiveDataCache<T>(private val liveData: LiveData<T>): LiveDataCac
     }
 }
 
+class SingleItemLiveDataCacheWithRequery<T>(private val liveDataCreator: () -> LiveData<T>): LiveDataCache() {
+    private val dummyObserver = Observer<T> {
+        // do nothing
+    }
+
+    private var wasUsed = false
+    private var instance: LiveData<T>? = null
+
+    fun read(): LiveData<T> {
+        if (instance == null) {
+            instance = liveDataCreator()
+            instance!!.observeForever(dummyObserver)
+        }
+
+        wasUsed = true
+
+        return instance!!
+    }
+
+    override fun removeAllItems() {
+        if (instance != null) {
+            instance!!.removeObserver(dummyObserver)
+            instance = null
+        }
+    }
+
+    override fun reportLoopDone() {
+        if (instance != null && !wasUsed) {
+            removeAllItems()
+        }
+
+        wasUsed = false
+    }
+}
+
 abstract class MultiKeyLiveDataCache<R, K>: LiveDataCache() {
     class ItemWrapper<R>(val value: LiveData<R>, var used: Boolean)
 

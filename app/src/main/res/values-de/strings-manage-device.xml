@@ -15,13 +15,24 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
 <resources>
+    <string name="manage_device_card_user_title">Benutzer</string>
+    <string name="manage_device_card_permission_title">Berechtigungen</string>
+    <string name="manage_device_card_feature_title">Funktionen</string>
+    <string name="manage_device_card_manage_title">Verwaltung</string>
+    <string name="manage_device_card_manage_text">sonstige Einstellungen für dieses Gerät</string>
+
     <string name="manage_device_added_at">Hinzugefügt: %s</string>
     <string name="manage_device_is_this_device">Das ist das Gerät, das Sie gerade vor sich haben</string>
 
     <string name="manage_device_current_user_title">Benutzer des Geräts</string>
     <string name="manage_device_current_user_none">Keine Angabe - keine Begrenzungen</string>
 
+    <string name="manage_device_feature_summary_none">Keine Funktionen aktiviert</string>
+
+    <string name="manage_device_permissions_summary_none">Keine Berechtigungen gewährt</string>
+
     <string name="manage_device_permissions_usagestats_title">Berechtigung zum Nutzungsdatenzugriff</string>
+    <string name="manage_device_permissions_usagestats_title_short">Nutzungsdatenzugriff</string>
     <string name="manage_device_permissions_usagestats_text">
         Der Nutzungsdatenzugriff ermöglicht es, die Nutzung des Gerätes zu erfassen.
         Dies wird genutzt, um zu ermitteln, welche App genutzt wird, damit die Zeit gezählt werden kann oder die App gesperrt werden kann.
@@ -31,6 +42,23 @@
     <string name="manage_device_permission_notification_access_text">
         Der Benachrichtigungszugriff wird von TimeLimit genutzt, um nicht nur Apps, sondern auch
         deren Benachrichtigungen zu sperren.
+        Zusätzlich wird dadurch die Wiedergaben von Medienplayern beendet, wenn die entsprechenden
+        Medienplayer gesperrt werden.
+    </string>
+
+    <string name="manage_device_permissions_overlay_title">Über anderen Apps anzeigen</string>
+    <string name="manage_device_permissions_overlay_text">
+        Das Anzeigen über anderen Apps kann das Sperren in einigen Fällen verbessern.
+        Außerdem ist diese Berechtigung eine Möglichkeit, um TimeLimit bei neueren Android-Versionen zu erlauben,
+        den Sperrbildschirm zu öffnen.
+    </string>
+
+    <string name="manage_device_permission_accessibility_title">Bedienhilfe</string>
+    <string name="manage_device_permission_accessibility_text">
+        Damit \"drückt\" TimeLimit den Home-Button, bevor der Sperrbildschirm aufgerufen wird.
+        Das kann das Sperren in einigen Fällen verbessern.
+        Außerdem ist diese Berechtigung eine Möglichkeit, um TimeLimit bei neueren Android-Versionen zu erlauben,
+        den Sperrbildschirm zu öffnen.
     </string>
 
     <string name="manage_device_permission_device_admin_title">Geräte-Administrator</string>

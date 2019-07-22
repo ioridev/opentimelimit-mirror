@@ -24,4 +24,8 @@
     <string name="diagnose_clock_day_of_week">Day of week (0 = monday, ...): %d</string>
     <string name="diagnose_clock_day_of_epoch">Day of epoch: %d</string>
     <string name="diagnose_clock_minute_of_week">Minute of week: %d</string>
+
+    <string name="diagnose_fga_title">Foreground-App-Detection</string>
+    <string name="diagnose_fga_query_range">Requested time range</string>
+    <string name="diagnose_fga_query_range_min">Minimum (Default)</string>
 </resources>

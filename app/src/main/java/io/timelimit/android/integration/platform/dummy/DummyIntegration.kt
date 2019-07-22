@@ -17,6 +17,7 @@ package io.timelimit.android.integration.platform.dummy
 
 import android.graphics.drawable.Drawable
 import io.timelimit.android.data.model.App
+import io.timelimit.android.data.model.AppActivity
 import io.timelimit.android.integration.platform.*
 
 class DummyIntegration(
@@ -37,6 +38,10 @@ class DummyIntegration(
         return localApps
     }
 
+    override fun getLocalAppActivities(deviceId: String): Collection<AppActivity> {
+        return emptySet()
+    }
+
     override fun getLocalAppTitle(packageName: String): String? {
         return localApps.find { it.packageName == packageName }?.title
     }
@@ -45,8 +50,18 @@ class DummyIntegration(
         return null
     }
 
+    override fun getLauncherAppPackageName(): String? = null
+
     override fun getCurrentProtectionLevel(): ProtectionLevel {
         return protectionLevel
+    }
+
+    override fun getOverlayPermissionStatus(): RuntimePermissionStatus {
+        return RuntimePermissionStatus.NotRequired
+    }
+
+    override fun isAccessibilityServiceEnabled(): Boolean {
+        return false
     }
 
     override fun getForegroundAppPermissionStatus(): RuntimePermissionStatus {
@@ -68,8 +83,16 @@ class DummyIntegration(
         // do nothing
     }
 
-    override fun showAppLockScreen(currentPackageName: String) {
+    override fun showAppLockScreen(currentPackageName: String, currentActivityName: String?) {
         launchLockScreenForPackage = currentPackageName
+    }
+
+    override fun muteAudioIfPossible(packageName: String) {
+        // ignore
+    }
+
+    override fun setShowBlockingOverlay(show: Boolean) {
+        // ignore
     }
 
     fun getAndResetShowAppLockScreen(): String? {
@@ -80,12 +103,13 @@ class DummyIntegration(
         }
     }
 
-    override suspend fun getForegroundAppPackageName(): String? {
+    override suspend fun getForegroundApp(result: ForegroundAppSpec, queryInterval: Long) {
         if (foregroundAppPermission == RuntimePermissionStatus.NotGranted) {
             throw SecurityException()
         }
 
-        return foregroundApp
+        result.packageName = foregroundApp
+        result.activityName = null
     }
 
     override fun setAppStatusMessage(message: AppStatusMessage?) {
@@ -106,6 +130,10 @@ class DummyIntegration(
 
     override fun setShowNotificationToRevokeTemporarilyAllowedApps(show: Boolean) {
         showRevokeTemporarilyAllowedNotification = show
+    }
+
+    override fun showTimeWarningNotification(title: String, text: String) {
+        // nothing to do
     }
 
     override fun disableDeviceAdmin() {

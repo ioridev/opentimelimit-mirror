@@ -20,4 +20,7 @@
 
     <string name="notification_channel_blocked_notification_title">blocked notifications</string>
     <string name="notification_channel_blocked_notification_text">Shows when a notification was blocked by TimeLimit</string>
+
+    <string name="notification_channel_time_warning_title">Time warning</string>
+    <string name="notification_channel_time_warning_text">Notification for childs if there is not much time remaining</string>
 </resources>

@@ -20,6 +20,7 @@ import android.app.Activity
 interface ActivityViewModelHolder {
     fun getActivityViewModel(): ActivityViewModel
     fun showAuthenticationScreen()
+    var ignoreStop: Boolean
 }
 
 fun getActivityViewModel(activity: Activity): ActivityViewModel {

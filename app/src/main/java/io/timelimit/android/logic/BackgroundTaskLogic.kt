@@ -30,17 +30,23 @@ import io.timelimit.android.data.model.*
 import io.timelimit.android.date.DateInTimezone
 import io.timelimit.android.date.getMinuteOfWeek
 import io.timelimit.android.integration.platform.AppStatusMessage
+import io.timelimit.android.integration.platform.ForegroundAppSpec
 import io.timelimit.android.integration.platform.ProtectionLevel
+import io.timelimit.android.integration.platform.android.AccessibilityService
 import io.timelimit.android.integration.platform.android.AndroidIntegrationApps
 import io.timelimit.android.livedata.*
 import io.timelimit.android.sync.actions.UpdateDeviceStatusAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
+import io.timelimit.android.util.AndroidVersion
 import io.timelimit.android.util.TimeTextUtil
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.*
 
 class BackgroundTaskLogic(val appLogic: AppLogic) {
+    var pauseBackgroundLoop = false
+
     companion object {
         private const val CHECK_PERMISSION_INTERVAL = 10 * 1000L    // all 10 seconds
         private const val BACKGROUND_SERVICE_INTERVAL = 100L    // all 100 ms
@@ -107,12 +113,15 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
         }
     }
 
+    private val shouldDoAutomaticSignOut = SingleItemLiveDataCacheWithRequery { -> appLogic.defaultUserLogic.hasAutomaticSignOut()}
+
     private val liveDataCaches = LiveDataCaches(arrayOf(
             deviceUserEntryLive,
             childCategories,
             appCategories,
             timeLimitRules,
-            usedTimesOfCategoryAndWeekByFirstDayOfWeek
+            usedTimesOfCategoryAndWeekByFirstDayOfWeek,
+            shouldDoAutomaticSignOut
     ))
 
     private var usedTimeUpdateHelper: UsedTimeItemBatchUpdateHelper? = null
@@ -125,6 +134,28 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
     private val appTitleCache = QueryAppTitleCache(appLogic.platformIntegration)
 
+    private suspend fun openLockscreen(blockedAppPackageName: String, blockedAppActivityName: String?) {
+        appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
+                title = appTitleCache.query(blockedAppPackageName),
+                text = appLogic.context.getString(R.string.background_logic_opening_lockscreen)
+        ))
+
+        appLogic.platformIntegration.setShowBlockingOverlay(true)
+
+        if (appLogic.platformIntegration.isAccessibilityServiceEnabled()) {
+            if (blockedAppPackageName != appLogic.platformIntegration.getLauncherAppPackageName()) {
+                AccessibilityService.instance?.showHomescreen()
+                delay(100)
+                AccessibilityService.instance?.showHomescreen()
+                delay(100)
+            }
+        }
+
+        appLogic.platformIntegration.showAppLockScreen(blockedAppPackageName, blockedAppActivityName)
+    }
+
+    private val foregroundAppSpec = ForegroundAppSpec.newInstance()
+
     private suspend fun backgroundServiceLoop() {
         while (true) {
             // app must be enabled
@@ -132,6 +163,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                 usedTimeUpdateHelper?.commit(appLogic)
                 liveDataCaches.removeAllItems()
                 appLogic.platformIntegration.setAppStatusMessage(null)
+                appLogic.platformIntegration.setShowBlockingOverlay(false)
                 appLogic.enable.waitUntilValueMatches { it == true }
 
                 continue
@@ -142,9 +174,31 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
             if (deviceUserEntry == null || deviceUserEntry.type != UserType.Child) {
                 usedTimeUpdateHelper?.commit(appLogic)
-                liveDataCaches.removeAllItems()
-                appLogic.platformIntegration.setAppStatusMessage(null)
-                deviceUserEntryLive.read().waitUntilValueMatches { it != null && it.type == UserType.Child }
+                val shouldDoAutomaticSignOut = shouldDoAutomaticSignOut.read()
+
+                if (shouldDoAutomaticSignOut.waitForNonNullValue()) {
+                    appLogic.defaultUserLogic.reportScreenOn(appLogic.platformIntegration.isScreenOn())
+
+                    appLogic.platformIntegration.setAppStatusMessage(
+                            AppStatusMessage(
+                                    title = appLogic.context.getString(R.string.background_logic_timeout_title),
+                                    text = appLogic.context.getString(R.string.background_logic_timeout_text),
+                                    showSwitchToDefaultUserOption = true
+                            )
+                    )
+                    appLogic.platformIntegration.setShowBlockingOverlay(false)
+
+                    liveDataCaches.reportLoopDone()
+                    appLogic.timeApi.sleep(BACKGROUND_SERVICE_INTERVAL)
+                } else {
+                    liveDataCaches.removeAllItems()
+                    appLogic.platformIntegration.setAppStatusMessage(null)
+                    appLogic.platformIntegration.setShowBlockingOverlay(false)
+
+                    val isChildSignedIn = deviceUserEntryLive.read().map { it != null && it.type == UserType.Child }
+
+                    isChildSignedIn.or(shouldDoAutomaticSignOut).waitUntilValueMatches { it == true }
+                }
 
                 continue
             }
@@ -159,11 +213,17 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                 val minuteOfWeek = getMinuteOfWeek(nowTimestamp, nowTimezone)
 
                 // eventually remove old used time data
-                if (dayChangeTracker.reportDayChange(nowDate.dayOfEpoch) == DayChangeTracker.DayChange.NowSinceLongerTime) {
-                    UsedTimeDeleter.deleteOldUsedTimeItems(
+                run {
+                    val dayChange = dayChangeTracker.reportDayChange(nowDate.dayOfEpoch)
+
+                    fun deleteOldUsedTimes() = UsedTimeDeleter.deleteOldUsedTimeItems(
                             database = appLogic.database,
                             date = nowDate
                     )
+
+                    if (dayChange == DayChangeTracker.DayChange.NowSinceLongerTime) {
+                        deleteOldUsedTimes()
+                    }
                 }
 
                 // get the categories
@@ -173,33 +233,63 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                 // get the current status
                 val isScreenOn = appLogic.platformIntegration.isScreenOn()
 
+                appLogic.defaultUserLogic.reportScreenOn(isScreenOn)
+
                 if (!isScreenOn) {
                     if (temporarilyAllowedApps.isNotEmpty()) {
                         resetTemporarilyAllowedApps()
                     }
                 }
 
-                val foregroundAppPackageName = appLogic.platformIntegration.getForegroundAppPackageName()
+                appLogic.platformIntegration.getForegroundApp(foregroundAppSpec, appLogic.getForegroundAppQueryInterval())
+                val foregroundAppPackageName = foregroundAppSpec.packageName
+                val foregroundAppActivityName = foregroundAppSpec.activityName
+                val activityLevelBlocking = appLogic.deviceEntry.value?.enableActivityLevelBlocking ?: false
+
+                fun showStatusMessageWithCurrentAppTitle(text: String, titlePrefix: String? = "") {
+                    appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
+                            titlePrefix + appTitleCache.query(foregroundAppPackageName ?: "invalid"),
+                            text,
+                            if (activityLevelBlocking) foregroundAppActivityName?.removePrefix(foregroundAppPackageName ?: "invalid") else null
+                    ))
+                }
+
                 // the following is not executed if the permission is missing
 
-                if (foregroundAppPackageName == BuildConfig.APPLICATION_ID) {
-                    // this app itself runs now -> no need for an status message
-                    usedTimeUpdateHelper?.commit(appLogic)
-                    appLogic.platformIntegration.setAppStatusMessage(null)
-                } else if (foregroundAppPackageName != null && AndroidIntegrationApps.ignoredApps.contains(foregroundAppPackageName)) {
+                if (pauseBackgroundLoop) {
                     usedTimeUpdateHelper?.commit(appLogic)
                     appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
-                            appTitleCache.query(foregroundAppPackageName),
-                            appLogic.context.getString(R.string.background_logic_whitelisted)
+                            title = appLogic.context.getString(R.string.background_logic_paused_title),
+                            text = appLogic.context.getString(R.string.background_logic_paused_text)
                     ))
+                    appLogic.platformIntegration.setShowBlockingOverlay(false)
+                } else if (
+                        (foregroundAppPackageName == BuildConfig.APPLICATION_ID) ||
+                        (foregroundAppPackageName != null && AndroidIntegrationApps.ignoredApps.contains(foregroundAppPackageName))) {
+                    usedTimeUpdateHelper?.commit(appLogic)
+                    showStatusMessageWithCurrentAppTitle(
+                            text = appLogic.context.getString(R.string.background_logic_whitelisted)
+                    )
+                    appLogic.platformIntegration.setShowBlockingOverlay(false)
                 } else if (foregroundAppPackageName != null && temporarilyAllowedApps.contains(foregroundAppPackageName)) {
                     usedTimeUpdateHelper?.commit(appLogic)
-                    appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
-                            appTitleCache.query(foregroundAppPackageName),
-                            appLogic.context.getString(R.string.background_logic_temporarily_allowed)
-                    ))
+                    showStatusMessageWithCurrentAppTitle(appLogic.context.getString(R.string.background_logic_temporarily_allowed))
+                    appLogic.platformIntegration.setShowBlockingOverlay(false)
                 } else if (foregroundAppPackageName != null) {
-                    val appCategory = appCategories.get(Pair(foregroundAppPackageName, categories.map { it.id })).waitForNullableValue()
+                    val categoryIds = categories.map { it.id }
+
+                    val appCategory = run {
+                        val appLevelCategoryLive = appCategories.get(foregroundAppPackageName to categoryIds)
+
+                        if (activityLevelBlocking) {
+                            val appActivityCategoryLive = appCategories.get("$foregroundAppPackageName:$foregroundAppActivityName" to categoryIds)
+
+                            appActivityCategoryLive.waitForNullableValue() ?: appLevelCategoryLive.waitForNullableValue()
+                        } else {
+                            appLevelCategoryLive.waitForNullableValue()
+                        }
+                    }
+
                     val category = categories.find { it.id == appCategory?.categoryId }
                             ?: categories.find { it.id == deviceUserEntry.categoryForNotAssignedApps }
                     val parentCategory = categories.find { it.id == category?.parentCategoryId }
@@ -207,39 +297,30 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                     if (category == null) {
                         usedTimeUpdateHelper?.commit(appLogic)
 
-                        appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
-                                title = appTitleCache.query(foregroundAppPackageName),
-                                text = appLogic.context.getString(R.string.background_logic_opening_lockscreen)
-                        ))
-                        appLogic.platformIntegration.setSuspendedApps(listOf(foregroundAppPackageName), true)
-                        appLogic.platformIntegration.showAppLockScreen(foregroundAppPackageName)
+                        if (AndroidIntegrationApps.ignoredApps.contains(foregroundAppPackageName) == false) {
+                            // don't suspend system apps which are whitelisted in any version
+                            appLogic.platformIntegration.setSuspendedApps(listOf(foregroundAppPackageName), true)
+                        }
+
+                        openLockscreen(foregroundAppPackageName, foregroundAppActivityName)
                     } else if (category.temporarilyBlocked or (parentCategory?.temporarilyBlocked == true)) {
                         usedTimeUpdateHelper?.commit(appLogic)
 
-                        appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
-                                title = appTitleCache.query(foregroundAppPackageName),
-                                text = appLogic.context.getString(R.string.background_logic_opening_lockscreen)
-                        ))
-                        appLogic.platformIntegration.showAppLockScreen(foregroundAppPackageName)
+                        openLockscreen(foregroundAppPackageName, foregroundAppActivityName)
                     } else {
                         // disable time limits temporarily feature
                         if (nowTimestamp < deviceUserEntry.disableLimitsUntil) {
-                            appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
-                                    title = appTitleCache.query(foregroundAppPackageName),
-                                    text = appLogic.context.getString(R.string.background_logic_limits_disabled)
-                            ))
+                            showStatusMessageWithCurrentAppTitle(appLogic.context.getString(R.string.background_logic_limits_disabled))
+                            appLogic.platformIntegration.setShowBlockingOverlay(false)
                         } else if (
                         // check blocked time areas
+                        // directly blocked
                                 (category.blockedMinutesInWeek.read(minuteOfWeek)) or
                                 (parentCategory?.blockedMinutesInWeek?.read(minuteOfWeek) == true)
                         ) {
                             usedTimeUpdateHelper?.commit(appLogic)
 
-                            appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
-                                    title = appTitleCache.query(foregroundAppPackageName),
-                                    text = appLogic.context.getString(R.string.background_logic_opening_lockscreen)
-                            ))
-                            appLogic.platformIntegration.showAppLockScreen(foregroundAppPackageName)
+                            openLockscreen(foregroundAppPackageName, foregroundAppActivityName)
                         } else {
                             // check time limits
                             val rules = timeLimitRules.get(category.id).waitForNonNullValue()
@@ -251,10 +332,11 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                                 // unlimited
                                 usedTimeUpdateHelper?.commit(appLogic)
 
-                                appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
-                                        category.title + " - " + appTitleCache.query(foregroundAppPackageName),
-                                        appLogic.context.getString(R.string.background_logic_no_timelimit)
-                                ))
+                                showStatusMessageWithCurrentAppTitle(
+                                        text = appLogic.context.getString(R.string.background_logic_no_timelimit),
+                                        titlePrefix = category.title + " - "
+                                )
+                                appLogic.platformIntegration.setShowBlockingOverlay(false)
                             } else {
                                 val usedTimes = usedTimesOfCategoryAndWeekByFirstDayOfWeek.get(Pair(category.id, nowDate.dayOfEpoch - nowDate.dayOfWeek)).waitForNonNullValue()
                                 val parentUsedTimes = parentCategory?.let {
@@ -317,42 +399,57 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
                                     usedTimeUpdateHelper?.commit(appLogic)
 
-                                    appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
-                                            category.title + " - " + appTitleCache.query(foregroundAppPackageName),
-                                            appLogic.context.getString(R.string.background_logic_no_timelimit)
-                                    ))
+                                    showStatusMessageWithCurrentAppTitle(
+                                            text = appLogic.context.getString(R.string.background_logic_no_timelimit),
+                                            titlePrefix = category.title + " - "
+                                    )
+                                    appLogic.platformIntegration.setShowBlockingOverlay(false)
                                 } else {
                                     // time limited
                                     if (remaining.includingExtraTime > 0) {
+                                        var subtractExtraTime: Boolean
+
                                         if (remaining.default == 0L) {
                                             // using extra time
-
-                                            appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
-                                                    category.title + " - " + appTitleCache.query(foregroundAppPackageName),
-                                                    appLogic.context.getString(R.string.background_logic_using_extra_time, TimeTextUtil.remaining(remaining.includingExtraTime.toInt(), appLogic.context))
-                                            ))
-
-                                            if (isScreenOn) {
-                                                newUsedTimeItemBatchUpdateHelper.addUsedTime(
-                                                        Math.min(previousMainLogicExecutionTime, MAX_USED_TIME_PER_ROUND),    // never save more than a second of used time
-                                                        true,
-                                                        appLogic
-                                                )
-                                            }
+                                            showStatusMessageWithCurrentAppTitle(
+                                                    text = appLogic.context.getString(R.string.background_logic_using_extra_time, TimeTextUtil.remaining(remaining.includingExtraTime.toInt(), appLogic.context)),
+                                                    titlePrefix = category.title + " - "
+                                            )
+                                            subtractExtraTime = true
                                         } else {
                                             // using normal contingent
+                                            showStatusMessageWithCurrentAppTitle(
+                                                    text = TimeTextUtil.remaining(remaining.default.toInt(), appLogic.context),
+                                                    titlePrefix = category.title + " - "
+                                            )
+                                            subtractExtraTime = false
+                                        }
 
-                                            appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
-                                                    category.title + " - " + appTitleCache.query(foregroundAppPackageName),
-                                                    TimeTextUtil.remaining(remaining.default.toInt(), appLogic.context)
-                                            ))
+                                        appLogic.platformIntegration.setShowBlockingOverlay(false)
+                                        if (isScreenOn) {
+                                            // never save more than a second of used time
+                                            val timeToSubtract = Math.min(previousMainLogicExecutionTime, MAX_USED_TIME_PER_ROUND)
 
-                                            if (isScreenOn) {
-                                                newUsedTimeItemBatchUpdateHelper.addUsedTime(
-                                                        Math.min(previousMainLogicExecutionTime, MAX_USED_TIME_PER_ROUND),    // never save more than a second of used time
-                                                        false,
-                                                        appLogic
-                                                )
+                                            newUsedTimeItemBatchUpdateHelper.addUsedTime(
+                                                    timeToSubtract,
+                                                    subtractExtraTime,
+                                                    appLogic
+                                            )
+
+                                            val oldRemainingTime = remaining.includingExtraTime
+                                            val newRemainingTime = oldRemainingTime - timeToSubtract
+
+                                            if (oldRemainingTime / (1000 * 60) != newRemainingTime / (1000 * 60)) {
+                                                // eventually show remaining time warning
+                                                val roundedNewTime = ((newRemainingTime / (1000 * 60)) + 1) * (1000 * 60)
+                                                val flagIndex = CategoryTimeWarnings.durationToBitIndex[roundedNewTime]
+
+                                                if (flagIndex != null && category.timeWarnings and (1 shl flagIndex) != 0) {
+                                                    appLogic.platformIntegration.showTimeWarningNotification(
+                                                            title = appLogic.context.getString(R.string.time_warning_not_title, category.title),
+                                                            text = TimeTextUtil.remaining(roundedNewTime.toInt(), appLogic.context)
+                                                    )
+                                                }
                                             }
                                         }
                                     } else {
@@ -360,11 +457,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
                                         newUsedTimeItemBatchUpdateHelper.commit(appLogic)
 
-                                        appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
-                                                title = appTitleCache.query(foregroundAppPackageName),
-                                                text = appLogic.context.getString(R.string.background_logic_opening_lockscreen)
-                                        ))
-                                        appLogic.platformIntegration.showAppLockScreen(foregroundAppPackageName)
+                                        openLockscreen(foregroundAppPackageName, foregroundAppActivityName)
                                     }
                                 }
                             }
@@ -375,6 +468,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                             appLogic.context.getString(R.string.background_logic_idle_title),
                             appLogic.context.getString(R.string.background_logic_idle_text)
                     ))
+                    appLogic.platformIntegration.setShowBlockingOverlay(false)
                 }
             } catch (ex: SecurityException) {
                 // this is handled by an other main loop (with a delay)
@@ -383,6 +477,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                         appLogic.context.getString(R.string.background_logic_error),
                         appLogic.context.getString(R.string.background_logic_error_permission)
                 ))
+                appLogic.platformIntegration.setShowBlockingOverlay(false)
             } catch (ex: Exception) {
                 if (BuildConfig.DEBUG) {
                     Log.w(LOG_TAG, "exception during running main loop", ex)
@@ -392,6 +487,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                         appLogic.context.getString(R.string.background_logic_error),
                         appLogic.context.getString(R.string.background_logic_error_internal)
                 ))
+                appLogic.platformIntegration.setShowBlockingOverlay(false)
             }
 
             liveDataCaches.reportLoopDone()
@@ -413,10 +509,11 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
         if (deviceEntry != null) {
             if (deviceEntry.currentAppVersion != currentAppVersion) {
                 ApplyActionUtil.applyAppLogicAction(
-                        UpdateDeviceStatusAction.empty.copy(
+                        action = UpdateDeviceStatusAction.empty.copy(
                                 newAppVersion = currentAppVersion
                         ),
-                        appLogic
+                        appLogic = appLogic,
+                        ignoreIfDeviceIsNotConfigured = true
                 )
             }
         }
@@ -446,10 +543,11 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
             if (deviceEntry?.considerRebootManipulation == true) {
                 ApplyActionUtil.applyAppLogicAction(
-                        UpdateDeviceStatusAction.empty.copy(
+                        action = UpdateDeviceStatusAction.empty.copy(
                                 didReboot = true
                         ),
-                        appLogic
+                        appLogic = appLogic,
+                        ignoreIfDeviceIsNotConfigured = true
                 )
             }
         }
@@ -463,6 +561,9 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                 val protectionLevel = appLogic.platformIntegration.getCurrentProtectionLevel()
                 val usageStatsPermission = appLogic.platformIntegration.getForegroundAppPermissionStatus()
                 val notificationAccess = appLogic.platformIntegration.getNotificationAccessPermissionStatus()
+                val overlayPermission = appLogic.platformIntegration.getOverlayPermissionStatus()
+                val accessibilityService = appLogic.platformIntegration.isAccessibilityServiceEnabled()
+                val qOrLater = AndroidVersion.qOrLater
 
                 var changes = UpdateDeviceStatusAction.empty
 
@@ -488,8 +589,28 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                     )
                 }
 
+                if (overlayPermission != deviceEntry.currentOverlayPermission) {
+                    changes = changes.copy(
+                            newOverlayPermission = overlayPermission
+                    )
+                }
+
+                if (accessibilityService != deviceEntry.accessibilityServiceEnabled) {
+                    changes = changes.copy(
+                            newAccessibilityServiceEnabled = accessibilityService
+                    )
+                }
+
+                if (qOrLater && !deviceEntry.qOrLater) {
+                    changes = changes.copy(isQOrLaterNow = true)
+                }
+
                 if (changes != UpdateDeviceStatusAction.empty) {
-                    ApplyActionUtil.applyAppLogicAction(changes, appLogic)
+                    ApplyActionUtil.applyAppLogicAction(
+                            action = changes,
+                            appLogic = appLogic,
+                            ignoreIfDeviceIsNotConfigured = true
+                    )
                 }
             }
         }

@@ -1,17 +1,16 @@
 <!--
-    Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+  TimeLimit Copyright <C> 2019 Jonas Lochmann
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation version 3 of the License.
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation version 3 of the License.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program. If not, see <https://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -19,10 +18,6 @@
     tools:context="io.timelimit.android.ui.manage.device.manage.ManageDeviceFragment">
 
     <data>
-        <variable
-            name="deviceTitle"
-            type="String" />
-
         <variable
             name="modelString"
             type="String" />
@@ -36,29 +31,27 @@
             type="Boolean" />
 
         <variable
-            name="usageStatsAccess"
-            type="io.timelimit.android.integration.platform.RuntimePermissionStatus" />
-
-        <variable
             name="didAppDowngrade"
             type="Boolean" />
 
         <variable
-            name="notificationAccessPermission"
-            type="io.timelimit.android.integration.platform.NewPermissionStatus" />
-
+            name="userCardText"
+            type="String" />
+        
         <variable
-            name="protectionLevel"
-            type="io.timelimit.android.integration.platform.ProtectionLevel" />
+            name="permissionCardText"
+            type="String" />
+        
+        <variable
+            name="featureCardText"
+            type="String" />
 
         <variable
             name="handlers"
             type="io.timelimit.android.ui.manage.device.manage.ManageDeviceFragmentHandlers" />
 
         <import type="android.view.View" />
-        <import type="io.timelimit.android.integration.platform.RuntimePermissionStatus" />
-        <import type="io.timelimit.android.integration.platform.NewPermissionStatus" />
-        <import type="io.timelimit.android.integration.platform.ProtectionLevel" />
+        <import type="io.timelimit.android.BuildConfig" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -78,7 +71,10 @@
                     layout="@layout/fragment_manage_device_introduction" />
 
                 <include android:id="@+id/usage_stats_access_missing"
-                    layout="@layout/usage_stats_permission_required_and_missing" />
+                    layout="@layout/missing_permission_view" />
+
+                <include android:id="@+id/activity_launch_permission_missing"
+                    layout="@layout/missing_permission_view" />
 
                 <include
                     android:id="@+id/manage_manipulation"
@@ -95,19 +91,7 @@
                         android:layout_height="wrap_content">
 
                         <TextView
-                            android:onClick="@{() -> handlers.editDeviceTitle()}"
-                            android:focusable="true"
-                            android:clickable="true"
-                            android:background="?selectableItemBackground"
-                            android:drawableEnd="@drawable/ic_edit_black_24dp"
                             android:textAppearance="?android:textAppearanceLarge"
-                            tools:text="Poor childs phone"
-                            android:text="@{deviceTitle}"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:textAppearance="?android:textAppearanceMedium"
                             tools:text="Samsung Galaxy S3"
                             android:text="@{modelString}"
                             android:layout_width="match_parent"
@@ -124,30 +108,6 @@
                             android:visibility="@{safeUnbox(isThisDevice) ? View.VISIBLE : View.GONE}"
                             android:textAppearance="?android:textAppearanceMedium"
                             android:text="@string/manage_device_is_this_device"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
-
-                <androidx.cardview.widget.CardView
-                    app:cardUseCompatPadding="true"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                    <LinearLayout
-                        android:padding="8dp"
-                        android:orientation="vertical"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <TextView
-                            android:textAppearance="?android:textAppearanceLarge"
-                            android:text="@string/manage_device_current_user_title"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <Spinner
-                            android:id="@+id/user_spinner"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
 
@@ -185,8 +145,7 @@
 
                 <androidx.cardview.widget.CardView
                     android:foreground="?selectableItemBackground"
-                    android:clickable="@{safeUnbox(isThisDevice)}"
-                    android:onClick="@{() -> handlers.manageDeviceAdmin()}"
+                    android:onClick="@{() -> handlers.showUserScreen()}"
                     app:cardUseCompatPadding="true"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
@@ -198,49 +157,13 @@
 
                         <TextView
                             android:textAppearance="?android:textAppearanceLarge"
-                            android:text="@string/manage_device_permission_device_admin_title"
+                            android:text="@string/manage_device_card_user_title"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
 
                         <TextView
-                            android:visibility="@{protectionLevel == ProtectionLevel.None ? View.VISIBLE : View.GONE}"
                             android:textAppearance="?android:textAppearanceMedium"
-                            android:text="@string/manage_device_permission_device_admin_text_disabled"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:visibility="@{protectionLevel == ProtectionLevel.SimpleDeviceAdmin ? View.VISIBLE : View.GONE}"
-                            android:textAppearance="?android:textAppearanceMedium"
-                            android:text="@string/manage_device_permission_device_admin_text_simple"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:visibility="@{protectionLevel == ProtectionLevel.PasswordDeviceAdmin ? View.VISIBLE : View.GONE}"
-                            android:textAppearance="?android:textAppearanceMedium"
-                            android:text="@string/manage_device_permission_device_admin_text_password"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:visibility="@{protectionLevel == ProtectionLevel.DeviceOwner ? View.VISIBLE : View.GONE}"
-                            android:textAppearance="?android:textAppearanceMedium"
-                            android:text="@string/manage_device_permission_device_admin_text_owner"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:visibility="@{safeUnbox(isThisDevice) ? View.VISIBLE : View.GONE}"
-                            android:text="@string/manage_device_permission_tap_top_open_settings"
-                            android:textAppearance="?android:textAppearanceSmall"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:visibility="@{safeUnbox(isThisDevice) ? View.GONE : View.VISIBLE}"
-                            android:text="@string/manage_device_permission_open_at_target_device"
-                            android:textAppearance="?android:textAppearanceSmall"
+                            android:text="@{userCardText}"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
 
@@ -248,9 +171,8 @@
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
-                    android:onClick="@{() -> handlers.openUsageStatsSettings()}"
                     android:foreground="?selectableItemBackground"
-                    android:clickable="@{safeUnbox(isThisDevice) &amp;&amp; (usageStatsAccess != RuntimePermissionStatus.NotRequired)}"
+                    android:onClick="@{() -> handlers.showPermissionsScreen()}"
                     app:cardUseCompatPadding="true"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
@@ -262,51 +184,13 @@
 
                         <TextView
                             android:textAppearance="?android:textAppearanceLarge"
-                            android:text="@string/manage_device_permissions_usagestats_title"
+                            android:text="@string/manage_device_card_permission_title"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
 
                         <TextView
                             android:textAppearance="?android:textAppearanceMedium"
-                            android:text="@string/manage_device_permissions_usagestats_text"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:visibility="@{usageStatsAccess == RuntimePermissionStatus.Granted ? View.VISIBLE : View.GONE}"
-                            android:textColor="@color/green"
-                            android:textAppearance="?android:textAppearanceMedium"
-                            android:text="@string/manage_device_permission_status_granted"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:visibility="@{usageStatsAccess == RuntimePermissionStatus.NotGranted ? View.VISIBLE : View.GONE}"
-                            android:textColor="@color/red"
-                            android:textAppearance="?android:textAppearanceMedium"
-                            android:text="@string/manage_device_permission_status_not_granted"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:visibility="@{usageStatsAccess == RuntimePermissionStatus.NotRequired ? View.VISIBLE : View.GONE}"
-                            android:textColor="@color/green"
-                            android:textAppearance="?android:textAppearanceMedium"
-                            android:text="@string/manage_device_permission_status_not_required"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:visibility="@{(( usageStatsAccess != RuntimePermissionStatus.NotRequired) &amp;&amp; (safeUnbox(isThisDevice))) ? View.VISIBLE : View.GONE}"
-                            android:text="@string/manage_device_permission_tap_top_open_settings"
-                            android:textAppearance="?android:textAppearanceSmall"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:visibility="@{((safeUnbox(isThisDevice) || (usageStatsAccess == RuntimePermissionStatus.NotRequired))) ? View.GONE : View.VISIBLE}"
-                            android:text="@string/manage_device_permission_open_at_target_device"
-                            android:textAppearance="?android:textAppearanceSmall"
+                            android:text="@{permissionCardText}"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
 
@@ -314,9 +198,8 @@
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
-                    android:onClick="@{() -> handlers.openNotificationAccessSettings()}"
                     android:foreground="?selectableItemBackground"
-                    android:clickable="@{safeUnbox(isThisDevice) &amp;&amp; (notificationAccessPermission != NewPermissionStatus.NotSupported)}"
+                    android:onClick="@{() -> handlers.showFeaturesScreen()}"
                     app:cardUseCompatPadding="true"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
@@ -328,62 +211,45 @@
 
                         <TextView
                             android:textAppearance="?android:textAppearanceLarge"
-                            android:text="@string/manage_device_permission_notification_access_title"
+                            android:text="@string/manage_device_card_feature_title"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
 
                         <TextView
                             android:textAppearance="?android:textAppearanceMedium"
-                            android:text="@string/manage_device_permission_notification_access_text"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:visibility="@{notificationAccessPermission == NewPermissionStatus.Granted ? View.VISIBLE : View.GONE}"
-                            android:textColor="@color/green"
-                            android:textAppearance="?android:textAppearanceMedium"
-                            android:text="@string/manage_device_permission_status_granted"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:visibility="@{notificationAccessPermission == NewPermissionStatus.NotGranted ? View.VISIBLE : View.GONE}"
-                            android:textColor="@color/red"
-                            android:textAppearance="?android:textAppearanceMedium"
-                            android:text="@string/manage_device_permission_status_not_granted"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:visibility="@{notificationAccessPermission == NewPermissionStatus.NotSupported ? View.VISIBLE : View.GONE}"
-                            android:textColor="@color/red"
-                            android:textAppearance="?android:textAppearanceMedium"
-                            android:text="@string/manage_device_permission_status_not_supported"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:visibility="@{(( notificationAccessPermission != NewPermissionStatus.NotSupported) &amp;&amp; (safeUnbox(isThisDevice))) ? View.VISIBLE : View.GONE}"
-                            android:text="@string/manage_device_permission_tap_top_open_settings"
-                            android:textAppearance="?android:textAppearanceSmall"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:visibility="@{((safeUnbox(isThisDevice) || (notificationAccessPermission == NewPermissionStatus.NotSupported))) ? View.GONE : View.VISIBLE}"
-                            android:text="@string/manage_device_permission_open_at_target_device"
-                            android:textAppearance="?android:textAppearanceSmall"
+                            android:text="@{featureCardText}"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
 
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
-                <include android:id="@+id/device_reboot_manipulation"
-                    layout="@layout/manage_device_reboot_manipulation_view" />
+                <androidx.cardview.widget.CardView
+                    android:foreground="?selectableItemBackground"
+                    android:onClick="@{() -> handlers.showManageScreen()}"
+                    app:cardUseCompatPadding="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:padding="8dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
 
-                <include android:id="@+id/troubleshooting_view"
-                    layout="@layout/manage_device_troubleshooting_view" />
+                        <TextView
+                            android:textAppearance="?android:textAppearanceLarge"
+                            android:text="@string/manage_device_card_manage_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:textAppearance="?android:textAppearanceMedium"
+                            android:text="@string/manage_device_card_manage_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
 
             </LinearLayout>
         </ScrollView>

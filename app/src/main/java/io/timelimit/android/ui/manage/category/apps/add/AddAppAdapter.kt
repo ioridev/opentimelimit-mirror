@@ -26,6 +26,7 @@ import kotlin.properties.Delegates
 
 class AddAppAdapter: RecyclerView.Adapter<ViewHolder>() {
     var data: List<App>? by Delegates.observable(null as List<App>?) { _, _, _ -> notifyDataSetChanged() }
+    var listener: AddAppAdapterListener? = null
     var categoryTitleByPackageName: Map<String, String> by Delegates.observable(emptyMap()) { _, _, _ -> notifyDataSetChanged() }
     val selectedApps = mutableSetOf<String>()
 
@@ -35,6 +36,8 @@ class AddAppAdapter: RecyclerView.Adapter<ViewHolder>() {
 
             notifyDataSetChanged()
         }
+
+        override fun onAppLongClicked(app: App) = listener?.onAppLongClicked(app) ?: false
     }
 
     init {
@@ -86,6 +89,10 @@ class AddAppAdapter: RecyclerView.Adapter<ViewHolder>() {
 
 class ViewHolder(val binding: FragmentAddCategoryAppsItemBinding): RecyclerView.ViewHolder(binding.root)
 
-interface ItemHandlers {
+interface ItemHandlers: AddAppAdapterListener {
     fun onAppClicked(app: App)
+}
+
+interface AddAppAdapterListener {
+    fun onAppLongClicked(app: App): Boolean
 }

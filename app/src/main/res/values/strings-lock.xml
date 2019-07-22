@@ -47,13 +47,13 @@
         And the simplest solution in this case is to block the App.
     </string>
     <string name="lock_reason_temporarily_blocked">
-        This App is part of a category which was temporarily blocked.
+        This %s is part of a category which was temporarily blocked.
     </string>
     <string name="lock_reason_blocked_time">
-        This App is part of a category which is blocked at this time.
+        This %s is part of a category which is blocked at this time.
     </string>
     <string name="lock_reason_time_over">
-        This App is part of a category whose time limit was reached.
+        This %s is part of a category whose time limit was reached.
     </string>
     <string name="lock_reason_time_over_etra_time_can_be_used_later">
         This App is part of a category whose time limit was reached.
@@ -64,4 +64,10 @@
     <string name="lock_reason_short_temporarily_blocked">temporarily blocked</string>
     <string name="lock_reason_short_time_over">time over</string>
     <string name="lock_reason_short_blocked_time_area">blocked time area</string>
+    <string name="lock_reason_short_notification_blocking">all notifications are blocked</string>
+
+    <string name="lock_overlay_warning">
+        Failed to open the lock screen.
+        You can try using the home or overview button to leave this screen.
+    </string>
 </resources>

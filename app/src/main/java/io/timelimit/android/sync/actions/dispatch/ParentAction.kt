@@ -74,7 +74,9 @@ object LocalDatabaseParentActionDispatcher {
                             blockedMinutesInWeek = ImmutableBitmask(BitSet()),
                             extraTimeInMillis = 0,
                             temporarilyBlocked = false,
-                            parentCategoryId = ""
+                            parentCategoryId = "",
+                            blockAllNotifications = false,
+                            timeWarnings = 0
                     ))
                 }
                 is DeleteCategoryAction -> {
@@ -271,6 +273,14 @@ object LocalDatabaseParentActionDispatcher {
                         deviceEntry = deviceEntry.copy(highestUsageStatsPermission = deviceEntry.currentUsageStatsPermission)
                     }
 
+                    if (action.ignoreOverlayPermissionManipulation) {
+                        deviceEntry = deviceEntry.copy(highestOverlayPermission = deviceEntry.currentOverlayPermission)
+                    }
+
+                    if (action.ignoreAccessibilityServiceManipulation) {
+                        deviceEntry = deviceEntry.copy(wasAccessibilityServiceEnabled = deviceEntry.accessibilityServiceEnabled)
+                    }
+
                     if (action.ignoreReboot) {
                         deviceEntry = deviceEntry.copy(manipulationDidReboot = false)
                     }
@@ -328,6 +338,26 @@ object LocalDatabaseParentActionDispatcher {
                             timezone = action.timezone
                     )
                 }
+                is SetDeviceDefaultUserAction -> {
+                    if (action.defaultUserId.isNotEmpty()) {
+                        DatabaseValidation.assertUserExists(database, action.defaultUserId)
+                    }
+
+                    DatabaseValidation.assertDeviceExists(database, action.deviceId)
+
+                    database.device().updateDeviceDefaultUser(
+                            deviceId = action.deviceId,
+                            defaultUserId = action.defaultUserId
+                    )
+                }
+                is SetDeviceDefaultUserTimeoutAction -> {
+                    val deviceEntry = database.device().getDeviceByIdSync(action.deviceId)
+                            ?: throw IllegalArgumentException("device not found")
+
+                    database.device().updateDeviceEntry(deviceEntry.copy(
+                            defaultUserTimeout = action.timeout
+                    ))
+                }
                 is SetConsiderRebootManipulationAction -> {
                     val deviceEntry = database.device().getDeviceByIdSync(action.deviceId)
                             ?: throw IllegalArgumentException("device not found")
@@ -337,6 +367,45 @@ object LocalDatabaseParentActionDispatcher {
                                     considerRebootManipulation = action.considerRebootManipulation
                             )
                     )
+                }
+                is UpdateCategoryBlockAllNotificationsAction -> {
+                    val categoryEntry = database.category().getCategoryByIdSync(action.categoryId)
+                            ?: throw IllegalArgumentException("can not update notification blocking for non exsistent category")
+
+                    database.category().updateCategorySync(
+                            categoryEntry.copy(
+                                    blockAllNotifications = action.blocked
+                            )
+                    )
+                }
+                is UpdateEnableActivityLevelBlocking -> {
+                    val deviceEntry = database.device().getDeviceByIdSync(action.deviceId)
+                            ?: throw IllegalArgumentException("device not found")
+
+                    database.device().updateDeviceEntry(
+                            deviceEntry.copy(
+                                    enableActivityLevelBlocking = action.enable
+                            )
+                    )
+                }
+                is UpdateCategoryTimeWarningsAction -> {
+                    val categoryEntry = database.category().getCategoryByIdSync(action.categoryId)
+                            ?: throw IllegalArgumentException("category not found")
+
+                    val modified = if (action.enable)
+                        categoryEntry.copy(
+                                timeWarnings = categoryEntry.timeWarnings or action.flags
+                        )
+                    else
+                        categoryEntry.copy(
+                                timeWarnings = categoryEntry.timeWarnings and (action.flags.inv())
+                        )
+
+                    if (modified != categoryEntry) {
+                        database.category().updateCategorySync(modified)
+                    }
+
+                    null
                 }
             }.let { }
 

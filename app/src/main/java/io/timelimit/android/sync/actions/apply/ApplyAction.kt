@@ -30,14 +30,40 @@ import io.timelimit.android.sync.actions.dispatch.LocalDatabaseAppLogicActionDis
 import io.timelimit.android.sync.actions.dispatch.LocalDatabaseParentActionDispatcher
 
 object ApplyActionUtil {
-    suspend fun applyAppLogicAction(action: AppLogicAction, appLogic: AppLogic) {
-        applyAppLogicAction(action, appLogic.database, appLogic.manipulationLogic)
+    suspend fun applyAppLogicAction(
+            action: AppLogicAction,
+            appLogic: AppLogic,
+            ignoreIfDeviceIsNotConfigured: Boolean
+    ) {
+        applyAppLogicAction(action, appLogic.database, appLogic.manipulationLogic, ignoreIfDeviceIsNotConfigured)
     }
 
-    private suspend fun applyAppLogicAction(action: AppLogicAction, database: Database, manipulationLogic: ManipulationLogic) {
+    private suspend fun applyAppLogicAction(
+            action: AppLogicAction,
+            database: Database,
+            manipulationLogic: ManipulationLogic,
+            ignoreIfDeviceIsNotConfigured: Boolean
+    ) {
+        // uncomment this if you need to know what's dispatching an action
+        /*
+        if (BuildConfig.DEBUG) {
+            try {
+                throw Exception()
+            } catch (ex: Exception) {
+                Log.d(LOG_TAG, "handling action: $action", ex)
+            }
+        }
+        */
+
         Threads.database.executeAndWait {
             database.transaction().use {
-                LocalDatabaseAppLogicActionDispatcher.dispatchAppLogicActionSync(action, database.config().getOwnDeviceIdSync()!!, database, manipulationLogic)
+                val ownDeviceId = database.config().getOwnDeviceIdSync()
+
+                if (ownDeviceId == null && ignoreIfDeviceIsNotConfigured) {
+                    return@executeAndWait
+                }
+
+                LocalDatabaseAppLogicActionDispatcher.dispatchAppLogicActionSync(action, ownDeviceId!!, database, manipulationLogic)
 
                 database.setTransactionSuccessful()
             }

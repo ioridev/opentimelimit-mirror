@@ -15,13 +15,24 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
 <resources>
+    <string name="manage_device_card_user_title">User</string>
+    <string name="manage_device_card_permission_title">Permissions</string>
+    <string name="manage_device_card_feature_title">Features</string>
+    <string name="manage_device_card_manage_title">Manage</string>
+    <string name="manage_device_card_manage_text">other settings for this device</string>
+
     <string name="manage_device_added_at">Added: %s</string>
     <string name="manage_device_is_this_device">This is the device which is in front of you</string>
 
     <string name="manage_device_current_user_title">User of the device</string>
     <string name="manage_device_current_user_none">No selection - no limits</string>
 
+    <string name="manage_device_feature_summary_none">No features enabled</string>
+
+    <string name="manage_device_permissions_summary_none">No permissions granted</string>
+
     <string name="manage_device_permissions_usagestats_title">Usage stats access</string>
+    <string name="manage_device_permissions_usagestats_title_short">Usage stats</string>
     <string name="manage_device_permissions_usagestats_text">
         TimeLimit uses the permission for the usage stats access.
         This is only used to detect the currently used App.
@@ -30,7 +41,21 @@
     <string name="manage_device_permission_notification_access_title">Notification access</string>
     <string name="manage_device_permission_notification_access_text">
         TimeLimit uses the notification access to block notifications of blocked apps.
-        Notifications and their contents are not saved.
+        Notifications and their contents are not saved. Additionally, this blocks
+        the playback of media players if the media player is blocked.
+    </string>
+
+    <string name="manage_device_permissions_overlay_title">Draw over other Apps</string>
+    <string name="manage_device_permissions_overlay_text">
+        Enabling drawing on top of other Apps can improve blocking in some cases.
+        Moreover, this is one way to allow TimeLimit at newer Android versions to open the lockscreen.
+    </string>
+
+    <string name="manage_device_permission_accessibility_title">Accessibility service</string>
+    <string name="manage_device_permission_accessibility_text">
+        This is used to \"press\" the home button before showing the lock screen.
+        This fixes blocking in some cases.
+        Moreover, this is one way to allow TimeLimit at newer Android versions to open the lockscreen.
     </string>
 
     <string name="manage_device_permission_device_admin_title">Device admin</string>

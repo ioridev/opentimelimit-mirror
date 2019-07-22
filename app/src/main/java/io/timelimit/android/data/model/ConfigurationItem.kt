@@ -77,30 +77,45 @@ data class ConfigurationItem(
 enum class ConfigurationItemType {
     OwnDeviceId,
     ShownHints,
-    WasDeviceLocked
+    WasDeviceLocked,
+    ForegroundAppQueryRange,
+    EnableAlternativeDurationSelection,
+    LastScreenOnTime
 }
 
 object ConfigurationItemTypeUtil {
     private const val OWN_DEVICE_ID = 1
     private const val SHOWN_HINTS = 2
     private const val WAS_DEVICE_LOCKED = 3
+    private const val FOREGROUND_APP_QUERY_RANGE = 4
+    private const val ENABLE_ALTERNATIVE_DURATION_SELECTION = 5
+    private const val LAST_SCREEN_ON_TIME = 6
 
     val TYPES = listOf(
             ConfigurationItemType.OwnDeviceId,
             ConfigurationItemType.ShownHints,
-            ConfigurationItemType.WasDeviceLocked
+            ConfigurationItemType.WasDeviceLocked,
+            ConfigurationItemType.ForegroundAppQueryRange,
+            ConfigurationItemType.EnableAlternativeDurationSelection,
+            ConfigurationItemType.LastScreenOnTime
     )
 
     fun serialize(value: ConfigurationItemType) = when(value) {
         ConfigurationItemType.OwnDeviceId -> OWN_DEVICE_ID
         ConfigurationItemType.ShownHints -> SHOWN_HINTS
         ConfigurationItemType.WasDeviceLocked -> WAS_DEVICE_LOCKED
+        ConfigurationItemType.ForegroundAppQueryRange -> FOREGROUND_APP_QUERY_RANGE
+        ConfigurationItemType.EnableAlternativeDurationSelection -> ENABLE_ALTERNATIVE_DURATION_SELECTION
+        ConfigurationItemType.LastScreenOnTime -> LAST_SCREEN_ON_TIME
     }
 
     fun parse(value: Int) = when(value) {
         OWN_DEVICE_ID -> ConfigurationItemType.OwnDeviceId
         SHOWN_HINTS -> ConfigurationItemType.ShownHints
         WAS_DEVICE_LOCKED -> ConfigurationItemType.WasDeviceLocked
+        FOREGROUND_APP_QUERY_RANGE -> ConfigurationItemType.ForegroundAppQueryRange
+        ENABLE_ALTERNATIVE_DURATION_SELECTION -> ConfigurationItemType.EnableAlternativeDurationSelection
+        LAST_SCREEN_ON_TIME -> ConfigurationItemType.LastScreenOnTime
         else -> throw IllegalArgumentException()
     }
 }
@@ -118,4 +133,6 @@ object HintsToShow {
     const val DEVICE_SCREEN_INTRODUCTION = 2L
     const val CATEGORIES_INTRODUCTION = 4L
     const val TIME_LIMIT_RULE_INTRODUCTION = 8L
+    const val CONTACTS_INTRO = 16L
+    const val TIMELIMIT_RULE_MUSTREAD = 32L
 }

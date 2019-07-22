@@ -18,20 +18,23 @@ package io.timelimit.android.ui.manage.device.manage
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import io.timelimit.android.R
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
-import io.timelimit.android.databinding.UsageStatsPermissionRequiredAndMissingBinding
+import io.timelimit.android.databinding.MissingPermissionViewBinding
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
 import io.timelimit.android.livedata.mergeLiveData
 
 object UsageStatsAccessRequiredAndMissing {
     fun bind(
-            view: UsageStatsPermissionRequiredAndMissingBinding,
+            view: MissingPermissionViewBinding,
             user: LiveData<User?>,
             device: LiveData<Device?>,
             lifecycleOwner: LifecycleOwner
     ) {
+        view.title = view.root.context.getString(R.string.usage_stats_permission_required_and_missing_title)
+
         mergeLiveData(user, device).observe(lifecycleOwner, Observer { (user, device) ->
             view.showMessage = user?.type == UserType.Child && device?.currentUsageStatsPermission == RuntimePermissionStatus.NotGranted
         })

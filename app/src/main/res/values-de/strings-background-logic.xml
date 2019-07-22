@@ -29,4 +29,10 @@
 
     <string name="background_logic_temporarily_allowed_title">Apps wurden vorübergehend erlaubt</string>
     <string name="background_logic_temporarily_allowed_text">Zum Rückgängig machen hier tippen oder Bildschirm ausschalten</string>
+
+    <string name="background_logic_timeout_title">automatische Abmeldung aktiviert</string>
+    <string name="background_logic_timeout_text">TimeLimit läuft noch, um das zu ermöglichen</string>
+
+    <string name="background_logic_paused_title">Vorübergehend deaktiviert</string>
+    <string name="background_logic_paused_text">Keine Einschränkungen</string>
 </resources>

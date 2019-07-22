@@ -65,11 +65,17 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <include android:id="@+id/time_warnings"
+                layout="@layout/category_time_warnings_view" />
+
             <include android:id="@+id/category_for_unassigned_apps"
                 layout="@layout/manage_category_for_unassigned_apps" />
 
             <include android:id="@+id/parent_category"
                 layout="@layout/manage_parent_category" />
+
+            <include android:id="@+id/notification_filter"
+                layout="@layout/category_notification_filter" />
 
             <androidx.cardview.widget.CardView
                 app:cardUseCompatPadding="true"

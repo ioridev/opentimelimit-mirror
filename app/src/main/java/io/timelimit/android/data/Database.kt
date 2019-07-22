@@ -28,6 +28,8 @@ interface Database {
     fun usedTimes(): UsedTimeDao
     fun user(): UserDao
     fun temporarilyAllowedApp(): TemporarilyAllowedAppDao
+    fun appActivity(): AppActivityDao
+    fun allowedContact(): AllowedContactDao
 
     fun beginTransaction()
     fun setTransactionSuccessful()

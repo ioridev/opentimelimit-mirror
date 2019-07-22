@@ -48,6 +48,8 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder {
 
     private val currentNavigatorFragment = MutableLiveData<Fragment>()
 
+    override var ignoreStop: Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -104,13 +106,17 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder {
     override fun onStop() {
         super.onStop()
 
-        if (!isChangingConfigurations) {
+        if ((!isChangingConfigurations) && (!ignoreStop)) {
             getActivityViewModel().logOut()
         }
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
+
+        if ((intent?.flags ?: 0) and Intent.FLAG_ACTIVITY_REORDER_TO_FRONT == Intent.FLAG_ACTIVITY_REORDER_TO_FRONT) {
+            return
+        }
 
         getNavController().popBackStack(R.id.overviewFragment, true)
         getNavController().handleDeepLink(

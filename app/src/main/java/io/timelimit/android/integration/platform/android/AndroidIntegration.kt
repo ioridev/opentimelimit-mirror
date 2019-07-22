@@ -17,6 +17,7 @@ package io.timelimit.android.integration.platform.android
 
 import android.annotation.TargetApi
 import android.app.ActivityManager
+import android.app.Application
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager
@@ -27,20 +28,27 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import android.media.session.MediaSessionManager
 import android.os.Build
 import android.os.PowerManager
 import android.os.UserManager
 import android.provider.Settings
 import android.util.Log
+import android.view.KeyEvent
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
+import io.timelimit.android.coroutines.runAsyncExpectForever
 import io.timelimit.android.data.model.App
+import io.timelimit.android.data.model.AppActivity
 import io.timelimit.android.integration.platform.*
 import io.timelimit.android.integration.platform.android.foregroundapp.ForegroundAppHelper
 import io.timelimit.android.ui.lock.LockActivity
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.delay
 
 
 class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectionLevel) {
@@ -65,6 +73,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     private val activityManager = this.context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
     private val notificationManager = this.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     private val deviceAdmin = ComponentName(context.applicationContext, AdminReceiver::class.java)
+    private val overlay = OverlayUtil(context as Application)
 
     init {
         AppsChangeListener.registerBroadcastReceiver(this.context, object : BroadcastReceiver() {
@@ -78,8 +87,18 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
         return AndroidIntegrationApps.getLocalApps(context)
     }
 
+    override fun getLocalAppActivities(deviceId: String): Collection<AppActivity> {
+        return AndroidIntegrationApps.getLocalAppActivities(deviceId, context)
+    }
+
     override fun getLocalAppTitle(packageName: String): String? {
         return AndroidIntegrationApps.getAppTitle(packageName, context)
+    }
+
+    override fun getLauncherAppPackageName(): String? {
+        return Intent(Intent.ACTION_MAIN)
+                .addCategory(Intent.CATEGORY_HOME)
+                .resolveActivity(context.packageManager)?.packageName
     }
 
     override fun getAppIcon(packageName: String): Drawable? {
@@ -90,8 +109,8 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
         return AdminStatus.getAdminStatus(context, policyManager)
     }
 
-    override suspend fun getForegroundAppPackageName(): String? {
-        return foregroundAppHelper.getForegroundAppPackage()
+    override suspend fun getForegroundApp(result: ForegroundAppSpec, queryInterval: Long) {
+        foregroundAppHelper.getForegroundApp(result, queryInterval)
     }
 
     override fun getForegroundAppPermissionStatus(): RuntimePermissionStatus {
@@ -128,6 +147,30 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
         }
     }
 
+    override fun getOverlayPermissionStatus(): RuntimePermissionStatus = overlay.getOverlayPermissionStatus()
+
+    override fun isAccessibilityServiceEnabled(): Boolean {
+        val service = context.packageName + "/" + AccessibilityService::class.java.canonicalName
+
+        val accessibilityEnabled = try {
+            Settings.Secure.getInt(context.contentResolver, Settings.Secure.ACCESSIBILITY_ENABLED)
+        } catch (ex: Settings.SettingNotFoundException) {
+            0
+        }
+
+        if (accessibilityEnabled == 1) {
+            val enabledServicesString = Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+
+            if (!enabledServicesString.isNullOrEmpty()) {
+                if (enabledServicesString.split(":").contains(service)) {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
     override fun trySetLockScreenPassword(password: String): Boolean {
         if (BuildConfig.DEBUG) {
             Log.d(LOG_TAG, "set password")
@@ -153,17 +196,55 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     }
 
     private var lastAppStatusMessage: AppStatusMessage? = null
+    private var appStatusMessageChannel = Channel<AppStatusMessage?>(capacity = Channel.CONFLATED)
 
     override fun setAppStatusMessage(message: AppStatusMessage?) {
         if (lastAppStatusMessage != message) {
             lastAppStatusMessage = message
-
-            BackgroundService.setStatusMessage(message, context)
+            appStatusMessageChannel.offer(message)
         }
     }
 
-    override fun showAppLockScreen(currentPackageName: String) {
-        LockActivity.start(context, currentPackageName)
+    init {
+        runAsyncExpectForever {
+            appStatusMessageChannel.consumeEach { message ->
+                BackgroundService.setStatusMessage(message, context)
+
+                delay(200)
+            }
+        }
+    }
+
+    override fun showAppLockScreen(currentPackageName: String, currentActivityName: String?) {
+        LockActivity.start(context, currentPackageName, currentActivityName)
+    }
+
+    override fun muteAudioIfPossible(packageName: String) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (getNotificationAccessPermissionStatus() == NewPermissionStatus.Granted) {
+                val manager = context.getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
+                val sessions = manager.getActiveSessions(ComponentName(context, NotificationListener::class.java))
+                val sessionsOfTheApp = sessions.filter { it.packageName == packageName }
+                sessionsOfTheApp.forEach { session ->
+                    session.dispatchMediaButtonEvent(KeyEvent(
+                            KeyEvent.ACTION_DOWN,
+                            KeyEvent.KEYCODE_MEDIA_STOP
+                    ))
+                    session.dispatchMediaButtonEvent(KeyEvent(
+                            KeyEvent.ACTION_UP,
+                            KeyEvent.KEYCODE_MEDIA_STOP
+                    ))
+                }
+            }
+        }
+    }
+
+    override fun setShowBlockingOverlay(show: Boolean) {
+        if (show) {
+            overlay.show()
+        } else {
+            overlay.hide()
+        }
     }
 
     override fun isScreenOn(): Boolean {
@@ -176,7 +257,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
 
     override fun setShowNotificationToRevokeTemporarilyAllowedApps(show: Boolean) {
         if (show) {
-            NotificationChannels.createAppStatusChannel(notificationManager, context)
+            NotificationChannels.createNotificationChannels(notificationManager, context)
 
             val actionIntent = PendingIntent.getService(
                     context,
@@ -204,6 +285,25 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
         } else {
             notificationManager.cancel(NotificationIds.REVOKE_TEMPORARILY_ALLOWED_APPS)
         }
+    }
+
+    override fun showTimeWarningNotification(title: String, text: String) {
+        NotificationChannels.createNotificationChannels(notificationManager, context)
+
+        notificationManager.notify(
+                NotificationIds.TIME_WARNING,
+                NotificationCompat.Builder(context, NotificationChannels.TIME_WARNING)
+                        .setSmallIcon(R.drawable.ic_stat_timelapse)
+                        .setContentTitle(title)
+                        .setContentText(text)
+                        .setWhen(System.currentTimeMillis())
+                        .setShowWhen(true)
+                        .setLocalOnly(true)
+                        .setAutoCancel(false)
+                        .setOngoing(false)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .build()
+        )
     }
 
     override fun disableDeviceAdmin() {

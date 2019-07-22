@@ -19,6 +19,7 @@ package io.timelimit.android.ui.manage.category.apps.add
 import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
@@ -27,6 +28,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.timelimit.android.R
 import io.timelimit.android.data.Database
+import io.timelimit.android.data.model.App
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.databinding.FragmentAddCategoryAppsBinding
 import io.timelimit.android.extensions.showSafe
@@ -39,6 +41,7 @@ import io.timelimit.android.sync.actions.AddCategoryAppsAction
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.category.ManageCategoryFragmentArgs
+import io.timelimit.android.ui.manage.category.apps.addactivity.AddAppActivitiesDialogFragment
 import io.timelimit.android.ui.view.AppFilterView
 
 class AddCategoryAppsFragment : DialogFragment() {
@@ -166,6 +169,26 @@ class AddCategoryAppsFragment : DialogFragment() {
             )
 
             adapter.notifyDataSetChanged()
+        }
+
+        adapter.listener = object: AddAppAdapterListener {
+            override fun onAppLongClicked(app: App): Boolean {
+                return if (adapter.selectedApps.isEmpty()) {
+                    AddAppActivitiesDialogFragment.newInstance(
+                            childId = params.childId,
+                            categoryId = params.categoryId,
+                            packageName = app.packageName
+                    ).show(fragmentManager!!)
+
+                    dismissAllowingStateLoss()
+
+                    true
+                } else {
+                    Toast.makeText(context, R.string.category_apps_add_dialog_cannot_add_activities_already_sth_selected, Toast.LENGTH_LONG).show()
+
+                    false
+                }
+            }
         }
 
         return AlertDialog.Builder(context!!, R.style.AppTheme)

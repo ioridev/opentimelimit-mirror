@@ -47,6 +47,9 @@ abstract class DeviceDao {
     @Query("UPDATE device SET current_user_id = :userId WHERE id = :deviceId")
     abstract fun updateDeviceUser(deviceId: String, userId: String)
 
+    @Query("UPDATE device SET default_user = :defaultUserId WHERE id = :deviceId")
+    abstract fun updateDeviceDefaultUser(deviceId: String, defaultUserId: String)
+
     @Update
     abstract fun updateDeviceEntry(device: Device)
 

@@ -65,6 +65,10 @@ class AppLogic(
         }
     }.ignoreUnchanged()
 
+    private val foregroundAppQueryInterval = database.config().getForegroundAppQueryIntervalAsync().apply { observeForever {  } }
+    fun getForegroundAppQueryInterval() = foregroundAppQueryInterval.value ?: 0L
+
+    val defaultUserLogic = DefaultUserLogic(this)
     val backgroundTaskLogic = BackgroundTaskLogic(this)
     val appSetupLogic = AppSetupLogic(this)
     private val syncAppsLogic = SyncInstalledAppsLogic(this)

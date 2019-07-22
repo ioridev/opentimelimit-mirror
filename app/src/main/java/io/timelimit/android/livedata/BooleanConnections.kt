@@ -18,14 +18,18 @@ package io.timelimit.android.livedata
 import androidx.lifecycle.LiveData
 
 fun LiveData<Boolean>.or(other: LiveData<Boolean>): LiveData<Boolean> {
-    return mergeLiveData(this, other).map {
-        (it.first != null && it.first == true) || ( it.second != null && it.second == true)
+    return this.switchMap { value1 ->
+        other.map { value2 ->
+            value1 || value2
+        }
     }
 }
 
 fun LiveData<Boolean>.and(other: LiveData<Boolean>): LiveData<Boolean> {
-    return mergeLiveData(this, other).map {
-        (it.first != null && it.first == true) && ( it.second != null && it.second == true)
+    return this.switchMap { value1 ->
+        other.map { value2 ->
+            value1 && value2
+        }
     }
 }
 

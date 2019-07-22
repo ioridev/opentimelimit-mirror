@@ -20,6 +20,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
@@ -35,10 +36,14 @@ import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.livedata.waitForNullableValue
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.ui.contacts.ContactsFragment
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticationFab
+import io.timelimit.android.ui.overview.about.AboutFragment
 import io.timelimit.android.ui.overview.about.AboutFragmentParentHandlers
+import io.timelimit.android.ui.overview.overview.OverviewFragment
 import io.timelimit.android.ui.overview.overview.OverviewFragmentParentHandlers
+import io.timelimit.android.ui.overview.uninstall.UninstallFragment
 import kotlinx.android.synthetic.main.fragment_main.*
 
 class MainFragment : Fragment(), OverviewFragmentParentHandlers, AboutFragmentParentHandlers {
@@ -79,7 +84,7 @@ class MainFragment : Fragment(), OverviewFragmentParentHandlers, AboutFragmentPa
                 }
             }.observe(this, Observer { shouldShowSetup ->
                 if (shouldShowSetup == true) {
-                    pager.post {
+                    fab.post {
                         navigation.safeNavigate(
                                 MainFragmentDirections.actionOverviewFragmentToSetupTermsFragment(),
                                 R.id.overviewFragment
@@ -103,52 +108,41 @@ class MainFragment : Fragment(), OverviewFragmentParentHandlers, AboutFragmentPa
             })
         }
 
-        pager.adapter = adapter
-
-        bottom_navigation_view.setOnNavigationItemSelectedListener {
-            menuItem ->
-
-            pager.currentItem = when(menuItem.itemId) {
-                R.id.main_tab_overview -> 0
-                R.id.main_tab_uninstall -> 1
-                R.id.main_tab_about -> 2
-                else -> 0
-            }
-
-            true
-        }
-
-        fun updateShowFab(selectedPage: Int) {
-            showAuthButtonLive.value = when (selectedPage) {
-                0 -> true
-                1 -> true
-                2 -> false
+        fun updateShowFab(selectedItemId: Int) {
+            showAuthButtonLive.value = when (selectedItemId) {
+                R.id.main_tab_overview -> true
+                R.id.main_tab_contacts -> true
+                R.id.main_tab_uninstall -> true
+                R.id.main_tab_about -> false
                 else -> throw IllegalStateException()
             }
         }
 
-        updateShowFab(pager.currentItem)
+        bottom_navigation_view.setOnNavigationItemReselectedListener { /* ignore */ }
+        bottom_navigation_view.setOnNavigationItemSelectedListener { menuItem ->
+            childFragmentManager.beginTransaction()
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                    .replace(R.id.container, when(menuItem.itemId) {
+                        R.id.main_tab_overview -> OverviewFragment()
+                        R.id.main_tab_contacts -> ContactsFragment()
+                        R.id.main_tab_uninstall -> UninstallFragment()
+                        R.id.main_tab_about -> AboutFragment()
+                        else -> throw IllegalStateException()
+                    })
+                    .commit()
 
-        pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener {
-            override fun onPageScrollStateChanged(state: Int) {
-                // ignore
-            }
+            updateShowFab(menuItem.itemId)
 
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-                // ignore
-            }
+            true
+        }
 
-            override fun onPageSelected(position: Int) {
-                updateShowFab(position)
+        if (childFragmentManager.findFragmentById(R.id.container) == null) {
+            childFragmentManager.beginTransaction()
+                    .replace(R.id.container, OverviewFragment())
+                    .commit()
+        }
 
-                bottom_navigation_view.selectedItemId = when(pager.currentItem) {
-                    0 -> R.id.main_tab_overview
-                    1 -> R.id.main_tab_uninstall
-                    2 -> R.id.main_tab_about
-                    else -> throw IllegalStateException()
-                }
-            }
-        })
+        updateShowFab(bottom_navigation_view.selectedItemId)
     }
 
     override fun openAddUserScreen() {

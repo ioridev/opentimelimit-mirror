@@ -17,6 +17,7 @@ package io.timelimit.android.sync.actions.dispatch
 
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.App
+import io.timelimit.android.data.model.AppActivity
 import io.timelimit.android.data.model.UsedTimeItem
 import io.timelimit.android.integration.platform.NewPermissionStatusUtil
 import io.timelimit.android.integration.platform.ProtectionLevelUtil
@@ -148,6 +149,42 @@ object LocalDatabaseAppLogicActionDispatcher {
                         }
                     }
 
+                    if (action.newOverlayPermission != null) {
+                        if (device.currentOverlayPermission != action.newOverlayPermission) {
+                            device = device.copy(
+                                    currentOverlayPermission = action.newOverlayPermission
+                            )
+
+                            if (RuntimePermissionStatusUtil.toInt(action.newOverlayPermission) > RuntimePermissionStatusUtil.toInt(device.highestOverlayPermission)) {
+                                device = device.copy(
+                                        highestOverlayPermission = action.newOverlayPermission
+                                )
+                            }
+
+                            if (device.currentOverlayPermission != device.highestOverlayPermission) {
+                                device = device.copy(hadManipulation = true)
+                            }
+                        }
+                    }
+
+                    if (action.newAccessibilityServiceEnabled != null) {
+                        if (device.accessibilityServiceEnabled != action.newAccessibilityServiceEnabled) {
+                            device = device.copy(
+                                    accessibilityServiceEnabled = action.newAccessibilityServiceEnabled
+                            )
+
+                            if (action.newAccessibilityServiceEnabled) {
+                                device = device.copy(
+                                        wasAccessibilityServiceEnabled = true
+                                )
+                            }
+
+                            if (device.accessibilityServiceEnabled != device.wasAccessibilityServiceEnabled) {
+                                device = device.copy(hadManipulation = true)
+                            }
+                        }
+                    }
+
                     if (action.newAppVersion != null) {
                         if (device.currentAppVersion != action.newAppVersion) {
                             device = device.copy(
@@ -165,6 +202,10 @@ object LocalDatabaseAppLogicActionDispatcher {
                         device = device.copy(
                                 manipulationDidReboot = true
                         )
+                    }
+
+                    if (action.isQOrLaterNow && !device.qOrLater) {
+                        device = device.copy(qOrLater = true)
                     }
 
                     database.device().updateDeviceEntry(device)
@@ -185,6 +226,52 @@ object LocalDatabaseAppLogicActionDispatcher {
                     )
 
                     manipulationLogic.lockDeviceSync()
+
+                    null
+                }
+                is SignOutAtDeviceAction -> {
+                    val deviceEntry = database.device().getDeviceByIdSync(database.config().getOwnDeviceIdSync()!!)!!
+
+                    if (deviceEntry.defaultUser.isEmpty()) {
+                        throw IllegalStateException("can not sign out without configured default user")
+                    }
+
+                    LocalDatabaseParentActionDispatcher.dispatchParentActionSync(
+                            SetDeviceUserAction(
+                                    deviceId = deviceEntry.id,
+                                    userId = deviceEntry.defaultUser
+                            ),
+                            database
+                    )
+
+                    null
+                }
+                is UpdateAppActivitiesAction -> {
+                    if (action.updatedOrAddedActivities.isNotEmpty()) {
+                        database.appActivity().addAppActivitiesSync(
+                                action.updatedOrAddedActivities.map { item ->
+                                    AppActivity(
+                                            deviceId = deviceId,
+                                            appPackageName = item.packageName,
+                                            activityClassName = item.className,
+                                            title = item.title
+                                    )
+                                }
+                        )
+                    }
+
+                    if (action.removedActivities.isNotEmpty()) {
+                        action.removedActivities.groupBy { it.first }.entries.forEach { item ->
+                            val packageName = item.component1()
+                            val activities = item.component2().map { it.second }
+
+                            database.appActivity().deleteAppActivitiesSync(
+                                    deviceId = deviceId,
+                                    packageName = packageName,
+                                    activities = activities
+                            )
+                        }
+                    }
 
                     null
                 }

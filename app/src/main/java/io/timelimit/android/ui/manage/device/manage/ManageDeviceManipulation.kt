@@ -41,6 +41,8 @@ object ManageDeviceManipulation {
             binding.hasManipulatedDeviceAdmin = device?.manipulationOfProtectionLevel ?: false
             binding.hasManipulatedUsageStatsAccess = device?.manipulationOfUsageStats ?: false
             binding.hasManipulatedNotificationAccess = device?.manipulationOfNotificationAccess ?: false
+            binding.hasManipulatedOverlayPermission = device?.manipulationOfOverlayPermission ?: false
+            binding.hasManipulatedAccessibilityService = device?.manipulationOfAccessibilityService ?: false
             binding.hasManipulationReboot = device?.manipulationDidReboot ?: false
             binding.hasHadManipulation = (device?.hadManipulation ?: false) and (! (device?.hasActiveManipulationWarning ?: false))
             binding.hasAnyManipulation = device?.hasAnyManipulation ?: false
@@ -62,6 +64,8 @@ object ManageDeviceManipulation {
                 binding.deviceAdminDisabledCheckbox,
                 binding.usageAccessCheckbox,
                 binding.notificationAccessCheckbox,
+                binding.overlayPermissionCheckbox,
+                binding.accessibilityServiceCheckbox,
                 binding.rebootCheckbox,
                 binding.hadManipulationCheckbox
         )
@@ -80,6 +84,8 @@ object ManageDeviceManipulation {
                     ignoreNotificationAccessManipulation = binding.notificationAccessCheckbox.isChecked && binding.hasManipulatedNotificationAccess == true,
                     ignoreDeviceAdminManipulationAttempt = binding.deviceAdminDisableAttemptCheckbox.isChecked && binding.hasTriedManipulatingDeviceAdmin == true,
                     ignoreDeviceAdminManipulation = binding.deviceAdminDisabledCheckbox.isChecked && binding.hasManipulatedDeviceAdmin == true,
+                    ignoreOverlayPermissionManipulation = binding.overlayPermissionCheckbox.isChecked && binding.hasManipulatedOverlayPermission == true,
+                    ignoreAccessibilityServiceManipulation = binding.accessibilityServiceCheckbox.isChecked && binding.hasManipulatedAccessibilityService == true,
                     ignoreAppDowngrade = binding.appVersionCheckbox.isChecked && binding.hasManipulatedAppVersion == true,
                     ignoreReboot = binding.rebootCheckbox.isChecked && binding.hasManipulationReboot == true,
                     ignoreHadManipulation = binding.hadManipulationCheckbox.isChecked || (

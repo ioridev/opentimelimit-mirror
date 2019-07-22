@@ -32,12 +32,18 @@ import io.timelimit.android.ui.main.ActivityViewModelHolder
 class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
     companion object {
         private const val EXTRA_PACKAGE_NAME = "packageName"
+        private const val EXTRA_ACTIVITY_NAME = "activityName"
         private const val LOGIN_DIALOG_TAG = "loginDialog"
 
-        fun start(context: Context, packageName: String) {
+        fun start(context: Context, packageName: String, activityName: String?) {
             context.startActivity(
                     Intent(context, LockActivity::class.java)
                             .putExtra(EXTRA_PACKAGE_NAME, packageName)
+                            .apply {
+                                if (activityName != null) {
+                                    putExtra(EXTRA_ACTIVITY_NAME, activityName)
+                                }
+                            }
                             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             .addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
@@ -45,8 +51,17 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
         }
     }
 
+    override var ignoreStop: Boolean = false
+
     val blockedPackageName: String by lazy {
         intent.getStringExtra(EXTRA_PACKAGE_NAME)
+    }
+
+    private val blockedActivityName: String? by lazy {
+        if (intent.hasExtra(EXTRA_ACTIVITY_NAME))
+            intent.getStringExtra(EXTRA_ACTIVITY_NAME)
+        else
+            null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,8 +70,10 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, LockFragment.newInstance(blockedPackageName))
+                    .replace(R.id.container, LockFragment.newInstance(blockedPackageName, blockedActivityName))
                     .commitNow()
+
+            stopMediaPlayback()
         }
     }
 
@@ -83,12 +100,12 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
     override fun onStop() {
         super.onStop()
 
-        if (!isChangingConfigurations) {
+        if ((!isChangingConfigurations) && (!ignoreStop)) {
             getActivityViewModel().logOut()
         }
     }
 
-    fun lockTaskModeWorkaround() {
+    private fun lockTaskModeWorkaround() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val platformIntegration = DefaultAppLogic.with(this).platformIntegration
             val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -103,6 +120,11 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
                 platformIntegration.setSuspendedApps(listOf(blockedPackageName), false)
             }
         }
+    }
+
+    private fun stopMediaPlayback() {
+        val platformIntegration = DefaultAppLogic.with(this).platformIntegration
+        platformIntegration.muteAudioIfPossible(blockedPackageName)
     }
 
     override fun onBackPressed() {

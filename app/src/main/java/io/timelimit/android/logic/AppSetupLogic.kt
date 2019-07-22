@@ -29,6 +29,7 @@ import io.timelimit.android.integration.platform.NewPermissionStatus
 import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
 import io.timelimit.android.ui.user.create.DefaultCategories
+import io.timelimit.android.util.AndroidVersion
 import java.util.*
 
 class AppSetupLogic(private val appLogic: AppLogic) {
@@ -84,7 +85,15 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             manipulationTriedDisablingDeviceAdmin = false,
                             manipulationDidReboot = false,
                             hadManipulation = false,
-                            considerRebootManipulation = false
+                            defaultUser = "",
+                            defaultUserTimeout = 0,
+                            considerRebootManipulation = false,
+                            currentOverlayPermission = RuntimePermissionStatus.NotGranted,
+                            highestOverlayPermission = RuntimePermissionStatus.NotGranted,
+                            accessibilityServiceEnabled = false,
+                            wasAccessibilityServiceEnabled = false,
+                            enableActivityLevelBlocking = false,
+                            qOrLater = AndroidVersion.qOrLater
                     )
 
                     appLogic.database.device().addDeviceSync(device)
@@ -139,7 +148,9 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             blockedMinutesInWeek = ImmutableBitmask((BitSet())),
                             extraTimeInMillis = 0,
                             temporarilyBlocked = false,
-                            parentCategoryId = ""
+                            parentCategoryId = "",
+                            blockAllNotifications = false,
+                            timeWarnings = 0
                     ))
 
                     appLogic.database.category().addCategory(Category(
@@ -149,7 +160,9 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             blockedMinutesInWeek = defaultCategories.allowedGamesBlockedTimes,
                             extraTimeInMillis = 0,
                             temporarilyBlocked = false,
-                            parentCategoryId = ""
+                            parentCategoryId = "",
+                            blockAllNotifications = false,
+                            timeWarnings = 0
                     ))
 
                     // add default allowed apps

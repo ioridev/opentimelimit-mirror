@@ -35,17 +35,19 @@ import io.timelimit.android.logic.*
 class NotificationListener: NotificationListenerService() {
     companion object {
         private const val LOG_TAG = "NotificationListenerLog"
+        private val SUPPORTS_HIDING_ONGOING_NOTIFICATIONS = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
     }
 
     private val appLogic: AppLogic by lazy { DefaultAppLogic.with(this) }
     private val blockingReasonUtil: BlockingReasonUtil by lazy { BlockingReasonUtil(appLogic) }
     private val notificationManager: NotificationManager by lazy { getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
     private val queryAppTitleCache: QueryAppTitleCache by lazy { QueryAppTitleCache(appLogic.platformIntegration) }
+    private val lastOngoingNotificationHidden = mutableSetOf<String>()
 
     override fun onCreate() {
         super.onCreate()
 
-        NotificationChannels.createBlockedNotificationChannel(notificationManager, this)
+        NotificationChannels.createNotificationChannels(notificationManager, this)
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
@@ -58,9 +60,25 @@ class NotificationListener: NotificationListenerService() {
         runAsync {
             val reason = shouldRemoveNotification(sbn)
 
-            if (reason != BlockingReason.None) {
+            if (reason == BlockingReason.None) {
+                if (sbn.isOngoing) {
+                    lastOngoingNotificationHidden.remove(sbn.packageName)
+                }
+            } else {
+                appLogic.platformIntegration.muteAudioIfPossible(sbn.packageName)
+
                 val success = try {
-                    cancelNotification(sbn.key)
+                    if (sbn.isOngoing && SUPPORTS_HIDING_ONGOING_NOTIFICATIONS) {
+                        // only snooze for 5 seconds to show it again soon
+                        snoozeNotification(sbn.key, 5000)
+
+                        if (!lastOngoingNotificationHidden.add(sbn.packageName)) {
+                            // skip showing again a notification that it was blocked
+                            return@runAsync
+                        }
+                    } else {
+                        cancelNotification(sbn.key)
+                    }
 
                     true
                 } catch (ex: SecurityException) {
@@ -91,6 +109,7 @@ class NotificationListener: NotificationListenerService() {
                                                     BlockingReason.TimeOver -> getString(R.string.lock_reason_short_time_over)
                                                     BlockingReason.TimeOverExtraTimeCanBeUsedLater -> getString(R.string.lock_reason_short_time_over)
                                                     BlockingReason.BlockedAtThisTime -> getString(R.string.lock_reason_short_blocked_time_area)
+                                                    BlockingReason.NotificationsAreBlocked -> getString(R.string.lock_reason_short_notification_blocking)
                                                     BlockingReason.None -> throw IllegalStateException()
                                                 }
                                 )
@@ -109,25 +128,41 @@ class NotificationListener: NotificationListenerService() {
     }
 
     private suspend fun shouldRemoveNotification(sbn: StatusBarNotification): BlockingReason {
-        if (sbn.packageName == packageName || sbn.isOngoing) {
+        if (sbn.packageName == packageName) {
             return BlockingReason.None
         }
 
-        val blockingReason = blockingReasonUtil.getBlockingReason(sbn.packageName).waitForNonNullValue()
-
-        if (blockingReason == BlockingReason.None) {
+        if (sbn.isOngoing && (!SUPPORTS_HIDING_ONGOING_NOTIFICATIONS)) {
             return BlockingReason.None
         }
 
-        if (isSystemApp(sbn.packageName) && blockingReason == BlockingReason.NotPartOfAnCategory) {
-            return BlockingReason.None
+        val blockingReason = blockingReasonUtil.getBlockingReason(
+                packageName = sbn.packageName,
+                activityName = null
+        ).waitForNonNullValue()
+
+        if (blockingReason.areNotificationsBlocked) {
+            if (BuildConfig.DEBUG) {
+                Log.d(LOG_TAG, "blocking notification of ${sbn.packageName} because notifications are blocked")
+            }
+
+            return BlockingReason.NotificationsAreBlocked
         }
 
-        if (BuildConfig.DEBUG) {
-            Log.d(LOG_TAG, "blocking notification of ${sbn.packageName} because $blockingReason")
-        }
+        return when (blockingReason) {
+            is NoBlockingReason -> BlockingReason.None
+            is BlockedReasonDetails -> {
+                if (isSystemApp(sbn.packageName) && blockingReason.reason == BlockingReason.NotPartOfAnCategory) {
+                    return BlockingReason.None
+                }
 
-        return blockingReason
+                if (BuildConfig.DEBUG) {
+                    Log.d(LOG_TAG, "blocking notification of ${sbn.packageName} because ${blockingReason.reason}")
+                }
+
+                return blockingReason.reason
+            }
+        }
     }
 
     private fun isSystemApp(packageName: String): Boolean {

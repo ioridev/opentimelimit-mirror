@@ -18,6 +18,7 @@ package io.timelimit.android.ui.setup
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -34,7 +35,7 @@ import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.integration.platform.android.AdminReceiver
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
-import io.timelimit.android.ui.manage.device.manage.InformAboutDeviceOwnerDialogFragment
+import io.timelimit.android.ui.manage.device.manage.permission.InformAboutDeviceOwnerDialogFragment
 
 class SetupDevicePermissionsFragment : Fragment() {
     private val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
@@ -93,6 +94,22 @@ class SetupDevicePermissionsFragment : Fragment() {
                 }
             }
 
+            override fun openDrawOverOtherAppsScreen() {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    startActivity(
+                            Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + context!!.packageName))
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    )
+                }
+            }
+
+            override fun openAccessibilitySettings() {
+                startActivity(
+                        Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            }
+
             override fun gotoNextStep() {
                 navigation.safeNavigate(
                         SetupDevicePermissionsFragmentDirections
@@ -113,6 +130,8 @@ class SetupDevicePermissionsFragment : Fragment() {
         binding.notificationAccessPermission = platform.getNotificationAccessPermissionStatus()
         binding.protectionLevel = platform.getCurrentProtectionLevel()
         binding.usageStatsAccess = platform.getForegroundAppPermissionStatus()
+        binding.overlayPermission = platform.getOverlayPermissionStatus()
+        binding.accessibilityServiceEnabled = platform.isAccessibilityServiceEnabled()
     }
 
     override fun onResume() {
@@ -126,5 +145,7 @@ interface SetupDevicePermissionsHandlers {
     fun manageDeviceAdmin()
     fun openUsageStatsSettings()
     fun openNotificationAccessSettings()
+    fun openDrawOverOtherAppsScreen()
+    fun openAccessibilitySettings()
     fun gotoNextStep()
 }

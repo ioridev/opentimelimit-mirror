@@ -37,7 +37,7 @@ class ActivityViewModel(application: Application): AndroidViewModel(application)
         private const val LOG_TAG = "ActivityViewModel"
     }
 
-    private val logic = DefaultAppLogic.with(application)
+    val logic = DefaultAppLogic.with(application)
     private val database = logic.database
 
     val shouldHighlightAuthenticationButton = MutableLiveData<Boolean>().apply { value = false }
@@ -114,6 +114,8 @@ class ActivityViewModel(application: Application): AndroidViewModel(application)
     fun setAuthenticatedUser(user: AuthenticatedUser) {
         authenticatedUserMetadata.value = user
     }
+
+    fun getAuthenticatedUser() = authenticatedUserMetadata.value
 
     fun logOut() {
         authenticatedUserMetadata.value = null

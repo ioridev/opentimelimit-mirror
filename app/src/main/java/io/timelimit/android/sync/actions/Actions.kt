@@ -74,6 +74,24 @@ data class RemoveInstalledAppsAction(val packageNames: List<String>): AppLogicAc
     }
 }
 
+data class AppActivityItem (
+        val packageName: String,
+        val className: String,
+        val title: String
+)
+data class UpdateAppActivitiesAction(
+        // package name to activity class names
+        val removedActivities: List<Pair<String, String>>,
+        val updatedOrAddedActivities: List<AppActivityItem>
+): AppLogicAction() {
+    init {
+        if (removedActivities.isEmpty() && updatedOrAddedActivities.isEmpty()) {
+            throw IllegalArgumentException("empty action")
+        }
+    }
+}
+object SignOutAtDeviceAction: AppLogicAction()
+
 data class AddCategoryAppsAction(val categoryId: String, val packageNames: List<String>): ParentAction() {
     init {
         IdGenerator.assertIdValid(categoryId)
@@ -126,6 +144,11 @@ data class UpdateCategoryTemporarilyBlockedAction(val categoryId: String, val bl
         IdGenerator.assertIdValid(categoryId)
     }
 }
+data class UpdateCategoryTimeWarningsAction(val categoryId: String, val enable: Boolean, val flags: Int): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(categoryId)
+    }
+}
 data class SetCategoryForUnassignedApps(val childId: String, val categoryId: String): ParentAction() {
     // category id can be empty
 
@@ -155,16 +178,22 @@ data class UpdateDeviceStatusAction(
         val newProtectionLevel: ProtectionLevel?,
         val newUsageStatsPermissionStatus: RuntimePermissionStatus?,
         val newNotificationAccessPermission: NewPermissionStatus?,
+        val newOverlayPermission: RuntimePermissionStatus?,
+        val newAccessibilityServiceEnabled: Boolean?,
         val newAppVersion: Int?,
-        val didReboot: Boolean
+        val didReboot: Boolean,
+        val isQOrLaterNow: Boolean
 ): AppLogicAction() {
     companion object {
         val empty = UpdateDeviceStatusAction(
                 newProtectionLevel = null,
                 newUsageStatsPermissionStatus = null,
                 newNotificationAccessPermission = null,
+                newOverlayPermission = null,
+                newAccessibilityServiceEnabled = null,
                 newAppVersion = null,
-                didReboot = false
+                didReboot = false,
+                isQOrLaterNow = false
         )
     }
 
@@ -182,6 +211,8 @@ data class IgnoreManipulationAction(
         val ignoreAppDowngrade: Boolean,
         val ignoreNotificationAccessManipulation: Boolean,
         val ignoreUsageStatsAccessManipulation: Boolean,
+        val ignoreOverlayPermissionManipulation: Boolean,
+        val ignoreAccessibilityServiceManipulation: Boolean,
         val ignoreReboot: Boolean,
         val ignoreHadManipulation: Boolean
 ): ParentAction() {
@@ -211,13 +242,45 @@ data class SetDeviceUserAction(val deviceId: String, val userId: String): Parent
     }
 }
 
+data class SetDeviceDefaultUserAction(val deviceId: String, val defaultUserId: String): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(deviceId)
+
+        if (defaultUserId.isNotEmpty()) {
+            IdGenerator.assertIdValid(defaultUserId)
+        }
+    }
+}
+
+data class SetDeviceDefaultUserTimeoutAction(val deviceId: String, val timeout: Int): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(deviceId)
+
+        if (timeout < 0) {
+            throw IllegalArgumentException("can not set a negative default user timeout")
+        }
+    }
+}
+
 data class SetConsiderRebootManipulationAction(val deviceId: String, val considerRebootManipulation: Boolean): ParentAction() {
     init {
         IdGenerator.assertIdValid(deviceId)
     }
 }
 
+data class UpdateEnableActivityLevelBlocking(val deviceId: String, val enable: Boolean): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(deviceId)
+    }
+}
+
 data class UpdateCategoryBlockedTimesAction(val categoryId: String, val blockedTimes: ImmutableBitmask): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(categoryId)
+    }
+}
+
+data class UpdateCategoryBlockAllNotificationsAction(val categoryId: String, val blocked: Boolean): ParentAction() {
     init {
         IdGenerator.assertIdValid(categoryId)
     }

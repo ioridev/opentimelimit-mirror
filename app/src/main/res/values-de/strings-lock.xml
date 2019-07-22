@@ -43,16 +43,16 @@
         Die App wurde zu keiner Kategorie zugeordnet. Das bedeutet, dass es keine Einschränkungs-Einstellungen gibt. Und da ist es die einfachste Lösung, die App zu sperren.
     </string>
     <string name="lock_reason_temporarily_blocked">
-        Diese App ist in einer Kategorie, die vorübergehend gesperrt wurde.
+        Diese %s ist in einer Kategorie, die vorübergehend gesperrt wurde.
     </string>
     <string name="lock_reason_blocked_time">
-        Diese App ist in einer Kategorie, für die festgelegt wurde, dass Sie zu dieser Uhrzeit gesperrt ist.
+        Diese %s ist in einer Kategorie, für die festgelegt wurde, dass Sie zu dieser Uhrzeit gesperrt ist.
     </string>
     <string name="lock_reason_time_over">
-        Diese App ist in einer Kategorie, deren maximale Nutzungszeit erreicht wurde.
+        Diese %s ist in einer Kategorie, deren maximale Nutzungszeit erreicht wurde.
     </string>
     <string name="lock_reason_time_over_etra_time_can_be_used_later">
-        Diese App ist in einer Kategorie, deren maximale Nutzungszeit erreicht wurde.
+        Diese %s ist in einer Kategorie, deren maximale Nutzungszeit erreicht wurde.
         Es gab noch Extra-Zeit, aber die maximale Nutzung der Extra-Zeit wurde erreicht.
     </string>
 
@@ -60,4 +60,10 @@
     <string name="lock_reason_short_temporarily_blocked">vorübergehend gesperrt</string>
     <string name="lock_reason_short_time_over">Zeit verbraucht</string>
     <string name="lock_reason_short_blocked_time_area">Sperrzeit</string>
+    <string name="lock_reason_short_notification_blocking">alle Benachrichtigungen werden blockiert</string>
+
+    <string name="lock_overlay_warning">
+        Öffnen des Sperrbildschirms fehlgeschlagen.
+        Versuche es, den Home- oder Anwendungslisten-Button zu verwenden, um diesen Bildschirm zu verlassen.
+    </string>
 </resources>

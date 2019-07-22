@@ -1,2 +1,3 @@
-- Abschaltung vom Passwortschutz möglich
-- keine Passwortabfrage, wenn nur ein Elternteil ohne Passwort existiert
+- Zeitwarnungen
+- Kontakt-Whitelist
+- Sperren auf Activity-Ebene

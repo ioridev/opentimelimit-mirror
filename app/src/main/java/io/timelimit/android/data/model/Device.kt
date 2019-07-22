@@ -65,8 +65,24 @@ data class Device(
         val manipulationDidReboot: Boolean,
         @ColumnInfo(name = "had_manipulation")
         val hadManipulation: Boolean,
+        @ColumnInfo(name = "default_user")
+        val defaultUser: String,
+        @ColumnInfo(name = "default_user_timeout")
+        val defaultUserTimeout: Int,
         @ColumnInfo(name = "consider_reboot_manipulation")
-        val considerRebootManipulation: Boolean
+        val considerRebootManipulation: Boolean,
+        @ColumnInfo(name = "current_overlay_permission")
+        val currentOverlayPermission: RuntimePermissionStatus,
+        @ColumnInfo(name = "highest_overlay_permission")
+        val highestOverlayPermission: RuntimePermissionStatus,
+        @ColumnInfo(name = "current_accessibility_service_permission")
+        val accessibilityServiceEnabled: Boolean,
+        @ColumnInfo(name = "was_accessibility_service_permission")
+        val wasAccessibilityServiceEnabled: Boolean,
+        @ColumnInfo(name = "enable_activity_level_blocking")
+        val enableActivityLevelBlocking: Boolean,
+        @ColumnInfo(name = "q_or_later")
+        val qOrLater: Boolean
 ): JsonSerializable {
     companion object {
         private const val ID = "id"
@@ -85,7 +101,15 @@ data class Device(
         private const val TRIED_DISABLING_DEVICE_ADMIN = "tdda"
         private const val MANIPULATION_DID_REBOOT = "mdr"
         private const val HAD_MANIPULATION = "hm"
+        private const val DEFAULT_USER = "du"
+        private const val DEFAULT_USER_TIMEOUT = "dut"
         private const val CONSIDER_REBOOT_A_MANIPULATION = "cram"
+        private const val CURRENT_OVERLAY_PERMISSION = "cop"
+        private const val HIGHEST_OVERLAY_PERMISSION = "hop"
+        private const val ACCESSIBILITY_SERVICE_ENABLED = "ase"
+        private const val WAS_ACCESSIBILITY_SERVICE_ENABLED = "wase"
+        private const val ENABLE_ACTIVITY_LEVEL_BLOCKING = "ealb"
+        private const val Q_OR_LATER = "qol"
 
         fun parse(reader: JsonReader): Device {
             var id: String? = null
@@ -104,7 +128,15 @@ data class Device(
             var manipulationTriedDisablingDeviceAdmin: Boolean? = null
             var manipulationDidReboot: Boolean = false
             var hadManipulation: Boolean? = null
+            var defaultUser = ""
+            var defaultUserTimeout = 0
             var considerRebootManipulation = false
+            var currentOverlayPermission = RuntimePermissionStatus.NotGranted
+            var highestOverlayPermission = RuntimePermissionStatus.NotGranted
+            var accessibilityServiceEnabled = false
+            var wasAccessibilityServiceEnabled = false
+            var enableActivityLevelBlocking = false
+            var qOrLater = false
 
             reader.beginObject()
 
@@ -126,7 +158,15 @@ data class Device(
                     TRIED_DISABLING_DEVICE_ADMIN -> manipulationTriedDisablingDeviceAdmin = reader.nextBoolean()
                     MANIPULATION_DID_REBOOT -> manipulationDidReboot = reader.nextBoolean()
                     HAD_MANIPULATION -> hadManipulation = reader.nextBoolean()
+                    DEFAULT_USER -> defaultUser = reader.nextString()
+                    DEFAULT_USER_TIMEOUT -> defaultUserTimeout = reader.nextInt()
                     CONSIDER_REBOOT_A_MANIPULATION -> considerRebootManipulation = reader.nextBoolean()
+                    CURRENT_OVERLAY_PERMISSION -> currentOverlayPermission = RuntimePermissionStatusUtil.parse(reader.nextString())
+                    HIGHEST_OVERLAY_PERMISSION -> highestOverlayPermission = RuntimePermissionStatusUtil.parse(reader.nextString())
+                    ACCESSIBILITY_SERVICE_ENABLED -> accessibilityServiceEnabled = reader.nextBoolean()
+                    WAS_ACCESSIBILITY_SERVICE_ENABLED -> wasAccessibilityServiceEnabled = reader.nextBoolean()
+                    ENABLE_ACTIVITY_LEVEL_BLOCKING -> enableActivityLevelBlocking = reader.nextBoolean()
+                    Q_OR_LATER -> qOrLater = reader.nextBoolean()
                     else -> reader.skipValue()
                 }
             }
@@ -150,7 +190,15 @@ data class Device(
                     manipulationTriedDisablingDeviceAdmin = manipulationTriedDisablingDeviceAdmin!!,
                     manipulationDidReboot = manipulationDidReboot,
                     hadManipulation = hadManipulation!!,
-                    considerRebootManipulation = considerRebootManipulation
+                    defaultUser = defaultUser,
+                    defaultUserTimeout = defaultUserTimeout,
+                    considerRebootManipulation = considerRebootManipulation,
+                    currentOverlayPermission = currentOverlayPermission,
+                    highestOverlayPermission = highestOverlayPermission,
+                    accessibilityServiceEnabled = accessibilityServiceEnabled,
+                    wasAccessibilityServiceEnabled = wasAccessibilityServiceEnabled,
+                    enableActivityLevelBlocking = enableActivityLevelBlocking,
+                    qOrLater = qOrLater
             )
         }
     }
@@ -198,7 +246,15 @@ data class Device(
         writer.name(TRIED_DISABLING_DEVICE_ADMIN).value(manipulationTriedDisablingDeviceAdmin)
         writer.name(MANIPULATION_DID_REBOOT).value(manipulationDidReboot)
         writer.name(HAD_MANIPULATION).value(hadManipulation)
+        writer.name(DEFAULT_USER).value(defaultUser)
+        writer.name(DEFAULT_USER_TIMEOUT).value(defaultUserTimeout)
         writer.name(CONSIDER_REBOOT_A_MANIPULATION).value(considerRebootManipulation)
+        writer.name(CURRENT_OVERLAY_PERMISSION).value(RuntimePermissionStatusUtil.serialize(currentOverlayPermission))
+        writer.name(HIGHEST_OVERLAY_PERMISSION).value(RuntimePermissionStatusUtil.serialize(highestOverlayPermission))
+        writer.name(ACCESSIBILITY_SERVICE_ENABLED).value(accessibilityServiceEnabled)
+        writer.name(WAS_ACCESSIBILITY_SERVICE_ENABLED).value(wasAccessibilityServiceEnabled)
+        writer.name(ENABLE_ACTIVITY_LEVEL_BLOCKING).value(enableActivityLevelBlocking)
+        writer.name(Q_OR_LATER).value(qOrLater)
 
         writer.endObject()
     }
@@ -211,6 +267,10 @@ data class Device(
     val manipulationOfNotificationAccess = currentNotificationAccessPermission != highestNotificationAccessPermission
     @Transient
     val manipulationOfAppVersion = currentAppVersion != highestAppVersion
+    @Transient
+    val manipulationOfOverlayPermission = currentOverlayPermission != highestOverlayPermission
+    @Transient
+    val manipulationOfAccessibilityService = accessibilityServiceEnabled != wasAccessibilityServiceEnabled
 
     @Transient
     val hasActiveManipulationWarning = manipulationOfProtectionLevel ||
@@ -218,8 +278,16 @@ data class Device(
             manipulationOfNotificationAccess ||
             manipulationOfAppVersion ||
             manipulationTriedDisablingDeviceAdmin ||
-            manipulationDidReboot
+            manipulationDidReboot ||
+            manipulationOfOverlayPermission ||
+            manipulationOfAccessibilityService
 
     @Transient
     val hasAnyManipulation = hasActiveManipulationWarning || hadManipulation
+
+    @Transient
+    val missingPermissionAtQOrLater = qOrLater &&
+            (!accessibilityServiceEnabled) &&
+            (currentOverlayPermission != RuntimePermissionStatus.Granted) &&
+            (currentProtectionLevel != ProtectionLevel.DeviceOwner)
 }

@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import com.google.android.material.snackbar.Snackbar
 import io.timelimit.android.R
+import io.timelimit.android.async.Threads
 import io.timelimit.android.databinding.FragmentCategorySettingsBinding
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
@@ -30,6 +31,7 @@ import io.timelimit.android.sync.actions.SetCategoryExtraTimeAction
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.category.ManageCategoryFragmentArgs
+import io.timelimit.android.ui.view.SelectTimeSpanViewListener
 
 class CategorySettingsFragment : Fragment() {
     companion object {
@@ -68,6 +70,20 @@ class CategorySettingsFragment : Fragment() {
                 auth = auth
         )
 
+        CategoryNotificationFilter.bind(
+                view = binding.notificationFilter,
+                lifecycleOwner = this,
+                auth = auth,
+                categoryLive = categoryEntry
+        )
+
+        CategoryTimeWarningView.bind(
+                view = binding.timeWarnings,
+                auth = auth,
+                categoryLive = categoryEntry,
+                lifecycleOwner = this
+        )
+
         binding.btnDeleteCategory.setOnClickListener { deleteCategory() }
         binding.editCategoryTitleGo.setOnClickListener { renameCategory() }
 
@@ -82,6 +98,8 @@ class CategorySettingsFragment : Fragment() {
         })
 
         binding.extraTimeBtnOk.setOnClickListener {
+            binding.extraTimeSelection.clearNumberPickerFocus()
+
             val newExtraTime = binding.extraTimeSelection.timeInMillis
 
             if (
@@ -93,6 +111,22 @@ class CategorySettingsFragment : Fragment() {
                     )
             ) {
                 Snackbar.make(binding.root, R.string.category_settings_extra_time_change_toast, Snackbar.LENGTH_SHORT).show()
+            }
+        }
+
+        appLogic.database.config().getEnableAlternativeDurationSelectionAsync().observe(this, Observer {
+            binding.extraTimeSelection.enablePickerMode(it)
+        })
+
+        binding.extraTimeSelection.listener = object: SelectTimeSpanViewListener {
+            override fun onTimeSpanChanged(newTimeInMillis: Long) {
+                // ignore
+            }
+
+            override fun setEnablePickerMode(enable: Boolean) {
+                Threads.database.execute {
+                    appLogic.database.config().setEnableAlternativeDurationSelectionSync(enable)
+                }
             }
         }
 

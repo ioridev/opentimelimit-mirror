@@ -1,2 +1,3 @@
-- allow disabling the password protection
-- no password prompt if there is only one parent user without password
+- time warnings
+- contact whitelist
+- blocking at activity level

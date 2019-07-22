@@ -16,6 +16,7 @@
 package io.timelimit.android.ui.lock
 
 import android.content.Intent
+import android.database.sqlite.SQLiteConstraintException
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -36,10 +37,7 @@ import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.databinding.LockFragmentBinding
 import io.timelimit.android.livedata.*
-import io.timelimit.android.logic.AppLogic
-import io.timelimit.android.logic.BlockingReason
-import io.timelimit.android.logic.BlockingReasonUtil
-import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.logic.*
 import io.timelimit.android.sync.actions.AddCategoryAppsAction
 import io.timelimit.android.sync.actions.IncrementCategoryExtraTimeAction
 import io.timelimit.android.sync.actions.UpdateCategoryTemporarilyBlockedAction
@@ -50,27 +48,39 @@ import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.child.ManageChildFragmentArgs
 import io.timelimit.android.ui.manage.child.advanced.managedisabletimelimits.ManageDisableTimelimitsViewHelper
 import io.timelimit.android.ui.manage.child.category.create.CreateCategoryDialogFragment
+import io.timelimit.android.ui.view.SelectTimeSpanViewListener
 
 class LockFragment : Fragment() {
     companion object {
         private const val EXTRA_PACKAGE_NAME = "packageName"
+        private const val EXTRA_ACTIVITY = "activitiy"
 
-        fun newInstance(packageName: String): LockFragment {
+        fun newInstance(packageName: String, activity: String?): LockFragment {
             val result = LockFragment()
             val arguments = Bundle()
 
             arguments.putString(EXTRA_PACKAGE_NAME, packageName)
+
+            if (activity != null) {
+                arguments.putString(EXTRA_ACTIVITY, activity)
+            }
 
             result.arguments = arguments
             return result
         }
     }
 
-    private val packageName: String by lazy { arguments!!.getString(EXTRA_PACKAGE_NAME) }
+    private val packageName: String by lazy { arguments!!.getString(EXTRA_PACKAGE_NAME)!! }
+    private val activityName: String? by lazy {
+        if (arguments!!.containsKey(EXTRA_ACTIVITY))
+            arguments!!.getString(EXTRA_ACTIVITY)
+        else
+            null
+    }
     private val auth: ActivityViewModel by lazy { getActivityViewModel(activity!!) }
     private val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
     private val title: String? by lazy { logic.platformIntegration.getLocalAppTitle(packageName) }
-    private val blockingReason: LiveData<BlockingReason> by lazy { BlockingReasonUtil(logic).getBlockingReason(packageName) }
+    private val blockingReason: LiveData<BlockingReasonDetail> by lazy { BlockingReasonUtil(logic).getBlockingReason(packageName, activityName) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = LockFragmentBinding.inflate(layoutInflater, container, false)
@@ -83,7 +93,13 @@ class LockFragment : Fragment() {
                 doesSupportAuth = liveDataFromValue(true)
         )
 
+        val enableActivityLevelBlocking = logic.deviceEntry.map { it?.enableActivityLevelBlocking ?: false }
+
         binding.packageName = packageName
+
+        enableActivityLevelBlocking.observe(this, Observer {
+            binding.activityName = if (it) activityName?.removePrefix(packageName) else null
+        })
 
         if (title != null) {
             binding.appTitle = title
@@ -94,11 +110,16 @@ class LockFragment : Fragment() {
         binding.appIcon.setImageDrawable(logic.platformIntegration.getAppIcon(packageName))
 
         blockingReason.observe(this, Observer {
-            if (it == BlockingReason.None) {
-                activity!!.finish()
-            } else {
-                binding.reason = it
-            }
+            when (it) {
+                is NoBlockingReason -> activity!!.finish()
+                is BlockedReasonDetails -> {
+                    binding.reason = it.reason
+                    binding.blockedKindLabel = when (it.level) {
+                        BlockingLevel.Activity -> "Activity"
+                        BlockingLevel.App -> "App"
+                    }
+                }
+            }.let { /* require handling all cases */ }
         })
 
         val categories = logic.deviceUserEntry.switchMap {
@@ -124,13 +145,14 @@ class LockFragment : Fragment() {
             } else {
                 val (_, categoryItems) = status
 
-                Transformations.map(logic.database.categoryApp().getCategoryApp(
-                        categoryItems.map { it.id },
-                        packageName
-                )) {
-                    appEntry ->
-
-                    categoryItems.find { it.id == appEntry?.categoryId }
+                blockingReason.map { reason ->
+                    if (reason is BlockedReasonDetails) {
+                        reason.categoryId
+                    } else {
+                        null
+                    }
+                }.map { categoryId ->
+                    categoryItems.find { it.id == categoryId }
                 }
             }
         }
@@ -196,6 +218,8 @@ class LockFragment : Fragment() {
                     if (extraTimeToAdd > 0) {
                         binding.extraTimeBtnOk.isEnabled = false
 
+                        binding.extraTimeSelection.clearNumberPickerFocus()
+
                         val categoryId = appCategory.waitForNullableValue()?.id
 
                         if (categoryId != null) {
@@ -212,6 +236,22 @@ class LockFragment : Fragment() {
                 }
             } else {
                 auth.requestAuthentication()
+            }
+        }
+
+        logic.database.config().getEnableAlternativeDurationSelectionAsync().observe(this, Observer {
+            binding.extraTimeSelection.enablePickerMode(it)
+        })
+
+        binding.extraTimeSelection.listener = object: SelectTimeSpanViewListener {
+            override fun onTimeSpanChanged(newTimeInMillis: Long) {
+                // ignore
+            }
+
+            override fun setEnablePickerMode(enable: Boolean) {
+                Threads.database.execute {
+                    logic.database.config().setEnableAlternativeDurationSelectionSync(enable)
+                }
             }
         }
 
@@ -267,9 +307,16 @@ class LockFragment : Fragment() {
                             logic.platformIntegration.setSuspendedApps(listOf(packageName), false)
 
                             Threads.database.executeAndWait(Runnable {
-                                database.temporarilyAllowedApp().addTemporarilyAllowedAppSync(TemporarilyAllowedApp(
-                                        packageName = packageName
-                                ))
+                                try {
+                                    database.temporarilyAllowedApp().addTemporarilyAllowedAppSync(TemporarilyAllowedApp(
+                                            packageName = packageName
+                                    ))
+                                } catch (ex: SQLiteConstraintException) {
+                                    // ignore this
+                                    //
+                                    // this happens when touching that option more than once very fast
+                                    // or if the device is under load
+                                }
                             })
                         }
                     }
