@@ -18,9 +18,6 @@
     <string name="about_version">Version %s</string>
 
     <string name="about_source_title">Quelltext</string>
-    <string name="about_source_text">
-        <a href="https://gitlab.com/timelimit.io/opentimelimit-android">https://gitlab.com/timelimit.io/opentimelimit-android</a>
-    </string>
 
     <string name="about_contained_software_title">enthaltene Software</string>
 

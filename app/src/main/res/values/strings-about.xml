@@ -18,8 +18,8 @@
     <string name="about_version">Version %s</string>
 
     <string name="about_source_title">Source code</string>
-    <string name="about_source_text">
-        <a href="https://gitlab.com/timelimit.io/opentimelimit-android">https://gitlab.com/timelimit.io/opentimelimit-android</a>
+    <string name="about_source_text" translatable="false">
+        <a href="https://codeberg.org/timelimit/opentimelimit-android">https://codeberg.org/timelimit/opentimelimit-android</a>
     </string>
 
     <string name="about_contained_software_title">contained Software</string>
