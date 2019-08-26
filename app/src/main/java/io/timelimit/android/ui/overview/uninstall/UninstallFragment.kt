@@ -20,10 +20,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.databinding.FragmentUninstallBinding
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.ui.backdoor.BackdoorDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 
@@ -38,21 +38,18 @@ class UninstallFragment : Fragment() {
         binding.checkConfirm.setOnCheckedChangeListener { _, isChecked -> binding.uninstall.isEnabled = isChecked }
 
         binding.uninstall.setOnClickListener { reset(revokePermissions = binding.checkPermissions.isChecked) }
+        binding.checkConfirm.setOnLongClickListener {
+            BackdoorDialogFragment().show(fragmentManager!!)
+
+            true
+        }
 
         return binding.root
     }
 
     private fun reset(revokePermissions: Boolean) {
         if (auth.requestAuthenticationOrReturnTrue()) {
-            logic.platformIntegration.setEnableSystemLockdown(false)
-
-            if (revokePermissions) {
-                logic.platformIntegration.disableDeviceAdmin()
-            }
-
-            runAsync {
-                logic.appSetupLogic.dangerousResetApp()
-            }
+            logic.appSetupLogic.resetAppCompletely(revokePermissions = revokePermissions)
         }
     }
 }

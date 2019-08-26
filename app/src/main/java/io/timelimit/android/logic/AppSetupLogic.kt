@@ -20,6 +20,7 @@ import com.jaredrummler.android.device.DeviceName
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
+import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.crypto.PasswordHashing
 import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.backup.DatabaseBackup
@@ -190,6 +191,18 @@ class AppSetupLogic(private val appLogic: AppLogic) {
         })
 
         DatabaseBackup.with(appLogic.context).tryCreateDatabaseBackupAsync()
+    }
+
+    fun resetAppCompletely(revokePermissions: Boolean = false) {
+        appLogic.platformIntegration.setEnableSystemLockdown(false)
+
+        if (revokePermissions) {
+            appLogic.platformIntegration.disableDeviceAdmin()
+        }
+
+        runAsync {
+            appLogic.appSetupLogic.dangerousResetApp()
+        }
     }
 
     suspend fun dangerousResetApp() {
