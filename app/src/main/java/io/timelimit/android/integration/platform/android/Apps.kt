@@ -46,6 +46,12 @@ object AndroidIntegrationApps {
         ignoredApps.add("com.android.nfc")
     }
 
+    private val ignoredActivities = setOf<String>(
+            "com.android.settings:com.android.settings.enterprise.ActionDisabledByAdminDialog"
+    )
+
+    fun shouldIgnoreActivity(packageName: String, activityName: String) = ignoredActivities.contains("$packageName:$activityName")
+
     fun getLocalApps(context: Context): Collection<App> {
         val packageManager = context.packageManager
 

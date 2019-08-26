@@ -38,6 +38,8 @@ class DummyIntegration(
         return localApps
     }
 
+    override fun getLocalAppPackageNames(): List<String> = localApps.map { it.packageName }
+
     override fun getLocalAppActivities(deviceId: String): Collection<AppActivity> {
         return emptySet()
     }

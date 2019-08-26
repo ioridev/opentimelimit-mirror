@@ -73,6 +73,7 @@ class AppLogic(
     val appSetupLogic = AppSetupLogic(this)
     private val syncAppsLogic = SyncInstalledAppsLogic(this)
     val manipulationLogic = ManipulationLogic(this)
+    val suspendAppsLogic = SuspendAppsLogic(this)
 
     fun shutdown() {
         enable.value = false

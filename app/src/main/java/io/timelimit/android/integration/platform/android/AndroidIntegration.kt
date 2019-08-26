@@ -88,6 +88,8 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
         return AndroidIntegrationApps.getLocalApps(context)
     }
 
+    override fun getLocalAppPackageNames(): List<String> = context.packageManager.getInstalledApplications(0).map { it.packageName }
+
     override fun getLocalAppActivities(deviceId: String): Collection<AppActivity> {
         return AndroidIntegrationApps.getLocalAppActivities(deviceId, context)
     }
@@ -395,7 +397,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     }
 
     override fun stopSuspendingForAllApps() {
-        setSuspendedApps(context.packageManager.getInstalledApplications(0).map { it.packageName }, false)
+        setSuspendedApps(getLocalAppPackageNames(), false)
     }
 
     override fun setLockTaskPackages(packageNames: List<String>): Boolean {

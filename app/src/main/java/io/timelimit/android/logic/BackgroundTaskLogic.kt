@@ -266,7 +266,9 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                     appLogic.platformIntegration.setShowBlockingOverlay(false)
                 } else if (
                         (foregroundAppPackageName == BuildConfig.APPLICATION_ID) ||
-                        (foregroundAppPackageName != null && AndroidIntegrationApps.ignoredApps.contains(foregroundAppPackageName))) {
+                        (foregroundAppPackageName != null && AndroidIntegrationApps.ignoredApps.contains(foregroundAppPackageName)) ||
+                        (foregroundAppPackageName != null && foregroundAppActivityName != null && AndroidIntegrationApps.shouldIgnoreActivity(foregroundAppPackageName, foregroundAppActivityName))
+                ) {
                     usedTimeUpdateHelper?.commit(appLogic)
                     showStatusMessageWithCurrentAppTitle(
                             text = appLogic.context.getString(R.string.background_logic_whitelisted)

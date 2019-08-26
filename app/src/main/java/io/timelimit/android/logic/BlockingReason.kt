@@ -334,7 +334,7 @@ class BlockingReasonUtil(private val appLogic: AppLogic) {
         }
     }
 
-    private fun getTemporarilyTrustedTimeInMillis(): LiveData<Long?> {
+    fun getTemporarilyTrustedTimeInMillis(): LiveData<Long?> {
         return liveDataFromFunction {
             appLogic.timeApi.getCurrentTimeInMillis()
         }
@@ -380,7 +380,7 @@ class BlockingReasonUtil(private val appLogic: AppLogic) {
         }.ignoreUnchanged()
     }
 
-    private fun getTrustedDateLive(timeZone: TimeZone): LiveData<DateInTimezone> {
+    fun getTrustedDateLive(timeZone: TimeZone): LiveData<DateInTimezone> {
         return object: LiveData<DateInTimezone>() {
             fun update() {
                 val timeInMillis = appLogic.timeApi.getCurrentTimeInMillis()
