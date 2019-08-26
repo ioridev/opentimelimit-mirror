@@ -28,4 +28,10 @@
     <string name="diagnose_fga_title">Foreground-App-Detection</string>
     <string name="diagnose_fga_query_range">Requested time range</string>
     <string name="diagnose_fga_query_range_min">Minimum (Default)</string>
+
+
+    <string name="diagnose_exf_title">Experimental flags</string>
+    <string name="diagnose_exf_lom">Disable locking after manipulations</string>
+    <string name="diagnose_exf_slb">Block Apps at system level</string>
+    <string name="diagnose_exf_mau">Annoy user after manipulation</string>
 </resources>

@@ -80,7 +80,8 @@ enum class ConfigurationItemType {
     WasDeviceLocked,
     ForegroundAppQueryRange,
     EnableAlternativeDurationSelection,
-    LastScreenOnTime
+    LastScreenOnTime,
+    ExperimentalFlags
 }
 
 object ConfigurationItemTypeUtil {
@@ -90,6 +91,7 @@ object ConfigurationItemTypeUtil {
     private const val FOREGROUND_APP_QUERY_RANGE = 4
     private const val ENABLE_ALTERNATIVE_DURATION_SELECTION = 5
     private const val LAST_SCREEN_ON_TIME = 6
+    private const val EXPERIMENTAL_FLAGS = 7
 
     val TYPES = listOf(
             ConfigurationItemType.OwnDeviceId,
@@ -97,7 +99,8 @@ object ConfigurationItemTypeUtil {
             ConfigurationItemType.WasDeviceLocked,
             ConfigurationItemType.ForegroundAppQueryRange,
             ConfigurationItemType.EnableAlternativeDurationSelection,
-            ConfigurationItemType.LastScreenOnTime
+            ConfigurationItemType.LastScreenOnTime,
+            ConfigurationItemType.ExperimentalFlags
     )
 
     fun serialize(value: ConfigurationItemType) = when(value) {
@@ -107,6 +110,7 @@ object ConfigurationItemTypeUtil {
         ConfigurationItemType.ForegroundAppQueryRange -> FOREGROUND_APP_QUERY_RANGE
         ConfigurationItemType.EnableAlternativeDurationSelection -> ENABLE_ALTERNATIVE_DURATION_SELECTION
         ConfigurationItemType.LastScreenOnTime -> LAST_SCREEN_ON_TIME
+        ConfigurationItemType.ExperimentalFlags -> EXPERIMENTAL_FLAGS
     }
 
     fun parse(value: Int) = when(value) {
@@ -116,6 +120,7 @@ object ConfigurationItemTypeUtil {
         FOREGROUND_APP_QUERY_RANGE -> ConfigurationItemType.ForegroundAppQueryRange
         ENABLE_ALTERNATIVE_DURATION_SELECTION -> ConfigurationItemType.EnableAlternativeDurationSelection
         LAST_SCREEN_ON_TIME -> ConfigurationItemType.LastScreenOnTime
+        EXPERIMENTAL_FLAGS -> ConfigurationItemType.ExperimentalFlags
         else -> throw IllegalArgumentException()
     }
 }
@@ -135,4 +140,11 @@ object HintsToShow {
     const val TIME_LIMIT_RULE_INTRODUCTION = 8L
     const val CONTACTS_INTRO = 16L
     const val TIMELIMIT_RULE_MUSTREAD = 32L
+}
+
+object ExperimentalFlags {
+    const val DISABLE_BLOCK_ON_MANIPULATION = 1L
+    const val SYSTEM_LEVEL_BLOCKING = 2L
+    const val MANIPULATION_ANNOY_USER_ONLY = 4L
+    const val MANIPULATION_ANNOY_USER = MANIPULATION_ANNOY_USER_ONLY or DISABLE_BLOCK_ON_MANIPULATION // otherwise there would be a conflict between both features
 }

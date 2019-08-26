@@ -127,4 +127,42 @@ abstract class ConfigDao {
 
     fun setLastScreenOnTime(time: Long) = updateValueSync(ConfigurationItemType.LastScreenOnTime, time.toString())
     fun getLastScreenOnTime() = getValueOfKeySync(ConfigurationItemType.LastScreenOnTime)?.toLong() ?: 0L
+
+    protected fun getExperimentalFlagsLive(): LiveData<Long> {
+        return getValueOfKeyAsync(ConfigurationItemType.ExperimentalFlags).map {
+            if (it == null) {
+                0
+            } else {
+                it.toLong(16)
+            }
+        }
+    }
+
+    val experimentalFlags: LiveData<Long> by lazy { getExperimentalFlagsLive() }
+
+    private fun getExperimentalFlagsSync(): Long {
+        val v = getValueOfKeySync(ConfigurationItemType.ExperimentalFlags)
+
+        if (v == null) {
+            return 0
+        } else {
+            return v.toLong(16)
+        }
+    }
+
+    fun isExperimentalFlagsSetAsync(flags: Long) = experimentalFlags.map {
+        (it and flags) == flags
+    }.ignoreUnchanged()
+
+    fun isExperimentalFlagsSetSync(flags: Long) = (getExperimentalFlagsSync() and flags) == flags
+
+    fun setExperimentalFlag(flags: Long, enable: Boolean) {
+        updateValueSync(
+                ConfigurationItemType.ExperimentalFlags,
+                if (enable)
+                    (getExperimentalFlagsSync() or flags).toString(16)
+                else
+                    (getExperimentalFlagsSync() and (flags.inv())).toString(16)
+        )
+    }
 }
