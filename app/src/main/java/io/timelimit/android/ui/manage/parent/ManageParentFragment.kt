@@ -101,6 +101,16 @@ class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
                         R.id.manageParentFragment
                 )
             }
+
+            override fun onManageBlockedTimesClicked() {
+                navigation.safeNavigate(
+                        ManageParentFragmentDirections.
+                                actionManageParentFragmentToManageParentBlockedTimesFragment(
+                                        params.parentId
+                                ),
+                        R.id.manageParentFragment
+                )
+            }
         }
 
         return binding.root
@@ -111,4 +121,5 @@ class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
 
 interface ManageParentFragmentHandlers {
     fun onChangePasswordClicked()
+    fun onManageBlockedTimesClicked()
 }

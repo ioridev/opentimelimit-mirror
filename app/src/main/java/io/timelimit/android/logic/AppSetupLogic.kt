@@ -111,7 +111,8 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             type = UserType.Child,
                             timeZone = timeZone,
                             disableLimitsUntil = 0,
-                            categoryForNotAssignedApps = ""
+                            categoryForNotAssignedApps = "",
+                            blockedTimes = ImmutableBitmask(BitSet())
                     )
 
                     appLogic.database.user().addUserSync(child)
@@ -127,7 +128,8 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             type = UserType.Parent,
                             timeZone = timeZone,
                             disableLimitsUntil = 0,
-                            categoryForNotAssignedApps = ""
+                            categoryForNotAssignedApps = "",
+                            blockedTimes = ImmutableBitmask(BitSet())
                     )
 
                     appLogic.database.user().addUserSync(parent)

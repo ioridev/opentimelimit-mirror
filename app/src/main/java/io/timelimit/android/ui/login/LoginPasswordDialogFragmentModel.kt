@@ -22,24 +22,68 @@ import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.crypto.PasswordHashing
-import io.timelimit.android.livedata.castDown
-import io.timelimit.android.livedata.waitForNonNullValue
-import io.timelimit.android.livedata.waitForNullableValue
+import io.timelimit.android.data.model.User
+import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.AppLogic
+import io.timelimit.android.logic.BlockingReasonUtil
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.AuthenticatedUser
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.*
 
 class LoginPasswordDialogFragmentModel(application: Application): AndroidViewModel(application) {
-    private val logic: AppLogic by lazy { DefaultAppLogic.with(application) }
-    private val statusInternal = MutableLiveData<LoginPasswordDialogFragmentStatus>().apply{
-        value = LoginPasswordDialogFragmentStatus.Idle
+    private val logic: AppLogic = DefaultAppLogic.with(application)
+    private val blockingReasonUtil = BlockingReasonUtil(logic)
+    val selectedUserId = MutableLiveData<String?>().apply { value = null }
+    private val selectedUser = selectedUserId.switchMap { userId ->
+        if (userId != null) {
+            logic.database.user().getParentUserByIdLive(userId)
+        } else {
+            liveDataFromValue(null as User?)
+        }
     }
     private val loginLock = Mutex()
+    private val isValidating = MutableLiveData<Boolean>().apply { value = false }
+    private val wasPasswordWrong = MutableLiveData<Boolean>().apply { value = false }
+    private val hadSuccess = MutableLiveData<Boolean>().apply { value = false }
 
-    val status = statusInternal.castDown()
+    val status = hadSuccess.switchMap { hadSuccess ->
+        if (hadSuccess) {
+            liveDataFromValue(SuccessLoginDialogStatus as LoginDialogStatus)
+        } else {
+            selectedUser.switchMap { selectedUser ->
+                if (selectedUser == null) {
+                    liveDataFromValue(UserListLoginDialogStatus as LoginDialogStatus)
+                } else {
+                    val isGoodTime = blockingReasonUtil.getTrustedMinuteOfWeekLive(TimeZone.getTimeZone(selectedUser.timeZone)).map { minuteOfWeek ->
+                        selectedUser.blockedTimes.dataNotToModify[minuteOfWeek] == false
+                    }.ignoreUnchanged()
+
+                    isGoodTime.switchMap { goodTime ->
+                        if (goodTime) {
+                            isValidating.switchMap { isValidating ->
+                                if (isValidating) {
+                                    liveDataFromValue(ValidationRunningLoginDialogStatus as LoginDialogStatus)
+                                } else {
+                                    wasPasswordWrong.map { wasPasswordWrong ->
+                                        if (wasPasswordWrong) {
+                                            WrongPasswordLoginDialogStatus
+                                        } else {
+                                            WaitingForPasswordLoginDialogStatus
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            liveDataFromValue(WrongTimeLoginDialogStatus as LoginDialogStatus)
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     fun tryDefaultLogin(model: ActivityViewModel) {
         runAsync {
@@ -53,55 +97,51 @@ class LoginPasswordDialogFragmentModel(application: Application): AndroidViewMod
                                 passwordHash = user.password
                         ))
 
-                        statusInternal.value = LoginPasswordDialogFragmentStatus.Success
+                        hadSuccess.value = true
                     }
                 }
             }
         }
     }
 
-    fun tryLogin(userId: String, password: String, model: ActivityViewModel) {
+    fun tryLogin(password: String, model: ActivityViewModel) {
+        isValidating.value = true
+
         runAsync {
-            loginLock.withLock {
-                statusInternal.value = LoginPasswordDialogFragmentStatus.Working
+            try {
+                loginLock.withLock {
+                    val userEntry = selectedUser.waitForNullableValue() ?: return@runAsync
 
-                val userEntry = logic.database.user().getUserByIdLive(userId).waitForNullableValue()
+                    val passwordValid = Threads.crypto.executeAndWait { PasswordHashing.validateSync(password, userEntry.password) }
 
-                if (userEntry == null) {
-                    statusInternal.value = LoginPasswordDialogFragmentStatus.PermanentlyFailed
+                    if (!passwordValid) {
+                        wasPasswordWrong.value = true
 
-                    return@runAsync
+                        return@runAsync
+                    }
+
+                    model.setAuthenticatedUser(AuthenticatedUser(
+                            userId = userEntry.id,
+                            passwordHash = userEntry.password
+                    ))
+
+                    hadSuccess.value = true
                 }
-
-                val passwordValid = Threads.crypto.executeAndWait { PasswordHashing.validateSync(password, userEntry.password) }
-
-                if (!passwordValid) {
-                    statusInternal.value = LoginPasswordDialogFragmentStatus.PasswordWrong
-
-                    return@runAsync
-                }
-
-                model.setAuthenticatedUser(AuthenticatedUser(
-                        userId = userId,
-                        passwordHash = userEntry.password
-                ))
-
-                statusInternal.value = LoginPasswordDialogFragmentStatus.Success
+            } finally {
+                isValidating.value = false
             }
         }
     }
 
     fun resetPasswordWrong() {
-        if (this.status.value == LoginPasswordDialogFragmentStatus.PasswordWrong) {
-            this.statusInternal.value = LoginPasswordDialogFragmentStatus.Idle
-        }
+        wasPasswordWrong.value = false
     }
 }
 
-enum class LoginPasswordDialogFragmentStatus {
-    Working,
-    PasswordWrong,
-    Idle,
-    Success,
-    PermanentlyFailed
-}
+sealed class LoginDialogStatus
+object UserListLoginDialogStatus: LoginDialogStatus()
+object WrongTimeLoginDialogStatus: LoginDialogStatus()
+object WaitingForPasswordLoginDialogStatus: LoginDialogStatus()
+object ValidationRunningLoginDialogStatus: LoginDialogStatus()
+object WrongPasswordLoginDialogStatus: LoginDialogStatus()
+object SuccessLoginDialogStatus: LoginDialogStatus()

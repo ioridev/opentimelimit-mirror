@@ -369,3 +369,15 @@ data class SetUserTimezoneAction(val userId: String, val timezone: String): Pare
         }
     }
 }
+
+data class UpdateParentBlockedTimesAction(val parentId: String, val blockedTimes: ImmutableBitmask): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(parentId)
+    }
+}
+
+data class ResetParentBlockedTimesAction(val parentId: String): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(parentId)
+    }
+}

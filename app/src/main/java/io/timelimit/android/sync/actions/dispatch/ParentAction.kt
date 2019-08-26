@@ -144,7 +144,8 @@ object LocalDatabaseParentActionDispatcher {
                             timeZone = action.timeZone,
                             password = if (action.password == null) "" else action.password,
                             disableLimitsUntil = 0,
-                            categoryForNotAssignedApps = ""
+                            categoryForNotAssignedApps = "",
+                            blockedTimes = ImmutableBitmask(BitSet())
                     ))
                 }
                 is UpdateCategoryBlockedTimesAction -> {
@@ -416,6 +417,32 @@ object LocalDatabaseParentActionDispatcher {
                     }
 
                     null
+                }
+                is UpdateParentBlockedTimesAction -> {
+                    val userEntry = database.user().getUserByIdSync(action.parentId)
+
+                    if (userEntry?.type != UserType.Parent) {
+                        throw IllegalArgumentException("no valid parent id")
+                    }
+
+                    database.user().updateUserSync(
+                            userEntry.copy(
+                                    blockedTimes = action.blockedTimes
+                            )
+                    )
+                }
+                is ResetParentBlockedTimesAction -> {
+                    val userEntry = database.user().getUserByIdSync(action.parentId)
+
+                    if (userEntry?.type != UserType.Parent) {
+                        throw IllegalArgumentException("no valid parent id")
+                    }
+
+                    database.user().updateUserSync(
+                            userEntry.copy(
+                                    blockedTimes = ImmutableBitmask(BitSet())
+                            )
+                    )
                 }
             }.let { }
 

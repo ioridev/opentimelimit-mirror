@@ -27,5 +27,7 @@
         <include android:id="@+id/enter_password"
             layout="@layout/new_login_fragment_password" />
 
+        <include layout="@layout/new_login_fragment_blocked_time" />
+
     </io.timelimit.android.ui.view.SafeViewFlipper>
 </layout>

@@ -24,7 +24,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -44,7 +43,6 @@ class NewLoginFragment: DialogFragment() {
     }
 
     private val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
-    private val selectedUserId = MutableLiveData<String?>().apply { value = null }
     private val model: LoginPasswordDialogFragmentModel by lazy {
         ViewModelProviders.of(this).get(LoginPasswordDialogFragmentModel::class.java)
     }
@@ -56,7 +54,7 @@ class NewLoginFragment: DialogFragment() {
         super.onCreate(savedInstanceState)
 
         if (savedInstanceState?.containsKey(SELECTED_USER_ID) == true) {
-            selectedUserId.value = savedInstanceState.getString(SELECTED_USER_ID)
+            model.selectedUserId.value = savedInstanceState.getString(SELECTED_USER_ID)
         }
 
         if (savedInstanceState == null) {
@@ -66,10 +64,10 @@ class NewLoginFragment: DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?) = object: BottomSheetDialog(context!!, theme) {
         override fun onBackPressed() {
-            if (selectedUserId.value == null) {
+            if (model.selectedUserId.value == null) {
                 super.onBackPressed()
             } else {
-                selectedUserId.value = null
+                model.selectedUserId.value = null
             }
         }
     }
@@ -77,7 +75,7 @@ class NewLoginFragment: DialogFragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        selectedUserId.value?.let { outState.putString(SELECTED_USER_ID, it) }
+        model.selectedUserId.value?.let { outState.putString(SELECTED_USER_ID, it) }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -90,7 +88,7 @@ class NewLoginFragment: DialogFragment() {
 
             adapter.listener = object: LoginUserAdapterListener {
                 override fun onUserClicked(user: User) {
-                    selectedUserId.value = user.id
+                    model.selectedUserId.value = user.id
                 }
             }
 
@@ -115,7 +113,6 @@ class NewLoginFragment: DialogFragment() {
 
             fun tryLogin() {
                 model.tryLogin(
-                        userId = selectedUserId.value!!,
                         password = password.text.toString(),
                         model = getActivityViewModel(activity!!)
                 )
@@ -138,49 +135,53 @@ class NewLoginFragment: DialogFragment() {
                 tryLogin()
             }
 
-            model.status.observe(this@NewLoginFragment, Observer {
-                status ->
+            model.status.observe(this@NewLoginFragment, Observer { status ->
+                when (status!!) {
+                    is UserListLoginDialogStatus -> {
+                        if (binding.switcher.displayedChild != 0) {
+                            binding.switcher.setInAnimation(context!!, R.anim.wizard_close_step_in)
+                            binding.switcher.setOutAnimation(context!!, R.anim.wizard_close_step_out)
+                            binding.switcher.displayedChild = 0
+                        }
 
-                val readyForInput = status == LoginPasswordDialogFragmentStatus.Idle
+                        null
+                    }
+                    is WrongTimeLoginDialogStatus -> {
+                        if (binding.switcher.displayedChild != 2) {
+                            binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
+                            binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
+                            binding.switcher.displayedChild = 2
+                        }
 
-                password.isEnabled = readyForInput
+                        null
+                    }
+                    WaitingForPasswordLoginDialogStatus -> {
+                        if (binding.switcher.displayedChild != 1) {
+                            binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
+                            binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
+                            binding.switcher.displayedChild = 1
+                        }
 
-                when (status) {
-                    LoginPasswordDialogFragmentStatus.Working -> {/* nothing to do */}
-                    LoginPasswordDialogFragmentStatus.Idle -> {/* nothing to do */}
-                    LoginPasswordDialogFragmentStatus.PasswordWrong -> {
+                        password.isEnabled = true
+
+                        binding.enterPassword.password.requestFocus()
+                        inputMethodManager.showSoftInput(binding.enterPassword.password, 0)
+
+                        null
+                    }
+                    ValidationRunningLoginDialogStatus -> {
+                        password.isEnabled = false
+                    }
+                    WrongPasswordLoginDialogStatus -> {
                         Toast.makeText(context!!, R.string.login_snackbar_wrong, Toast.LENGTH_SHORT).show()
                         password.setText("")
 
                         model.resetPasswordWrong()
                     }
-                    LoginPasswordDialogFragmentStatus.Success -> {
-                        dismissAllowingStateLoss()
-                    }
-                    LoginPasswordDialogFragmentStatus.PermanentlyFailed -> selectedUserId.value = null
-                    null -> {/* nothing to handle */}
-                }.let {  }
+                    SuccessLoginDialogStatus -> dismissAllowingStateLoss()
+                }.let {/* require handling all paths */}
             })
         }
-
-        selectedUserId.observe(this, Observer {
-            if (it == null) {
-                if (binding.switcher.displayedChild != 0) {
-                    binding.switcher.setInAnimation(context!!, R.anim.wizard_close_step_in)
-                    binding.switcher.setOutAnimation(context!!, R.anim.wizard_close_step_out)
-                    binding.switcher.displayedChild = 0
-                }
-            } else {
-                if (binding.switcher.displayedChild != 1) {
-                    binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
-                    binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
-                    binding.switcher.displayedChild = 1
-                }
-
-                binding.enterPassword.password.requestFocus()
-                inputMethodManager.showSoftInput(binding.enterPassword.password, 0)
-            }
-        })
 
         return binding.root
     }

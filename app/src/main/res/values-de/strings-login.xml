@@ -20,4 +20,5 @@
     <string name="login_btn_do">Anmelden</string>
     <string name="login_snackbar_wrong">Dieses Passwort ist nicht korrekt</string>
     <string name="login_dialog_password_text">Geben Sie Ihr Passwort ein, um sich anzumelden</string>
+    <string name="login_blocked_time">Das Anmelden mit diesem Benutzer zu dieser Zeit wurde gesperrt</string>
 </resources>

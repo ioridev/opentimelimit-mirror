@@ -20,9 +20,16 @@ import android.util.JsonWriter
 import androidx.room.*
 import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.JsonSerializable
+import io.timelimit.android.data.customtypes.ImmutableBitmask
+import io.timelimit.android.data.customtypes.ImmutableBitmaskAdapter
+import java.util.*
+import io.timelimit.android.data.customtypes.ImmutableBitmaskJson
 
 @Entity(tableName = "user")
-@TypeConverters(UserTypeConverter::class)
+@TypeConverters(
+        UserTypeConverter::class,
+        ImmutableBitmaskAdapter::class
+)
 data class User(
         @PrimaryKey
         @ColumnInfo(name = "id")
@@ -40,7 +47,9 @@ data class User(
         val disableLimitsUntil: Long,
         @ColumnInfo(name = "category_for_not_assigned_apps")
         // empty or invalid = no category
-        val categoryForNotAssignedApps: String
+        val categoryForNotAssignedApps: String,
+        @ColumnInfo(name = "blocked_times")
+        val blockedTimes: ImmutableBitmask
 ): JsonSerializable {
     companion object {
         private const val ID = "id"
@@ -50,6 +59,7 @@ data class User(
         private const val TIMEZONE = "timeZone"
         private const val DISABLE_LIMITS_UNTIL = "disableLimitsUntil"
         private const val CATEGORY_FOR_NOT_ASSIGNED_APPS = "categoryForNotAssignedApps"
+        private const val BLOCKED_TIMES = "blockedTimes"
 
         fun parse(reader: JsonReader): User {
             var id: String? = null
@@ -59,6 +69,7 @@ data class User(
             var timeZone: String? = null
             var disableLimitsUntil: Long? = null
             var categoryForNotAssignedApps = ""
+            var blockedTimes = ImmutableBitmask(BitSet())
 
             reader.beginObject()
             while (reader.hasNext()) {
@@ -70,6 +81,7 @@ data class User(
                     TIMEZONE -> timeZone = reader.nextString()
                     DISABLE_LIMITS_UNTIL -> disableLimitsUntil = reader.nextLong()
                     CATEGORY_FOR_NOT_ASSIGNED_APPS -> categoryForNotAssignedApps = reader.nextString()
+                    BLOCKED_TIMES -> blockedTimes = ImmutableBitmaskJson.parse(reader.nextString(), Category.BLOCKED_MINUTES_IN_WEEK_LENGTH)
                     else -> reader.skipValue()
                 }
             }
@@ -82,7 +94,8 @@ data class User(
                     type = type!!,
                     timeZone = timeZone!!,
                     disableLimitsUntil = disableLimitsUntil!!,
-                    categoryForNotAssignedApps = categoryForNotAssignedApps
+                    categoryForNotAssignedApps = categoryForNotAssignedApps,
+                    blockedTimes = blockedTimes
             )
         }
     }
@@ -117,6 +130,7 @@ data class User(
         writer.name(TIMEZONE).value(timeZone)
         writer.name(DISABLE_LIMITS_UNTIL).value(disableLimitsUntil)
         writer.name(CATEGORY_FOR_NOT_ASSIGNED_APPS).value(categoryForNotAssignedApps)
+        writer.name(BLOCKED_TIMES).value(ImmutableBitmaskJson.serialize(blockedTimes))
 
         writer.endObject()
     }
