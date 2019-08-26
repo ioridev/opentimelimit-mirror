@@ -60,6 +60,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
         runAsyncExpectForever { backgroundServiceLoop() }
         runAsyncExpectForever { syncDeviceStatusLoop() }
         runAsyncExpectForever { backupDatabaseLoop() }
+        runAsyncExpectForever { annoyUserOnManipulationLoop() }
         runAsync {
             // this is effective after an reboot
 
@@ -629,6 +630,67 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
             DatabaseBackup.with(appLogic.context).tryCreateDatabaseBackupAsync()
 
             appLogic.timeApi.sleep(1000 * 60 * 60 * 3 /* 3 hours */)
+        }
+    }
+
+    // first time: annoy for 20 seconds; free for 5 minutes
+    // second time: annoy for 30 seconds; free for 2 minutes
+    // third time: annoy for 1 minute; free for 1 minute
+    // then: annoy for 2 minutes; free for 1 minute
+    private suspend fun annoyUserOnManipulationLoop() {
+        val isManipulated = appLogic.deviceEntryIfEnabled.map { it?.hasActiveManipulationWarning ?: false }
+        val enableAnnoy = appLogic.database.config().isExperimentalFlagsSetAsync(ExperimentalFlags.MANIPULATION_ANNOY_USER)
+
+        var counter = 0
+        var globalCounter = 0
+
+        val shouldAnnoyNow = isManipulated.and(enableAnnoy)
+
+        if (BuildConfig.DEBUG) {
+            Log.d(LOG_TAG, "delay before enabling annoying")
+        }
+
+        delay(1000 * 15)
+
+        while (true) {
+            if (BuildConfig.DEBUG) {
+                Log.d(LOG_TAG, "wait until should annoy")
+            }
+
+            shouldAnnoyNow.waitUntilValueMatches { it == true }
+
+            val annoyDurationInSeconds = when (counter) {
+                0 -> 20
+                1 -> 30
+                2 -> 60
+                else -> 120
+            }
+
+            val freeDurationInSeconds = when (counter) {
+                0 -> 5 * 60
+                1 -> 2 * 60
+                else -> 60
+            }
+
+            if (BuildConfig.DEBUG) {
+                Log.d(LOG_TAG, "annoy for $annoyDurationInSeconds seconds; free for $freeDurationInSeconds seconds")
+            }
+
+            appLogic.platformIntegration.showAnnoyScreen(annoyDurationInSeconds.toLong())
+
+            counter++
+            globalCounter++
+
+            // reset counter if there was nothing for one hour
+            val globalCounterBackup = globalCounter
+            appLogic.timeApi.runDelayed(Runnable {
+                if (globalCounter == globalCounterBackup) {
+                    counter = 0
+                }
+            }, 1000 * 60 * 60 /* 1 hour */)
+
+            // wait before annoying next time
+            delay((annoyDurationInSeconds + freeDurationInSeconds) * 1000L)
         }
     }
 }
