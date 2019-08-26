@@ -207,12 +207,18 @@ class BlockedTimeAreasFragment : Fragment() {
                 super.onScrollStateChanged(recyclerView, newState)
 
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    val selectedDay = items.value!!.getDayOfPosition(
-                            layoutManager.findFirstVisibleItemPosition()
-                    )
+                    items.value?.let { items ->
+                        try {
+                            val selectedDay = items.getDayOfPosition(
+                                    layoutManager.findFirstVisibleItemPosition()
+                            )
 
-                    if (selectedDay != spinner_day.selectedItemPosition) {
-                        spinner_day.setSelection(selectedDay, true)
+                            if (selectedDay != spinner_day.selectedItemPosition) {
+                                spinner_day.setSelection(selectedDay, true)
+                            }
+                        } catch (ex: IllegalStateException) {
+                            // ignore
+                        }
                     }
                 }
             }
