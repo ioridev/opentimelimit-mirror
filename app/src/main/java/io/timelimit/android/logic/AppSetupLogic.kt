@@ -86,6 +86,7 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             manipulationTriedDisablingDeviceAdmin = false,
                             manipulationDidReboot = false,
                             hadManipulation = false,
+                            hadManipulationFlags = 0,
                             defaultUser = "",
                             defaultUserTimeout = 0,
                             considerRebootManipulation = false,

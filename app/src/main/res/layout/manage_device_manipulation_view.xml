@@ -1,62 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+  TimeLimit Copyright <C> 2019 Jonas Lochmann
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation version 3 of the License.
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation version 3 of the License.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program. If not, see <https://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
         <variable
-            name="hasTriedManipulatingDeviceAdmin"
-            type="Boolean" />
-
-        <variable
-            name="hasManipulatedDeviceAdmin"
-            type="Boolean" />
-
-        <variable
-            name="hasManipulatedUsageStatsAccess"
-            type="Boolean" />
-
-        <variable
-            name="hasManipulatedNotificationAccess"
-            type="Boolean" />
-
-        <variable
-            name="hasManipulatedOverlayPermission"
-            type="Boolean" />
-
-        <variable
-            name="hasManipulatedAccessibilityService"
-            type="Boolean" />
-
-        <variable
-            name="hasManipulatedAppVersion"
-            type="Boolean" />
-
-        <variable
-            name="hasManipulationReboot"
-            type="Boolean" />
-
-        <variable
-            name="hasHadManipulation"
-            type="Boolean" />
-
-        <variable
             name="hasAnyManipulation"
             type="Boolean" />
+
+        <variable
+            name="hasCurrentlyManipulation"
+            type="boolean" />
+
+        <variable
+            name="hadManipulationInPast"
+            type="boolean" />
 
         <import type="android.view.View" />
     </data>
@@ -88,65 +59,29 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <CheckBox
-                android:visibility="@{safeUnbox(hasTriedManipulatingDeviceAdmin) ? View.VISIBLE : View.GONE}"
-                android:id="@+id/device_admin_disable_attempt_checkbox"
-                android:text="@string/manage_device_manipulation_device_admin_disable_attempt"
+            <TextView
+                android:visibility="@{hasCurrentlyManipulation ? View.VISIBLE : View.GONE}"
+                android:text="@string/manage_device_manipulation_type_current"
+                android:textAppearance="?android:textAppearanceMedium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <CheckBox
-                android:visibility="@{safeUnbox(hasManipulatedDeviceAdmin) ? View.VISIBLE : View.GONE}"
-                android:id="@+id/device_admin_disabled_checkbox"
-                android:text="@string/manage_device_manipulation_device_admin_disabled"
+            <LinearLayout
+                android:id="@+id/current_manipulations"
+                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <CheckBox
-                android:visibility="@{safeUnbox(hasManipulatedUsageStatsAccess) ? View.VISIBLE : View.GONE}"
-                android:id="@+id/usage_access_checkbox"
-                android:text="@string/manage_device_manipulation_usage_stats_access"
+            <TextView
+                android:visibility="@{hadManipulationInPast ? View.VISIBLE : View.GONE}"
+                android:text="@string/manage_device_manipulation_type_past"
+                android:textAppearance="?android:textAppearanceMedium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <CheckBox
-                android:visibility="@{safeUnbox(hasManipulatedNotificationAccess) ? View.VISIBLE : View.GONE}"
-                android:id="@+id/notification_access_checkbox"
-                android:text="@string/manage_device_manipulation_notification_access"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <CheckBox
-                android:visibility="@{safeUnbox(hasManipulatedOverlayPermission) ? View.VISIBLE : View.GONE}"
-                android:id="@+id/overlay_permission_checkbox"
-                android:text="@string/manage_device_manipulation_overlay_permission"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <CheckBox
-                android:visibility="@{safeUnbox(hasManipulatedAccessibilityService) ? View.VISIBLE : View.GONE}"
-                android:id="@+id/accessibility_service_checkbox"
-                android:text="@string/manage_device_manipulation_accessibility_service"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-            <CheckBox
-                android:visibility="@{safeUnbox(hasManipulatedAppVersion) ? View.VISIBLE : View.GONE}"
-                android:id="@+id/app_version_checkbox"
-                android:text="@string/manage_device_manipulation_app_version"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <CheckBox
-                android:visibility="@{safeUnbox(hasManipulationReboot) ? View.VISIBLE : View.GONE}"
-                android:id="@+id/reboot_checkbox"
-                android:text="@string/manage_device_manipulation_reboot"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <CheckBox
-                android:visibility="@{safeUnbox(hasHadManipulation) ? View.VISIBLE : View.GONE}"
-                android:id="@+id/had_manipulation_checkbox"
-                android:text="@string/manage_device_manipulation_existed"
+            <LinearLayout
+                android:id="@+id/past_manipulations"
+                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 

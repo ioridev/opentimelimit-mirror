@@ -65,6 +65,8 @@ data class Device(
         val manipulationDidReboot: Boolean,
         @ColumnInfo(name = "had_manipulation")
         val hadManipulation: Boolean,
+        @ColumnInfo(name = "had_manipulation_flags")
+        val hadManipulationFlags: Long,
         @ColumnInfo(name = "default_user")
         val defaultUser: String,
         @ColumnInfo(name = "default_user_timeout")
@@ -101,6 +103,7 @@ data class Device(
         private const val TRIED_DISABLING_DEVICE_ADMIN = "tdda"
         private const val MANIPULATION_DID_REBOOT = "mdr"
         private const val HAD_MANIPULATION = "hm"
+        private const val HAD_MANIPULATION_FLAGS = "hmf"
         private const val DEFAULT_USER = "du"
         private const val DEFAULT_USER_TIMEOUT = "dut"
         private const val CONSIDER_REBOOT_A_MANIPULATION = "cram"
@@ -128,6 +131,7 @@ data class Device(
             var manipulationTriedDisablingDeviceAdmin: Boolean? = null
             var manipulationDidReboot: Boolean = false
             var hadManipulation: Boolean? = null
+            var hadManipulationFlags = 0L
             var defaultUser = ""
             var defaultUserTimeout = 0
             var considerRebootManipulation = false
@@ -158,6 +162,7 @@ data class Device(
                     TRIED_DISABLING_DEVICE_ADMIN -> manipulationTriedDisablingDeviceAdmin = reader.nextBoolean()
                     MANIPULATION_DID_REBOOT -> manipulationDidReboot = reader.nextBoolean()
                     HAD_MANIPULATION -> hadManipulation = reader.nextBoolean()
+                    HAD_MANIPULATION_FLAGS -> hadManipulationFlags = reader.nextLong()
                     DEFAULT_USER -> defaultUser = reader.nextString()
                     DEFAULT_USER_TIMEOUT -> defaultUserTimeout = reader.nextInt()
                     CONSIDER_REBOOT_A_MANIPULATION -> considerRebootManipulation = reader.nextBoolean()
@@ -190,6 +195,7 @@ data class Device(
                     manipulationTriedDisablingDeviceAdmin = manipulationTriedDisablingDeviceAdmin!!,
                     manipulationDidReboot = manipulationDidReboot,
                     hadManipulation = hadManipulation!!,
+                    hadManipulationFlags = hadManipulationFlags,
                     defaultUser = defaultUser,
                     defaultUserTimeout = defaultUserTimeout,
                     considerRebootManipulation = considerRebootManipulation,
@@ -246,6 +252,7 @@ data class Device(
         writer.name(TRIED_DISABLING_DEVICE_ADMIN).value(manipulationTriedDisablingDeviceAdmin)
         writer.name(MANIPULATION_DID_REBOOT).value(manipulationDidReboot)
         writer.name(HAD_MANIPULATION).value(hadManipulation)
+        writer.name(HAD_MANIPULATION_FLAGS).value(hadManipulationFlags)
         writer.name(DEFAULT_USER).value(defaultUser)
         writer.name(DEFAULT_USER_TIMEOUT).value(defaultUserTimeout)
         writer.name(CONSIDER_REBOOT_A_MANIPULATION).value(considerRebootManipulation)
@@ -290,4 +297,13 @@ data class Device(
             (!accessibilityServiceEnabled) &&
             (currentOverlayPermission != RuntimePermissionStatus.Granted) &&
             (currentProtectionLevel != ProtectionLevel.DeviceOwner)
+}
+
+object HadManipulationFlag {
+    const val PROTECTION_LEVEL = 1L shl 0
+    const val USAGE_STATS_ACCESS = 1L shl 1
+    const val NOTIFICATION_ACCESS = 1L shl 2
+    const val APP_VERSION = 1L shl 3
+    const val OVERLAY_PERMISSION = 1L shl 4
+    const val ACCESSIBILITY_SERVICE = 1L shl 5
 }

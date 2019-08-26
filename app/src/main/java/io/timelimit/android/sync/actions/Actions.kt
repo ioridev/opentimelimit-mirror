@@ -214,7 +214,8 @@ data class IgnoreManipulationAction(
         val ignoreOverlayPermissionManipulation: Boolean,
         val ignoreAccessibilityServiceManipulation: Boolean,
         val ignoreReboot: Boolean,
-        val ignoreHadManipulation: Boolean
+        val ignoreHadManipulation: Boolean,
+        val ignoreHadManipulationFlags: Long
 ): ParentAction() {
     init {
         IdGenerator.assertIdValid(deviceId)
@@ -226,7 +227,8 @@ data class IgnoreManipulationAction(
             (!ignoreNotificationAccessManipulation) &&
             (!ignoreUsageStatsAccessManipulation) &&
             (!ignoreReboot) &&
-            (!ignoreHadManipulation)
+            (!ignoreHadManipulation) &&
+            (ignoreHadManipulationFlags == 0L)
 }
 
 object TriedDisablingDeviceAdminAction: AppLogicAction()
