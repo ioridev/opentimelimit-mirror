@@ -1,2 +1,1 @@
-- time lock for parent users
-- showing more details about manipulations
+- fix issues which occured when using the device owner permission at Android 5 or 6
