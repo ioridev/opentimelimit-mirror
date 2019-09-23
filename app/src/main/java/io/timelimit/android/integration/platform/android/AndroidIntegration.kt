@@ -328,7 +328,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     override fun setSuspendedApps(packageNames: List<String>, suspend: Boolean): List<String> {
         if (
                 (getCurrentProtectionLevel() == ProtectionLevel.DeviceOwner) &&
-                (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
         ) {
             val failedApps = policyManager.setPackagesSuspended(
                     deviceAdmin,
