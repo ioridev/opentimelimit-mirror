@@ -1,1 +1,2 @@
-- fix issues which occured when using the device owner permission at Android 5 or 6
+- fix authentication after manipulation at Android 4.4
+- improve description of one feature in the App

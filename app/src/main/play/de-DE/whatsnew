@@ -1,1 +1,2 @@
-- Probleme behoben, die bei der Nutzung der Geräte-Besitzer-Berechtigung unter Android 5 und 6 auftraten
+- Fehler bei der Authentifizierung nach einer Manipulation unter Android 4.4 behoben
+- Beschreibung einer Funktion in der App verbessert
