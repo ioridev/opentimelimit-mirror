@@ -92,12 +92,18 @@ class LoginPasswordDialogFragmentModel(application: Application): AndroidViewMod
                     val emptyPasswordValid = Threads.crypto.executeAndWait { PasswordHashing.validateSync("", user.password) }
 
                     if (emptyPasswordValid) {
-                        model.setAuthenticatedUser(AuthenticatedUser(
-                                userId = user.id,
-                                passwordHash = user.password
-                        ))
+                        val isGoodTime = blockingReasonUtil.getTrustedMinuteOfWeekLive(TimeZone.getTimeZone(user.timeZone)).map { minuteOfWeek ->
+                            user.blockedTimes.dataNotToModify[minuteOfWeek] == false
+                        }.waitForNonNullValue()
 
-                        hadSuccess.value = true
+                        if (isGoodTime) {
+                            model.setAuthenticatedUser(AuthenticatedUser(
+                                    userId = user.id,
+                                    passwordHash = user.password
+                            ))
+
+                            hadSuccess.value = true
+                        }
                     }
                 }
             }
