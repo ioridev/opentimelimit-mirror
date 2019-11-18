@@ -1,2 +1,1 @@
-- fix authentication after manipulation at Android 4.4
-- improve description of one feature in the App
+Bugfix: Time lock works now for parent users which don't have got a password too

@@ -1,2 +1,1 @@
-- Fehler bei der Authentifizierung nach einer Manipulation unter Android 4.4 behoben
-- Beschreibung einer Funktion in der App verbessert
+Fehlerbehebung: Zeitschloss funktioniert jetzt auch, wenn kein Passwort für ein Elternteil gewählt wurde
