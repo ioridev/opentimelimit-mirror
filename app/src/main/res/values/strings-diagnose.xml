@@ -40,4 +40,9 @@
     <string name="diagnose_bat_status_charging">Charging/ full</string>
     <string name="diagnose_bat_status_mobile">Not charging</string>
     <string name="diagnose_bat_level">Level: %d\%%</string>
+
+    <string name="diagnose_bg_task_loop_ex">Background task loop exception</string>
+
+    <string name="diagnose_copy_to_clipboard">Copy to clipboard</string>
+    <string name="diagnose_copied_to_clipboard">Copied to clipboard</string>
 </resources>

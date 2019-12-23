@@ -39,4 +39,9 @@
     <string name="diagnose_bat_status_charging">Aufladen/ voll</string>
     <string name="diagnose_bat_status_mobile">Entladen</string>
     <string name="diagnose_bat_level">Akkustand: %d\%%</string>
+
+    <string name="diagnose_bg_task_loop_ex">Hintergrundaufgabenschleifenfehler</string>
+
+    <string name="diagnose_copy_to_clipboard">In die Zwischenablage kopieren</string>
+    <string name="diagnose_copied_to_clipboard">In die Zwischenablage kopiert</string>
 </resources>
