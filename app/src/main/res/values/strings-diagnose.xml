@@ -34,4 +34,10 @@
     <string name="diagnose_exf_lom">Disable locking after manipulations</string>
     <string name="diagnose_exf_slb">Block Apps at system level</string>
     <string name="diagnose_exf_mau">Annoy user after manipulation</string>
+
+    <string name="diagnose_bat_title">Battery</string>
+    <string name="diagnose_bat_status">Status: %s</string>
+    <string name="diagnose_bat_status_charging">Charging/ full</string>
+    <string name="diagnose_bat_status_mobile">Not charging</string>
+    <string name="diagnose_bat_level">Level: %d\%%</string>
 </resources>

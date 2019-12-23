@@ -15,43 +15,51 @@
 -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="io.timelimit.android.ui.diagnose.DiagnoseMainFragment">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="io.timelimit.android.ui.diagnose.DiagnoseBatteryFragment">
 
-    <ScrollView
-        android:id="@+id/scroll"
+    <data>
+        <variable
+            name="charging"
+            type="boolean" />
+
+        <variable
+            name="level"
+            type="int" />
+    </data>
+
+    <androidx.cardview.widget.CardView
+        android:layout_margin="8dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        app:cardUseCompatPadding="true">
         <LinearLayout
             android:padding="8dp"
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/diagnose_clock_button"
-                android:text="@string/diagnose_clock_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <Button
-                android:id="@+id/diagnose_battery_button"
+            <TextView
                 android:text="@string/diagnose_bat_title"
+                android:textAppearance="?android:textAppearanceLarge"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <Button
-                android:id="@+id/diagnose_fga_button"
-                android:text="@string/diagnose_fga_title"
+            <TextView
+                tools:text="@string/diagnose_bat_status"
+                android:text="@{@string/diagnose_bat_status(charging ? @string/diagnose_bat_status_charging : @string/diagnose_bat_status_mobile)}"
+                android:textAppearance="?android:textAppearanceMedium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <Button
-                android:id="@+id/diagnose_exf_button"
-                android:text="@string/diagnose_exf_title"
+            <TextView
+                tools:text="@string/diagnose_bat_level"
+                android:text="@{@string/diagnose_bat_level(level)}"
+                android:textAppearance="?android:textAppearanceMedium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
         </LinearLayout>
-    </ScrollView>
+    </androidx.cardview.widget.CardView>
 
 </layout>

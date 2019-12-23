@@ -55,12 +55,18 @@
         Diese %s ist in einer Kategorie, deren maximale Nutzungszeit erreicht wurde.
         Es gab noch Extra-Zeit, aber die maximale Nutzung der Extra-Zeit wurde erreicht.
     </string>
+    <string name="lock_reason_battery_limit">
+        Diese %s ist in einer Kategorie, für die ein Akkulimit eingerichtet wurde
+        und dieses Akkulimit wurde erreicht.
+        Zum Wiederfreigeben muss der Akku aufgeladen werden.
+    </string>
 
     <string name="lock_reason_short_no_category">keine Kategorie</string>
     <string name="lock_reason_short_temporarily_blocked">vorübergehend gesperrt</string>
     <string name="lock_reason_short_time_over">Zeit verbraucht</string>
     <string name="lock_reason_short_blocked_time_area">Sperrzeit</string>
     <string name="lock_reason_short_notification_blocking">alle Benachrichtigungen werden blockiert</string>
+    <string name="lock_reason_short_battery_limit">Akkulimit unterschritten</string>
 
     <string name="lock_overlay_warning">
         Öffnen des Sperrbildschirms fehlgeschlagen.

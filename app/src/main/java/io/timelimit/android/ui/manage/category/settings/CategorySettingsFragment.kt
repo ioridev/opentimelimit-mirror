@@ -60,6 +60,14 @@ class CategorySettingsFragment : Fragment() {
                 auth = auth
         )
 
+        CategoryBatteryLimitView.bind(
+                binding = binding.batteryLimit,
+                lifecycleOwner = this,
+                category = categoryEntry,
+                auth = auth,
+                categoryId = params.categoryId
+        )
+
         ParentCategoryView.bind(
                 binding = binding.parentCategory,
                 lifecycleOwner = this,

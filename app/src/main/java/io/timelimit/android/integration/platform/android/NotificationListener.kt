@@ -110,6 +110,7 @@ class NotificationListener: NotificationListenerService() {
                                                     BlockingReason.TimeOverExtraTimeCanBeUsedLater -> getString(R.string.lock_reason_short_time_over)
                                                     BlockingReason.BlockedAtThisTime -> getString(R.string.lock_reason_short_blocked_time_area)
                                                     BlockingReason.NotificationsAreBlocked -> getString(R.string.lock_reason_short_notification_blocking)
+                                                    BlockingReason.BatteryLimit -> getString(R.string.lock_reason_short_battery_limit)
                                                     BlockingReason.None -> throw IllegalStateException()
                                                 }
                                 )

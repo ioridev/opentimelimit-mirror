@@ -171,6 +171,23 @@ data class SetParentCategory(val categoryId: String, val parentCategory: String)
         }
     }
 }
+data class UpdateCategoryBatteryLimit(val categoryId: String, val chargingLimit: Int?, val mobileLimit: Int?): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(categoryId)
+
+        if (chargingLimit != null) {
+            if (chargingLimit < 0 || chargingLimit > 100) {
+                throw IllegalArgumentException()
+            }
+        }
+
+        if (mobileLimit != null) {
+            if (mobileLimit < 0 || mobileLimit > 100) {
+                throw IllegalArgumentException()
+            }
+        }
+    }
+}
 
 // DeviceDao
 

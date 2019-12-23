@@ -37,6 +37,13 @@ class DiagnoseMainFragment : Fragment() {
             )
         }
 
+        binding.diagnoseBatteryButton.setOnClickListener {
+            navigation.safeNavigate(
+                    DiagnoseMainFragmentDirections.actionDiagnoseMainFragmentToDiagnoseBatteryFragment(),
+                    R.id.diagnoseMainFragment
+            )
+        }
+
         binding.diagnoseFgaButton.setOnClickListener {
             navigation.safeNavigate(
                     DiagnoseMainFragmentDirections.actionDiagnoseMainFragmentToDiagnoseForegroundAppFragment(),

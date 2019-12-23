@@ -33,7 +33,7 @@ import io.timelimit.android.data.model.*
     TemporarilyAllowedApp::class,
     AppActivity::class,
     AllowedContact::class
-], version = 7)
+], version = 8)
 abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database {
     companion object {
         private val lock = Object()
@@ -74,7 +74,8 @@ abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database 
                             DatabaseMigrations.MIGRATE_TO_V4,
                             DatabaseMigrations.MIGRATE_TO_V5,
                             DatabaseMigrations.MIGRATE_TO_V6,
-                            DatabaseMigrations.MIGRATE_TO_V7
+                            DatabaseMigrations.MIGRATE_TO_V7,
+                            DatabaseMigrations.MIGRATE_TO_V8
                     )
                     .build()
         }

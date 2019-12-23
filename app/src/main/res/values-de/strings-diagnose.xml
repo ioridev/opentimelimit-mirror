@@ -33,4 +33,10 @@
     <string name="diagnose_exf_lom">Sperrung nach Manipulationen deaktivieren</string>
     <string name="diagnose_exf_slb">Apps auf Systemebene sperren</string>
     <string name="diagnose_exf_mau">Nutzer nach Manipulation nerven</string>
+
+    <string name="diagnose_bat_title">Akku</string>
+    <string name="diagnose_bat_status">Status: %s</string>
+    <string name="diagnose_bat_status_charging">Aufladen/ voll</string>
+    <string name="diagnose_bat_status_mobile">Entladen</string>
+    <string name="diagnose_bat_level">Akkustand: %d\%%</string>
 </resources>

@@ -59,12 +59,18 @@
         This App is part of a category whose time limit was reached.
         There is still extra time, but the usage limit for the extra time was reached, too.
     </string>
+    <string name="lock_reason_battery_limit">
+        This %s is part of a category which has got a battery limit and this
+        battery limit was reached.
+        To unlock it, charge the battery.
+    </string>
 
     <string name="lock_reason_short_no_category">no category</string>
     <string name="lock_reason_short_temporarily_blocked">temporarily blocked</string>
     <string name="lock_reason_short_time_over">time over</string>
     <string name="lock_reason_short_blocked_time_area">blocked time area</string>
     <string name="lock_reason_short_notification_blocking">all notifications are blocked</string>
+    <string name="lock_reason_short_battery_limit">battery limit reached</string>
 
     <string name="lock_overlay_warning">
         Failed to open the lock screen.

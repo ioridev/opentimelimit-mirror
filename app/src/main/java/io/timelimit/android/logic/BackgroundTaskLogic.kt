@@ -35,6 +35,7 @@ import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.integration.platform.android.AccessibilityService
 import io.timelimit.android.integration.platform.android.AndroidIntegrationApps
 import io.timelimit.android.livedata.*
+import io.timelimit.android.logic.extension.isCategoryAllowed
 import io.timelimit.android.sync.actions.UpdateDeviceStatusAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 import io.timelimit.android.util.AndroidVersion
@@ -233,6 +234,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
                 // get the current status
                 val isScreenOn = appLogic.platformIntegration.isScreenOn()
+                val batteryStatus = appLogic.platformIntegration.getBatteryStatus()
 
                 appLogic.defaultUserLogic.reportScreenOn(isScreenOn)
 
@@ -304,6 +306,10 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                             // don't suspend system apps which are whitelisted in any version
                             appLogic.platformIntegration.setSuspendedApps(listOf(foregroundAppPackageName), true)
                         }
+
+                        openLockscreen(foregroundAppPackageName, foregroundAppActivityName)
+                    } else if ((!batteryStatus.isCategoryAllowed(category)) || (!batteryStatus.isCategoryAllowed(parentCategory))) {
+                        usedTimeUpdateHelper?.commit(appLogic)
 
                         openLockscreen(foregroundAppPackageName, foregroundAppActivityName)
                     } else if (category.temporarilyBlocked or (parentCategory?.temporarilyBlocked == true)) {
