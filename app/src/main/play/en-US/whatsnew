@@ -1,1 +1,2 @@
-Bugfix: Time lock works now for parent users which don't have got a password too
+- battery limit - configurable minimum battery level per category
+- whitelist emergency dialer
