@@ -16,6 +16,7 @@
 package io.timelimit.android.integration.platform.android
 
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -24,6 +25,7 @@ import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.SignOutAtDeviceAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
+import io.timelimit.android.ui.MainActivity
 
 class BackgroundActionService: Service() {
     companion object {
@@ -36,6 +38,13 @@ class BackgroundActionService: Service() {
 
         fun prepareSwitchToDefaultUser(context: Context) = Intent(context, BackgroundActionService::class.java)
                 .putExtra(ACTION, ACTION_SWITCH_TO_DEFAULT_USER)
+
+        fun getOpenAppIntent(context: Context) = PendingIntent.getActivity(
+                context,
+                PendingIntentIds.OPEN_MAIN_APP,
+                Intent(context, MainActivity::class.java),
+                PendingIntent.FLAG_UPDATE_CURRENT
+        )
     }
 
     private val notificationManager: NotificationManager by lazy {

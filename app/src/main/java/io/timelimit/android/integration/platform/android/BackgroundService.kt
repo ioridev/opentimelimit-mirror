@@ -15,42 +15,91 @@
  */
 package io.timelimit.android.integration.platform.android
 
+import android.app.ActivityManager
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import io.timelimit.android.R
 import io.timelimit.android.integration.platform.AppStatusMessage
 import io.timelimit.android.logic.DefaultAppLogic
-import io.timelimit.android.ui.MainActivity
 
 class BackgroundService: Service() {
     companion object {
         private const val EXTRA_NOTIFICATION = "notification"
 
         fun setStatusMessage(status: AppStatusMessage?, context: Context) {
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             val intent = Intent(context, BackgroundService::class.java)
 
             if (status != null) {
-                ContextCompat.startForegroundService(
-                        context,
-                        intent.putExtra(EXTRA_NOTIFICATION, status)
-                )
+                if (isBackgroundActivityRestricted(context)) {
+                    val notification = buildNotification(status, context)
+
+                    notificationManager.notify(NotificationIds.APP_STATUS, notification)
+                } else {
+                    ContextCompat.startForegroundService(
+                            context,
+                            intent.putExtra(EXTRA_NOTIFICATION, status)
+                    )
+                }
             } else {
                 context.stopService(intent)
+
+                if (isBackgroundActivityRestricted(context)) {
+                    notificationManager.cancel(NotificationIds.APP_STATUS)
+                }
             }
         }
 
-        fun getOpenAppIntent(context: Context) = PendingIntent.getActivity(
-                context,
-                PendingIntentIds.OPEN_MAIN_APP,
-                Intent(context, MainActivity::class.java),
-                PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        private fun isBackgroundActivityRestricted(context: Context): Boolean {
+            val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                return activityManager.isBackgroundRestricted
+            } else {
+                return false
+            }
+        }
+
+        private fun buildNotification(appStatusMessage: AppStatusMessage, context: Context) = NotificationCompat.Builder(context, NotificationChannels.APP_STATUS)
+                .setSmallIcon(R.drawable.ic_stat_timelapse)
+                .setContentTitle(appStatusMessage.title)
+                .setContentText(appStatusMessage.text)
+                .setSubText(appStatusMessage.subtext)
+                .setContentIntent(BackgroundActionService.getOpenAppIntent(context))
+                .setWhen(0)
+                .setShowWhen(false)
+                .setSound(null)
+                .setOnlyAlertOnce(true)
+                .setLocalOnly(true)
+                .setAutoCancel(false)
+                .setOngoing(true)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .let { builder ->
+                    if (appStatusMessage.showSwitchToDefaultUserOption) {
+                        builder.addAction(
+                                NotificationCompat.Action.Builder(
+                                        R.drawable.ic_account_circle_black_24dp,
+                                        context.getString(R.string.manage_device_default_user_switch_btn),
+                                        PendingIntent.getService(
+                                                context,
+                                                PendingIntentIds.SWITCH_TO_DEFAULT_USER,
+                                                BackgroundActionService.prepareSwitchToDefaultUser(context),
+                                                PendingIntent.FLAG_UPDATE_CURRENT
+                                        )
+                                ).build()
+                        )
+                    }
+
+                    builder
+                }
+                .build()
     }
 
     private val notificationManager: NotificationManager by lazy {
@@ -71,41 +120,9 @@ class BackgroundService: Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent != null) {
-            val appStatusMessage = intent.getParcelableExtra<AppStatusMessage>(EXTRA_NOTIFICATION)
+            val appStatusMessage = intent.getParcelableExtra<AppStatusMessage>(EXTRA_NOTIFICATION)!!
 
-            val notification = NotificationCompat.Builder(this, NotificationChannels.APP_STATUS)
-                    .setSmallIcon(R.drawable.ic_stat_timelapse)
-                    .setContentTitle(appStatusMessage.title)
-                    .setContentText(appStatusMessage.text)
-                    .setSubText(appStatusMessage.subtext)
-                    .setContentIntent(getOpenAppIntent(this@BackgroundService))
-                    .setWhen(0)
-                    .setShowWhen(false)
-                    .setSound(null)
-                    .setOnlyAlertOnce(true)
-                    .setLocalOnly(true)
-                    .setAutoCancel(false)
-                    .setOngoing(true)
-                    .setPriority(NotificationCompat.PRIORITY_LOW)
-                    .let { builder ->
-                        if (appStatusMessage.showSwitchToDefaultUserOption) {
-                            builder.addAction(
-                                    NotificationCompat.Action.Builder(
-                                            R.drawable.ic_account_circle_black_24dp,
-                                            getString(R.string.manage_device_default_user_switch_btn),
-                                            PendingIntent.getService(
-                                                    this@BackgroundService,
-                                                    PendingIntentIds.SWITCH_TO_DEFAULT_USER,
-                                                    BackgroundActionService.prepareSwitchToDefaultUser(this@BackgroundService),
-                                                    PendingIntent.FLAG_UPDATE_CURRENT
-                                            )
-                                    ).build()
-                            )
-                        }
-
-                        builder
-                    }
-                    .build()
+            val notification = buildNotification(appStatusMessage, this)
 
             if (didPostNotification) {
                 notificationManager.notify(NotificationIds.APP_STATUS, notification)
