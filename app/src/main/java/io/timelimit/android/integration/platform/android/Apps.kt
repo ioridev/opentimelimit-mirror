@@ -47,6 +47,11 @@ object AndroidIntegrationApps {
         ignoredApps.add("com.android.emergency")
     }
 
+    val appsToNotSuspend = setOf<String>(
+            "com.android.emergency",
+            "com.android.phone"
+    )
+
     private val ignoredActivities = setOf<String>(
             "com.android.settings:com.android.settings.enterprise.ActionDisabledByAdminDialog",
             "com.android.packageinstaller:com.android.packageinstaller.permission.ui.GrantPermissionActivity",
