@@ -21,23 +21,15 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import io.timelimit.android.R
-import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.integration.platform.AppStatusMessage
 import io.timelimit.android.logic.DefaultAppLogic
-import io.timelimit.android.sync.actions.SignOutAtDeviceAction
-import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 import io.timelimit.android.ui.MainActivity
 
 class BackgroundService: Service() {
     companion object {
-        private const val ACTION = "action"
-        private const val ACTION_SET_NOTIFICATION = "set_notification"
-        private const val ACTION_REVOKE_TEMPORARILY_ALLOWED_APPS = "revoke_temporarily_allowed_apps"
-        private const val ACTION_SWITCH_TO_DEFAULT_USER = "switch_to_default_user"
         private const val EXTRA_NOTIFICATION = "notification"
 
         fun setStatusMessage(status: AppStatusMessage?, context: Context) {
@@ -46,20 +38,12 @@ class BackgroundService: Service() {
             if (status != null) {
                 ContextCompat.startForegroundService(
                         context,
-                        intent
-                                .putExtra(ACTION, ACTION_SET_NOTIFICATION)
-                                .putExtra(EXTRA_NOTIFICATION, status)
+                        intent.putExtra(EXTRA_NOTIFICATION, status)
                 )
             } else {
                 context.stopService(intent)
             }
         }
-
-        fun prepareRevokeTemporarilyAllowed(context: Context) = Intent(context, BackgroundService::class.java)
-                .putExtra(ACTION, ACTION_REVOKE_TEMPORARILY_ALLOWED_APPS)
-
-        fun prepareSwitchToDefaultUser(context: Context) = Intent(context, BackgroundService::class.java)
-                .putExtra(ACTION, ACTION_SWITCH_TO_DEFAULT_USER)
 
         fun getOpenAppIntent(context: Context) = PendingIntent.getActivity(
                 context,
@@ -87,65 +71,47 @@ class BackgroundService: Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent != null) {
-            val action = intent.getStringExtra(ACTION)
+            val appStatusMessage = intent.getParcelableExtra<AppStatusMessage>(EXTRA_NOTIFICATION)
 
-            if (action == ACTION_SET_NOTIFICATION) {
-                val appStatusMessage = intent.getParcelableExtra<AppStatusMessage>(EXTRA_NOTIFICATION)
-
-                val notification = NotificationCompat.Builder(this, NotificationChannels.APP_STATUS)
-                        .setSmallIcon(R.drawable.ic_stat_timelapse)
-                        .setContentTitle(appStatusMessage.title)
-                        .setContentText(appStatusMessage.text)
-                        .setSubText(appStatusMessage.subtext)
-                        .setContentIntent(getOpenAppIntent(this@BackgroundService))
-                        .setWhen(0)
-                        .setShowWhen(false)
-                        .setSound(null)
-                        .setOnlyAlertOnce(true)
-                        .setLocalOnly(true)
-                        .setAutoCancel(false)
-                        .setOngoing(true)
-                        .setPriority(NotificationCompat.PRIORITY_LOW)
-                        .let { builder ->
-                            if (appStatusMessage.showSwitchToDefaultUserOption) {
-                                builder.addAction(
-                                        NotificationCompat.Action.Builder(
-                                                R.drawable.ic_account_circle_black_24dp,
-                                                getString(R.string.manage_device_default_user_switch_btn),
-                                                PendingIntent.getService(
-                                                        this@BackgroundService,
-                                                        PendingIntentIds.SWITCH_TO_DEFAULT_USER,
-                                                        prepareSwitchToDefaultUser(this@BackgroundService),
-                                                        PendingIntent.FLAG_UPDATE_CURRENT
-                                                )
-                                        ).build()
-                                )
-                            }
-
-                            builder
+            val notification = NotificationCompat.Builder(this, NotificationChannels.APP_STATUS)
+                    .setSmallIcon(R.drawable.ic_stat_timelapse)
+                    .setContentTitle(appStatusMessage.title)
+                    .setContentText(appStatusMessage.text)
+                    .setSubText(appStatusMessage.subtext)
+                    .setContentIntent(getOpenAppIntent(this@BackgroundService))
+                    .setWhen(0)
+                    .setShowWhen(false)
+                    .setSound(null)
+                    .setOnlyAlertOnce(true)
+                    .setLocalOnly(true)
+                    .setAutoCancel(false)
+                    .setOngoing(true)
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
+                    .let { builder ->
+                        if (appStatusMessage.showSwitchToDefaultUserOption) {
+                            builder.addAction(
+                                    NotificationCompat.Action.Builder(
+                                            R.drawable.ic_account_circle_black_24dp,
+                                            getString(R.string.manage_device_default_user_switch_btn),
+                                            PendingIntent.getService(
+                                                    this@BackgroundService,
+                                                    PendingIntentIds.SWITCH_TO_DEFAULT_USER,
+                                                    BackgroundActionService.prepareSwitchToDefaultUser(this@BackgroundService),
+                                                    PendingIntent.FLAG_UPDATE_CURRENT
+                                            )
+                                    ).build()
+                            )
                         }
-                        .build()
 
-                if (didPostNotification) {
-                    notificationManager.notify(NotificationIds.APP_STATUS, notification)
-                } else {
-                    startForeground(NotificationIds.APP_STATUS, notification)
-                    didPostNotification = true
-                }
-            } else if (action == ACTION_REVOKE_TEMPORARILY_ALLOWED_APPS) {
-                runAsync {
-                    DefaultAppLogic.with(this@BackgroundService).backgroundTaskLogic.resetTemporarilyAllowedApps()
-                }
-            } else if (action == ACTION_SWITCH_TO_DEFAULT_USER) {
-                runAsync {
-                    val logic = DefaultAppLogic.with(this@BackgroundService)
+                        builder
+                    }
+                    .build()
 
-                    ApplyActionUtil.applyAppLogicAction(
-                            appLogic = logic,
-                            action = SignOutAtDeviceAction,
-                            ignoreIfDeviceIsNotConfigured = true
-                    )
-                }
+            if (didPostNotification) {
+                notificationManager.notify(NotificationIds.APP_STATUS, notification)
+            } else {
+                startForeground(NotificationIds.APP_STATUS, notification)
+                didPostNotification = true
             }
         }
 
