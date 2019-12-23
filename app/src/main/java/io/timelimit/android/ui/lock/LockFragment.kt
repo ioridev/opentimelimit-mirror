@@ -304,8 +304,6 @@ class LockFragment : Fragment() {
                         val deviceId = deviceIdLive.waitForNullableValue()
 
                         if (deviceId != null) {
-                            logic.platformIntegration.setSuspendedApps(listOf(packageName), false)
-
                             Threads.database.executeAndWait(Runnable {
                                 try {
                                     database.temporarilyAllowedApp().addTemporarilyAllowedAppSync(TemporarilyAllowedApp(

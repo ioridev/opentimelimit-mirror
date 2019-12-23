@@ -75,28 +75,6 @@ object ApplyActionUtil {
             database.transaction().use {
                 LocalDatabaseParentActionDispatcher.dispatchParentActionSync(action, database)
 
-                // disable suspending the assigned app
-                if (action is AddCategoryAppsAction) {
-                    val thisDeviceId = database.config().getOwnDeviceIdSync()!!
-                    val thisDeviceEntry = database.device().getDeviceByIdSync(thisDeviceId)!!
-
-                    if (thisDeviceEntry.currentUserId != "") {
-                        val userCategories = database.category().getCategoriesByChildIdSync(thisDeviceEntry.currentUserId)
-
-                        if (userCategories.find { category -> category.id == action.categoryId } != null) {
-                            platformIntegration.setSuspendedApps(action.packageNames, false)
-                        }
-                    }
-                }
-
-                if (action is SetDeviceUserAction) {
-                    val thisDeviceId = database.config().getOwnDeviceIdSync()!!
-
-                    if (action.deviceId == thisDeviceId) {
-                        platformIntegration.stopSuspendingForAllApps()
-                    }
-                }
-
                 database.setTransactionSuccessful()
             }
         }

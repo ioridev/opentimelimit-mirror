@@ -304,11 +304,6 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                     if (category == null) {
                         usedTimeUpdateHelper?.commit(appLogic)
 
-                        if (AndroidIntegrationApps.ignoredApps.contains(foregroundAppPackageName) == false) {
-                            // don't suspend system apps which are whitelisted in any version
-                            appLogic.platformIntegration.setSuspendedApps(listOf(foregroundAppPackageName), true)
-                        }
-
                         openLockscreen(foregroundAppPackageName, foregroundAppActivityName)
                     } else if ((!batteryStatus.isCategoryAllowed(category)) || (!batteryStatus.isCategoryAllowed(parentCategory))) {
                         usedTimeUpdateHelper?.commit(appLogic)
