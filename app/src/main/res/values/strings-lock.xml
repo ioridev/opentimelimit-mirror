@@ -56,7 +56,7 @@
         This %s is part of a category whose time limit was reached.
     </string>
     <string name="lock_reason_time_over_etra_time_can_be_used_later">
-        This App is part of a category whose time limit was reached.
+        This %s is part of a category whose time limit was reached.
         There is still extra time, but the usage limit for the extra time was reached, too.
     </string>
     <string name="lock_reason_battery_limit">
