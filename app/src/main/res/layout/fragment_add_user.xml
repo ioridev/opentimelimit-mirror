@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+    Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,7 +20,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.user.create.AddUserFragment">
 
-    <data></data>
+    <data>
+        <variable
+            name="isCreatingChildUser"
+            type="boolean" />
+
+        <import type="android.view.View" />
+    </data>
 
     <io.timelimit.android.ui.view.SafeViewFlipper
         android:layout_width="match_parent"
@@ -78,6 +84,13 @@
                                 android:layout_height="wrap_content" />
 
                         </RadioGroup>
+
+                        <TextView
+                            android:visibility="@{isCreatingChildUser ? View.VISIBLE : View.GONE}"
+                            android:textAppearance="?android:textAppearanceMedium"
+                            android:text="@string/add_user_child_password_info"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
 
                         <io.timelimit.android.ui.view.SetPasswordView
                             android:id="@+id/password"
