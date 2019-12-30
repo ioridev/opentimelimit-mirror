@@ -351,6 +351,15 @@ object LocalDatabaseParentActionDispatcher {
                             timezone = action.timezone
                     )
                 }
+                is SetChildPasswordAction -> {
+                    val userEntry = database.user().getUserByIdSync(action.childId)
+
+                    if (userEntry?.type != UserType.Child) {
+                        throw IllegalArgumentException("can not set child password for a child which does not exist")
+                    }
+
+                    database.user().updateUserSync(userEntry.copy(password = action.newPasswordHash))
+                }
                 is SetDeviceDefaultUserAction -> {
                     if (action.defaultUserId.isNotEmpty()) {
                         DatabaseValidation.assertUserExists(database, action.defaultUserId)

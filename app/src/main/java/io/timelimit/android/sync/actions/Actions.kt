@@ -388,6 +388,12 @@ data class SetUserTimezoneAction(val userId: String, val timezone: String): Pare
     }
 }
 
+data class SetChildPasswordAction(val childId: String, val newPasswordHash: String): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(childId)
+    }
+}
+
 data class RenameChildAction(val childId: String, val newName: String): ParentAction() {
     init {
         IdGenerator.assertIdValid(childId)

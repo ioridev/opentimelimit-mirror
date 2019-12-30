@@ -35,6 +35,7 @@ import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.child.ManageChildFragmentArgs
 import io.timelimit.android.ui.manage.child.advanced.managedisabletimelimits.ManageDisableTimelimitsViewHelper
+import io.timelimit.android.ui.manage.child.advanced.password.ManageChildPassword
 import io.timelimit.android.ui.manage.child.advanced.timezone.SetChildTimezoneDialogFragment
 import java.util.*
 
@@ -147,6 +148,15 @@ class ManageChildAdvancedFragment : Fragment() {
                 DeleteChildDialogFragment.newInstance(params.childId).show(fragmentManager!!)
             }
         }
+
+        ManageChildPassword.bind(
+                view = binding.password,
+                childId = params.childId,
+                childEntry = childEntry,
+                lifecycleOwner = this,
+                auth = auth,
+                fragmentManager = fragmentManager!!
+        )
 
         return binding.root
     }

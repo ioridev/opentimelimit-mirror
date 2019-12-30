@@ -118,6 +118,9 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <include android:id="@+id/password"
+                layout="@layout/manage_child_password" />
+
             <androidx.cardview.widget.CardView
                 app:cardUseCompatPadding="true"
                 android:layout_width="match_parent"
