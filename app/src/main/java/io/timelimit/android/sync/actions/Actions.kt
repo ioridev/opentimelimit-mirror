@@ -39,6 +39,7 @@ sealed class Action
 
 sealed class AppLogicAction: Action()
 sealed class ParentAction: Action()
+sealed class ChildAction: Action()
 
 //
 // now the concrete actions
@@ -408,3 +409,8 @@ data class ResetParentBlockedTimesAction(val parentId: String): ParentAction() {
         IdGenerator.assertIdValid(parentId)
     }
 }
+
+// child actions
+object ChildSignInAction: ChildAction()
+
+data class ChildChangePasswordAction(val newPasswordHash: String): ChildAction()

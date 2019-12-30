@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,20 +33,24 @@ import io.timelimit.android.R
 import io.timelimit.android.data.model.User
 import io.timelimit.android.databinding.NewLoginFragmentBinding
 import io.timelimit.android.extensions.setOnEnterListenr
-import io.timelimit.android.logic.AppLogic
-import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.view.KeyboardViewListener
 
 class NewLoginFragment: DialogFragment() {
     companion object {
         const val SHOW_ON_LOCKSCREEN = "showOnLockscreen"
+
         private const val SELECTED_USER_ID = "selectedUserId"
+        private const val USER_LIST = 0
+        private const val PARENT_AUTH = 1
+        private const val CHILD_MISSING_PASSWORD = 2
+        private const val CHILD_ALREADY_CURRENT_USER = 3
+        private const val CHILD_AUTH = 4
+        private const val BLOCKED_LOGIN_TIME = 5
     }
 
-    private val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
-    private val model: LoginPasswordDialogFragmentModel by lazy {
-        ViewModelProviders.of(this).get(LoginPasswordDialogFragmentModel::class.java)
+    private val model: LoginDialogFragmentModel by lazy {
+        ViewModelProviders.of(this).get(LoginDialogFragmentModel::class.java)
     }
     private val inputMethodManager: InputMethodManager by lazy {
         context!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -66,10 +70,8 @@ class NewLoginFragment: DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?) = object: BottomSheetDialog(context!!, theme) {
         override fun onBackPressed() {
-            if (model.selectedUserId.value == null) {
+            if (!model.goBack()) {
                 super.onBackPressed()
-            } else {
-                model.selectedUserId.value = null
             }
         }
 
@@ -98,20 +100,20 @@ class NewLoginFragment: DialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = NewLoginFragmentBinding.inflate(inflater, container, false)
 
-        binding.userList.apply {
-            val adapter = LoginUserAdapter()
+        val adapter = LoginUserAdapter()
 
-            logic.database.user().getParentUsersLive().observe(this@NewLoginFragment, Observer { adapter.data = it })
+        adapter.listener = object: LoginUserAdapterListener {
+            override fun onUserClicked(user: User) {
+                // reset parent password view
+                binding.enterPassword.password.setText("")
 
-            adapter.listener = object: LoginUserAdapterListener {
-                override fun onUserClicked(user: User) {
-                    model.selectedUserId.value = user.id
-                }
+                // go to the next step
+                model.startSignIn(user)
             }
-
-            recycler.adapter = adapter
-            recycler.layoutManager = LinearLayoutManager(context)
         }
+
+        binding.userList.recycler.adapter = adapter
+        binding.userList.recycler.layoutManager = LinearLayoutManager(context)
 
         binding.enterPassword.apply {
             showKeyboardButton.setOnClickListener {
@@ -128,8 +130,8 @@ class NewLoginFragment: DialogFragment() {
                 }
             }
 
-            fun tryLogin() {
-                model.tryLogin(
+            fun go() {
+                model.tryParentLogin(
                         password = password.text.toString(),
                         model = getActivityViewModel(activity!!)
                 )
@@ -144,61 +146,111 @@ class NewLoginFragment: DialogFragment() {
                 }
 
                 override fun onGoClicked() {
-                    tryLogin()
+                    go()
                 }
             }
 
+            password.setOnEnterListenr { go() }
+        }
+
+        binding.childPassword.apply {
             password.setOnEnterListenr {
-                tryLogin()
+                model.tryChildLogin(
+                        password = password.text.toString(),
+                        model = getActivityViewModel(activity!!)
+                )
             }
+        }
 
-            model.status.observe(this@NewLoginFragment, Observer { status ->
-                when (status!!) {
-                    is UserListLoginDialogStatus -> {
-                        if (binding.switcher.displayedChild != 0) {
-                            binding.switcher.setInAnimation(context!!, R.anim.wizard_close_step_in)
-                            binding.switcher.setOutAnimation(context!!, R.anim.wizard_close_step_out)
-                            binding.switcher.displayedChild = 0
-                        }
-
-                        null
+        model.status.observe(this, Observer { status ->
+            when (status) {
+                LoginDialogDone -> {
+                    dismissAllowingStateLoss()
+                }
+                is UserListLoginDialogStatus -> {
+                    if (binding.switcher.displayedChild != USER_LIST) {
+                        binding.switcher.setInAnimation(context!!, R.anim.wizard_close_step_in)
+                        binding.switcher.setOutAnimation(context!!, R.anim.wizard_close_step_out)
+                        binding.switcher.displayedChild = USER_LIST
                     }
-                    is WrongTimeLoginDialogStatus -> {
-                        if (binding.switcher.displayedChild != 2) {
-                            binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
-                            binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
-                            binding.switcher.displayedChild = 2
-                        }
 
-                        null
+                    adapter.data = status.usersToShow
+                }
+                is ParentUserLogin -> {
+                    if (binding.switcher.displayedChild != PARENT_AUTH) {
+                        binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
+                        binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
+                        binding.switcher.displayedChild = PARENT_AUTH
                     }
-                    WaitingForPasswordLoginDialogStatus -> {
-                        if (binding.switcher.displayedChild != 1) {
-                            binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
-                            binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
-                            binding.switcher.displayedChild = 1
-                        }
 
-                        password.isEnabled = true
-
+                    if (!binding.enterPassword.showCustomKeyboard) {
                         binding.enterPassword.password.requestFocus()
                         inputMethodManager.showSoftInput(binding.enterPassword.password, 0)
+                    }
 
-                        null
-                    }
-                    ValidationRunningLoginDialogStatus -> {
-                        password.isEnabled = false
-                    }
-                    WrongPasswordLoginDialogStatus -> {
+                    binding.enterPassword.password.isEnabled = !status.isCheckingPassword
+
+                    if (status.wasPasswordWrong) {
                         Toast.makeText(context!!, R.string.login_snackbar_wrong, Toast.LENGTH_SHORT).show()
-                        password.setText("")
+                        binding.enterPassword.password.setText("")
 
                         model.resetPasswordWrong()
                     }
-                    SuccessLoginDialogStatus -> dismissAllowingStateLoss()
-                }.let {/* require handling all paths */}
-            })
-        }
+
+                    null
+                }
+                ParentUserLoginBlockedTime -> {
+                    if (binding.switcher.displayedChild != BLOCKED_LOGIN_TIME) {
+                        binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
+                        binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
+                        binding.switcher.displayedChild = BLOCKED_LOGIN_TIME
+                    }
+
+                    null
+                }
+                is CanNotSignInChildHasNoPassword -> {
+                    if (binding.switcher.displayedChild != CHILD_MISSING_PASSWORD) {
+                        binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
+                        binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
+                        binding.switcher.displayedChild = CHILD_MISSING_PASSWORD
+                    }
+
+                    binding.childWithoutPassword.childName = status.childName
+
+                    null
+                }
+                is ChildAlreadyDeviceUser -> {
+                    if (binding.switcher.displayedChild != CHILD_ALREADY_CURRENT_USER) {
+                        binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
+                        binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
+                        binding.switcher.displayedChild = CHILD_ALREADY_CURRENT_USER
+                    }
+
+                    null
+                }
+                is ChildUserLogin -> {
+                    if (binding.switcher.displayedChild != CHILD_AUTH) {
+                        binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
+                        binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
+                        binding.switcher.displayedChild = CHILD_AUTH
+                    }
+
+                    binding.childPassword.password.requestFocus()
+                    inputMethodManager.showSoftInput(binding.childPassword.password, 0)
+
+                    binding.childPassword.password.isEnabled = !status.isCheckingPassword
+
+                    if (status.wasPasswordWrong) {
+                        Toast.makeText(context!!, R.string.login_snackbar_wrong, Toast.LENGTH_SHORT).show()
+                        binding.childPassword.password.setText("")
+
+                        model.resetPasswordWrong()
+                    }
+
+                    null
+                }
+            }.let { /* require handling all cases */ }
+        })
 
         return binding.root
     }
