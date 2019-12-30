@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -133,6 +133,12 @@ class ManageChildAdvancedFragment : Fragment() {
                             childId = params.childId
                     ).show(fragmentManager!!)
                 }
+            }
+        }
+
+        binding.renameChildButton.setOnClickListener {
+            if (auth.requestAuthenticationOrReturnTrue()) {
+                UpdateChildNameDialogFragment.newInstance(params.childId).show(fragmentManager!!)
             }
         }
 
