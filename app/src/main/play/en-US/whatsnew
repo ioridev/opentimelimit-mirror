@@ -1,2 +1,3 @@
-- battery limit - configurable minimum battery level per category
-- whitelist emergency dialer
+- widget with remaining times
+- option to rename child users
+- child password feature (password per child so that they can set themself as current device user)

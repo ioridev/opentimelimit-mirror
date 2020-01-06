@@ -1,2 +1,3 @@
-- Akkulimit - Mindestakkustand für die Nutzung von Kategorien
-- Whitelisting der Notruffunktion
+- Widget mit Restnutzungsdauer
+- Möglichkeit, Kind-Benutzer umzubenennen
+- Kind-Passwort-Funktion (ein Passwort je Kind, damit diese sich selbst als aktuellen Benutzer festlegen können)
