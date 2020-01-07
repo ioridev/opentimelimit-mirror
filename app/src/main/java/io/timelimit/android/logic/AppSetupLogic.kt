@@ -154,7 +154,9 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             temporarilyBlocked = false,
                             parentCategoryId = "",
                             blockAllNotifications = false,
-                            timeWarnings = 0
+                            timeWarnings = 0,
+                            minBatteryLevelWhileCharging = 0,
+                            minBatteryLevelMobile = 0
                     ))
 
                     appLogic.database.category().addCategory(Category(
@@ -166,7 +168,9 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             temporarilyBlocked = false,
                             parentCategoryId = "",
                             blockAllNotifications = false,
-                            timeWarnings = 0
+                            timeWarnings = 0,
+                            minBatteryLevelWhileCharging = 0,
+                            minBatteryLevelMobile = 0
                     ))
 
                     // add default allowed apps

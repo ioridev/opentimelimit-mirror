@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+    Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -45,4 +45,14 @@
     <string name="manage_child_timezone_title">Timezone</string>
     <string name="manage_child_timezone_change_button">Change timezone</string>
     <string name="manage_child_timezone_search_hint">Search timezone</string>
+
+    <string name="manage_child_password_title">Child password</string>
+    <string name="manage_child_password_info">A child with a password
+        can set itself as the current user of a device
+        (using the authentication screen which is opened by the lock button at the bottom right)
+    </string>
+    <string name="manage_child_password_status_yes">This child has got a password</string>
+    <string name="manage_child_password_status_no">This child does not have a password</string>
+    <string name="manage_child_password_btn_set">Set password (for parents)</string>
+    <string name="manage_child_password_btn_change">Change password (for the child itself)</string>
 </resources>

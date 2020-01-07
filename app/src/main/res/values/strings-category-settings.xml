@@ -35,4 +35,10 @@
     <string name="category_settings_parent_category_assigned_to">This category is a child category of %s now.</string>
     <string name="category_settings_parent_category_button">Select parent category</string>
     <string name="category_settings_parent_category_none">no parent category</string>
+
+    <string name="category_settings_battery_limit_title">Battery limit</string>
+    <string name="category_settings_battery_limit_description">This allows to set minimum battery levels for this category</string>
+    <string name="category_settings_battery_limit_charging">While charging, the battery must have at least %d\%%</string>
+    <string name="category_settings_battery_limit_mobile">While discharging, the battery must have at least %d\%%</string>
+    <string name="category_settings_battery_limit_confirm_toast">The battery limit was saved</string>
 </resources>

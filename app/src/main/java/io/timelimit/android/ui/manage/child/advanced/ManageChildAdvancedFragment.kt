@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.child.ManageChildFragmentArgs
 import io.timelimit.android.ui.manage.child.advanced.managedisabletimelimits.ManageDisableTimelimitsViewHelper
+import io.timelimit.android.ui.manage.child.advanced.password.ManageChildPassword
 import io.timelimit.android.ui.manage.child.advanced.timezone.SetChildTimezoneDialogFragment
 import java.util.*
 
@@ -136,11 +137,26 @@ class ManageChildAdvancedFragment : Fragment() {
             }
         }
 
+        binding.renameChildButton.setOnClickListener {
+            if (auth.requestAuthenticationOrReturnTrue()) {
+                UpdateChildNameDialogFragment.newInstance(params.childId).show(fragmentManager!!)
+            }
+        }
+
         binding.deleteUserButton.setOnClickListener {
             if (auth.requestAuthenticationOrReturnTrue()) {
                 DeleteChildDialogFragment.newInstance(params.childId).show(fragmentManager!!)
             }
         }
+
+        ManageChildPassword.bind(
+                view = binding.password,
+                childId = params.childId,
+                childEntry = childEntry,
+                lifecycleOwner = this,
+                auth = auth,
+                fragmentManager = fragmentManager!!
+        )
 
         return binding.root
     }

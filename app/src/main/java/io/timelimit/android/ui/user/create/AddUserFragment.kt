@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,17 +63,11 @@ class AddUserFragment : Fragment() {
 
         // password
 
-        val isPasswordRequired = userType.map { it == UserType.Parent }
-
-        isPasswordRequired.observe(this, Observer {
-            if (it != null && it) {
-                binding.password.visibility = View.VISIBLE
-            } else {
-                binding.password.visibility = View.GONE
-            }
+        userType.observe(this, Observer {
+            binding.isCreatingChildUser = it == UserType.Child
         })
 
-        val isPasswordOk = binding.password.passwordOk.or(isPasswordRequired.invert())
+        val isPasswordOk = binding.password.passwordOk
 
         binding.password.allowNoPassword.value = true
 
@@ -95,10 +89,7 @@ class AddUserFragment : Fragment() {
                 model.tryCreateUser(
                         name = binding.name.text.toString(),
                         type = userType.value!!,
-                        password = when (userType.value!!) {
-                            UserType.Parent -> binding.password.readPassword()
-                            UserType.Child -> ""
-                        },
+                        password = binding.password.readPassword(),
                         model = auth
                 )
             }

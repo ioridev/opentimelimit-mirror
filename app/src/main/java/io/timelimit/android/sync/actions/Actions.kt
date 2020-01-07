@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ sealed class Action
 
 sealed class AppLogicAction: Action()
 sealed class ParentAction: Action()
+sealed class ChildAction: Action()
 
 //
 // now the concrete actions
@@ -168,6 +169,23 @@ data class SetParentCategory(val categoryId: String, val parentCategory: String)
 
         if (parentCategory.isNotEmpty()) {
             IdGenerator.assertIdValid(parentCategory)
+        }
+    }
+}
+data class UpdateCategoryBatteryLimit(val categoryId: String, val chargingLimit: Int?, val mobileLimit: Int?): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(categoryId)
+
+        if (chargingLimit != null) {
+            if (chargingLimit < 0 || chargingLimit > 100) {
+                throw IllegalArgumentException()
+            }
+        }
+
+        if (mobileLimit != null) {
+            if (mobileLimit < 0 || mobileLimit > 100) {
+                throw IllegalArgumentException()
+            }
         }
     }
 }
@@ -370,6 +388,22 @@ data class SetUserTimezoneAction(val userId: String, val timezone: String): Pare
     }
 }
 
+data class SetChildPasswordAction(val childId: String, val newPasswordHash: String): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(childId)
+    }
+}
+
+data class RenameChildAction(val childId: String, val newName: String): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(childId)
+
+        if (newName.isEmpty()) {
+            throw IllegalArgumentException("newName must not be empty")
+        }
+    }
+}
+
 data class UpdateParentBlockedTimesAction(val parentId: String, val blockedTimes: ImmutableBitmask): ParentAction() {
     init {
         IdGenerator.assertIdValid(parentId)
@@ -381,3 +415,8 @@ data class ResetParentBlockedTimesAction(val parentId: String): ParentAction() {
         IdGenerator.assertIdValid(parentId)
     }
 }
+
+// child actions
+object ChildSignInAction: ChildAction()
+
+data class ChildChangePasswordAction(val newPasswordHash: String): ChildAction()

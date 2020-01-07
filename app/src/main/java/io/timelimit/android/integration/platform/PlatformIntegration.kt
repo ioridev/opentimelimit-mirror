@@ -17,6 +17,7 @@ package io.timelimit.android.integration.platform
 
 import android.graphics.drawable.Drawable
 import android.os.Parcelable
+import androidx.lifecycle.LiveData
 import androidx.room.TypeConverter
 import io.timelimit.android.data.model.App
 import io.timelimit.android.data.model.AppActivity
@@ -60,6 +61,9 @@ abstract class PlatformIntegration(
     abstract fun setEnableSystemLockdown(enableLockdown: Boolean): Boolean
     // returns true on success
     abstract fun setLockTaskPackages(packageNames: List<String>): Boolean
+
+    abstract fun getBatteryStatus(): BatteryStatus
+    abstract fun getBatteryStatusLive(): LiveData<BatteryStatus>
 
     var installedAppsChangeListener: Runnable? = null
 }
@@ -192,3 +196,18 @@ data class AppStatusMessage(
         val subtext: String? = null,
         val showSwitchToDefaultUserOption: Boolean = false
 ): Parcelable
+
+data class BatteryStatus(
+        val charging: Boolean,
+        val level: Int
+) {
+    companion object {
+        val dummy = BatteryStatus(false, 0)
+    }
+
+    init {
+        if (level < 0 || level > 100) {
+            throw IllegalArgumentException()
+        }
+    }
+}

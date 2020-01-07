@@ -49,7 +49,11 @@ data class Category(
         @ColumnInfo(name = "block_all_notifications")
         val blockAllNotifications: Boolean,
         @ColumnInfo(name = "time_warnings")
-        val timeWarnings: Int
+        val timeWarnings: Int,
+        @ColumnInfo(name = "min_battery_charging")
+        val minBatteryLevelWhileCharging: Int,
+        @ColumnInfo(name = "min_battery_mobile")
+        val minBatteryLevelMobile: Int
 ): JsonSerializable {
     companion object {
         const val MINUTES_PER_DAY = 60 * 24
@@ -64,6 +68,8 @@ data class Category(
         private const val PARENT_CATEGORY_ID = "parentCategoryId"
         private const val BlOCK_ALL_NOTIFICATIONS = "blockAllNotifications"
         private const val TIME_WARNINGS = "timeWarnings"
+        private const val MIN_BATTERY_CHARGING = "minBatteryCharging"
+        private const val MIN_BATTERY_MOBILE = "minBatteryMobile"
 
         fun parse(reader: JsonReader): Category {
             var id: String? = null
@@ -76,6 +82,8 @@ data class Category(
             var parentCategoryId = ""
             var blockAllNotifications = false
             var timeWarnings = 0
+            var minBatteryCharging = 0
+            var minBatteryMobile = 0
 
             reader.beginObject()
 
@@ -90,6 +98,8 @@ data class Category(
                     PARENT_CATEGORY_ID -> parentCategoryId = reader.nextString()
                     BlOCK_ALL_NOTIFICATIONS -> blockAllNotifications = reader.nextBoolean()
                     TIME_WARNINGS -> timeWarnings = reader.nextInt()
+                    MIN_BATTERY_CHARGING -> minBatteryCharging = reader.nextInt()
+                    MIN_BATTERY_MOBILE -> minBatteryMobile = reader.nextInt()
                     else -> reader.skipValue()
                 }
             }
@@ -105,7 +115,9 @@ data class Category(
                     temporarilyBlocked = temporarilyBlocked!!,
                     parentCategoryId = parentCategoryId,
                     blockAllNotifications = blockAllNotifications,
-                    timeWarnings = timeWarnings
+                    timeWarnings = timeWarnings,
+                    minBatteryLevelWhileCharging = minBatteryCharging,
+                    minBatteryLevelMobile = minBatteryMobile
             )
         }
     }
@@ -119,6 +131,14 @@ data class Category(
         }
 
         if (title.isEmpty()) {
+            throw IllegalArgumentException()
+        }
+
+        if (minBatteryLevelMobile < 0 || minBatteryLevelWhileCharging < 0) {
+            throw IllegalArgumentException()
+        }
+
+        if (minBatteryLevelMobile > 100 || minBatteryLevelWhileCharging > 100) {
             throw IllegalArgumentException()
         }
     }
@@ -135,6 +155,8 @@ data class Category(
         writer.name(PARENT_CATEGORY_ID).value(parentCategoryId)
         writer.name(BlOCK_ALL_NOTIFICATIONS).value(blockAllNotifications)
         writer.name(TIME_WARNINGS).value(timeWarnings)
+        writer.name(MIN_BATTERY_CHARGING).value(minBatteryLevelWhileCharging)
+        writer.name(MIN_BATTERY_MOBILE).value(minBatteryLevelMobile)
 
         writer.endObject()
     }

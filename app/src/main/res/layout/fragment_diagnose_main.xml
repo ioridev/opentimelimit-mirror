@@ -34,6 +34,12 @@
                 android:layout_height="wrap_content" />
 
             <Button
+                android:id="@+id/diagnose_battery_button"
+                android:text="@string/diagnose_bat_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <Button
                 android:id="@+id/diagnose_fga_button"
                 android:text="@string/diagnose_fga_title"
                 android:layout_width="match_parent"
@@ -42,6 +48,13 @@
             <Button
                 android:id="@+id/diagnose_exf_button"
                 android:text="@string/diagnose_exf_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/diagnose_bg_task_loop_ex_button"
+                android:text="@string/diagnose_bg_task_loop_ex"
+                android:enabled="false"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 

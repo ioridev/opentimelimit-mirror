@@ -18,7 +18,9 @@
     <color name="colorPrimary">#673ab7</color>
     <color name="colorPrimaryDark">#512da8</color>
     <color name="colorAccent">#4caf50</color>
+    <color name="widget_background">#33000000</color>
 
+    <color name="transparent">#00000000</color>
     <color name="gray">#9E9E9E</color>
     <color name="white">#FFF</color>
     <color name="green">#0a0</color>

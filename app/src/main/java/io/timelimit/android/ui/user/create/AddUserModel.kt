@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ class AddUserModel(application: Application): AndroidViewModel(application) {
                         val actions = ArrayList<ParentAction>(listOf(
                                 AddUserAction(
                                         name = name,
-                                        password = null,
+                                        password = if (password.isEmpty()) null else PasswordHashing.hashCoroutine(password),
                                         userType = UserType.Child,
                                         userId = childId,
                                         timeZone = logic.timeApi.getSystemTimeZone().id

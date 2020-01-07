@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+    Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,4 +44,14 @@
     <string name="manage_child_timezone_title">Zeitzone</string>
     <string name="manage_child_timezone_change_button">Zeitzone ändern</string>
     <string name="manage_child_timezone_search_hint">Zeitzone suchen</string>
+
+    <string name="manage_child_password_title">Kind-Passwort</string>
+    <string name="manage_child_password_info">Ein Kind kann
+        sich mit seinem Passwort als aktueller Benutzer eines Gerätes festlegen
+        (mit dem Anmeldebildschirm, der mit dem Schloss-Button unten rechts geöffnet werden kann)
+    </string>
+    <string name="manage_child_password_status_yes">Dieses Kind hat ein Passwort</string>
+    <string name="manage_child_password_status_no">Dieses Kind hat kein Passwort</string>
+    <string name="manage_child_password_btn_set">Passwort festlegen (als Elternteil)</string>
+    <string name="manage_child_password_btn_change">Passwort ändern (als das Kind selbst)</string>
 </resources>

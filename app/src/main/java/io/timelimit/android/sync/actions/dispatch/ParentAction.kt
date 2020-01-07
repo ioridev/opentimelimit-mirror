@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,7 +76,9 @@ object LocalDatabaseParentActionDispatcher {
                             temporarilyBlocked = false,
                             parentCategoryId = "",
                             blockAllNotifications = false,
-                            timeWarnings = 0
+                            timeWarnings = 0,
+                            minBatteryLevelWhileCharging = 0,
+                            minBatteryLevelMobile = 0
                     ))
                 }
                 is DeleteCategoryAction -> {
@@ -349,6 +351,15 @@ object LocalDatabaseParentActionDispatcher {
                             timezone = action.timezone
                     )
                 }
+                is SetChildPasswordAction -> {
+                    val userEntry = database.user().getUserByIdSync(action.childId)
+
+                    if (userEntry?.type != UserType.Child) {
+                        throw IllegalArgumentException("can not set child password for a child which does not exist")
+                    }
+
+                    database.user().updateUserSync(userEntry.copy(password = action.newPasswordHash))
+                }
                 is SetDeviceDefaultUserAction -> {
                     if (action.defaultUserId.isNotEmpty()) {
                         DatabaseValidation.assertUserExists(database, action.defaultUserId)
@@ -376,6 +387,19 @@ object LocalDatabaseParentActionDispatcher {
                     database.device().updateDeviceEntry(
                             deviceEntry.copy(
                                     considerRebootManipulation = action.considerRebootManipulation
+                            )
+                    )
+                }
+                is RenameChildAction -> {
+                    val userEntry = database.user().getUserByIdSync(action.childId)
+
+                    if (userEntry?.type != UserType.Child) {
+                        throw IllegalArgumentException("can not set child password for a child which does not exist")
+                    }
+
+                    database.user().updateUserSync(
+                            userEntry.copy(
+                                    name = action.newName
                             )
                     )
                 }
@@ -441,6 +465,17 @@ object LocalDatabaseParentActionDispatcher {
                     database.user().updateUserSync(
                             userEntry.copy(
                                     blockedTimes = ImmutableBitmask(BitSet())
+                            )
+                    )
+                }
+                is UpdateCategoryBatteryLimit -> {
+                    val categoryEntry = database.category().getCategoryByIdSync(action.categoryId)
+                            ?: throw IllegalArgumentException("can not update battery limit for a category which does not exist")
+
+                    database.category().updateCategorySync(
+                            categoryEntry.copy(
+                                    minBatteryLevelWhileCharging = action.chargingLimit ?: categoryEntry.minBatteryLevelWhileCharging,
+                                    minBatteryLevelMobile = action.mobileLimit ?: categoryEntry.minBatteryLevelMobile
                             )
                     )
                 }

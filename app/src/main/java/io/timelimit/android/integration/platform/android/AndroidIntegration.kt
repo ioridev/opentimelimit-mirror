@@ -38,6 +38,7 @@ import android.view.KeyEvent
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.LiveData
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsyncExpectForever
@@ -75,6 +76,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     private val notificationManager = this.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     private val deviceAdmin = ComponentName(context.applicationContext, AdminReceiver::class.java)
     private val overlay = OverlayUtil(context as Application)
+    private val battery = BatteryStatusUtil(context)
 
     init {
         AppsChangeListener.registerBroadcastReceiver(this.context, object : BroadcastReceiver() {
@@ -269,7 +271,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
             val actionIntent = PendingIntent.getService(
                     context,
                     PendingIntentIds.REVOKE_TEMPORARILY_ALLOWED,
-                    BackgroundService.prepareRevokeTemporarilyAllowed(context),
+                    BackgroundActionService.prepareRevokeTemporarilyAllowed(context),
                     PendingIntent.FLAG_UPDATE_CURRENT
             )
 
@@ -413,4 +415,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
             false
         }
     }
+
+    override fun getBatteryStatus(): BatteryStatus = battery.status.value!!
+    override fun getBatteryStatusLive(): LiveData<BatteryStatus> = battery.status
 }

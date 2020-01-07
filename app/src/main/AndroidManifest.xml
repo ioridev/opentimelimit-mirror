@@ -101,6 +101,10 @@
             android:name=".integration.platform.android.BackgroundService"
             android:exported="false" />
 
+        <service
+            android:name=".integration.platform.android.BackgroundActionService"
+            android:exported="false" />
+
         <receiver
             android:name=".integration.platform.android.AdminReceiver"
             android:description="@string/admin_description"
@@ -113,6 +117,14 @@
             <intent-filter>
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
+        </receiver>
+        
+        <receiver android:name=".ui.widget.TimesWidgetProvider">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                android:resource="@xml/times_widget_info" />
         </receiver>
 
         <service
@@ -136,6 +148,8 @@
 
         </service>
 
+        <service android:name=".ui.widget.TimesWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"/>
 
     </application>
 

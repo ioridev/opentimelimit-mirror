@@ -19,6 +19,7 @@ import android.util.Log
 import android.util.SparseArray
 import android.util.SparseLongArray
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
@@ -35,6 +36,7 @@ import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.integration.platform.android.AccessibilityService
 import io.timelimit.android.integration.platform.android.AndroidIntegrationApps
 import io.timelimit.android.livedata.*
+import io.timelimit.android.logic.extension.isCategoryAllowed
 import io.timelimit.android.sync.actions.UpdateDeviceStatusAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 import io.timelimit.android.util.AndroidVersion
@@ -46,6 +48,7 @@ import java.util.*
 
 class BackgroundTaskLogic(val appLogic: AppLogic) {
     var pauseBackgroundLoop = false
+    val lastLoopException = MutableLiveData<Exception?>().apply { value = null }
 
     companion object {
         private const val CHECK_PERMISSION_INTERVAL = 10 * 1000L    // all 10 seconds
@@ -233,6 +236,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
                 // get the current status
                 val isScreenOn = appLogic.platformIntegration.isScreenOn()
+                val batteryStatus = appLogic.platformIntegration.getBatteryStatus()
 
                 appLogic.defaultUserLogic.reportScreenOn(isScreenOn)
 
@@ -300,10 +304,9 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                     if (category == null) {
                         usedTimeUpdateHelper?.commit(appLogic)
 
-                        if (AndroidIntegrationApps.ignoredApps.contains(foregroundAppPackageName) == false) {
-                            // don't suspend system apps which are whitelisted in any version
-                            appLogic.platformIntegration.setSuspendedApps(listOf(foregroundAppPackageName), true)
-                        }
+                        openLockscreen(foregroundAppPackageName, foregroundAppActivityName)
+                    } else if ((!batteryStatus.isCategoryAllowed(category)) || (!batteryStatus.isCategoryAllowed(parentCategory))) {
+                        usedTimeUpdateHelper?.commit(appLogic)
 
                         openLockscreen(foregroundAppPackageName, foregroundAppActivityName)
                     } else if (category.temporarilyBlocked or (parentCategory?.temporarilyBlocked == true)) {
@@ -475,6 +478,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                 }
             } catch (ex: SecurityException) {
                 // this is handled by an other main loop (with a delay)
+                lastLoopException.postValue(ex)
 
                 appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
                         appLogic.context.getString(R.string.background_logic_error),
@@ -485,6 +489,8 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                 if (BuildConfig.DEBUG) {
                     Log.w(LOG_TAG, "exception during running main loop", ex)
                 }
+
+                lastLoopException.postValue(ex)
 
                 appLogic.platformIntegration.setAppStatusMessage(AppStatusMessage(
                         appLogic.context.getString(R.string.background_logic_error),
