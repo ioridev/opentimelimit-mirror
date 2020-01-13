@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,8 @@ import android.os.Looper
 import java.util.concurrent.Executors
 
 object Threads {
-    val database = Executors.newSingleThreadExecutor()!!
+    val database = Executors.newSingleThreadExecutor()
     val mainThreadHandler = Handler(Looper.getMainLooper())
-    val crypto = Executors.newSingleThreadExecutor()!!
+    val crypto = Executors.newSingleThreadExecutor()
+    val backgroundOSInteraction = Executors.newSingleThreadExecutor()
 }

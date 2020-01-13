@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,10 +15,15 @@
  */
 package io.timelimit.android.logic
 
+import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
+import io.timelimit.android.BuildConfig
+import io.timelimit.android.R
+import io.timelimit.android.async.Threads
+import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsyncExpectForever
 import io.timelimit.android.data.model.AppActivity
-import io.timelimit.android.data.model.UserType
 import io.timelimit.android.livedata.*
 import io.timelimit.android.sync.actions.*
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
@@ -26,6 +31,10 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class SyncInstalledAppsLogic(val appLogic: AppLogic) {
+    companion object {
+        private const val LOG_TAG = "SyncInstalledAppsLogic"
+    }
+
     private val doSyncLock = Mutex()
     private var requestSync = MutableLiveData<Boolean>().apply { value = false }
 
@@ -42,14 +51,28 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
     private suspend fun syncLoop() {
         requestSync.postValue(true)
 
+        // wait a moment before the first sync
+        appLogic.timeApi.sleep(15 * 1000)
+
         while (true) {
             requestSync.waitUntilValueMatches { it == true }
             requestSync.value = false
 
-            doSyncNow()
+            try {
+                doSyncNow()
 
-            // maximal 1 time per 5 seconds
-            appLogic.timeApi.sleep(5 * 1000)
+                // maximal 1 time per 5 seconds
+                appLogic.timeApi.sleep(5 * 1000)
+            } catch (ex: Exception) {
+                if (BuildConfig.DEBUG) {
+                    Log.w(LOG_TAG, "could not sync installed app list", ex)
+                }
+
+                Toast.makeText(appLogic.context, R.string.background_logic_toast_sync_apps, Toast.LENGTH_SHORT).show()
+
+                appLogic.timeApi.sleep(45 * 1000)
+                requestSync.value = true
+            }
         }
     }
 
@@ -59,7 +82,9 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
             val deviceId = deviceEntry.id
 
             run {
-                val currentlyInstalled = appLogic.platformIntegration.getLocalApps().associateBy { app -> app.packageName }
+                val currentlyInstalled = Threads.backgroundOSInteraction.executeAndWait {
+                    appLogic.platformIntegration.getLocalApps().associateBy { app -> app.packageName }
+                }
                 val currentlySaved = appLogic.database.app().getApps().waitForNonNullValue().associateBy { app -> app.packageName }
 
                 // skip all items for removal which are still saved locally
@@ -100,12 +125,12 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
             run {
                 fun buildKey(activity: AppActivity) = "${activity.appPackageName}:${activity.activityClassName}"
 
-                val currentlyInstalled = (
-                        if (deviceEntry.enableActivityLevelBlocking)
-                            appLogic.platformIntegration.getLocalAppActivities(deviceId = deviceId)
-                        else
-                            emptyList()
-                        ).associateBy { buildKey(it) }
+                val currentlyInstalled = if (deviceEntry.enableActivityLevelBlocking)
+                    Threads.backgroundOSInteraction.executeAndWait {
+                        appLogic.platformIntegration.getLocalAppActivities(deviceId = deviceId).associateBy { buildKey(it) }
+                    }
+                else
+                    emptyMap()
 
                 val currentlySaved = appLogic.database.appActivity().getAppActivitiesByDeviceIds(deviceIds = listOf(deviceId)).waitForNonNullValue().associateBy { buildKey(it) }
 
