@@ -1,3 +1,3 @@
-- widget with remaining times
-- option to rename child users
-- child password feature (password per child so that they can set themself as current device user)
+stability improvments:
+- reduced problems when opening the usage stats access consent screen
+- exception handling when reading the list of installed Apps
