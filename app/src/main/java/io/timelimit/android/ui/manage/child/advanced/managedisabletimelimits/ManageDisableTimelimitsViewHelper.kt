@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,13 @@ package io.timelimit.android.ui.manage.child.advanced.managedisabletimelimits
 import android.content.Context
 import android.text.format.DateUtils
 import androidx.fragment.app.FragmentActivity
+import io.timelimit.android.R
 import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.date.DateInTimezone
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.SetUserDisableLimitsUntilAction
+import io.timelimit.android.ui.help.HelpDialogFragment
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.view.ManageDisableTimelimitsViewHandlers
 import org.threeten.bp.LocalDate
@@ -81,6 +83,13 @@ object ManageDisableTimelimitsViewHelper {
                                 timestamp = 0
                         )
                 )
+            }
+
+            override fun showDisableTimeLimitsHelp() {
+                HelpDialogFragment.newInstance(
+                        title = R.string.manage_disable_time_limits_title,
+                        text = R.string.manage_disable_time_limits_text
+                ).show(activity.supportFragmentManager)
             }
         }
     }

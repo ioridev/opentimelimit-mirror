@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -100,7 +100,8 @@ class ManageDeviceFeaturesFragment : Fragment(), FragmentWithCustomTitle {
                 view = binding.deviceRebootManipulation,
                 lifecycleOwner = this,
                 deviceEntry = deviceEntry,
-                auth = auth
+                auth = auth,
+                fragmentManager = fragmentManager!!
         )
 
         // activity level blocking
@@ -108,7 +109,8 @@ class ManageDeviceFeaturesFragment : Fragment(), FragmentWithCustomTitle {
                 view = binding.activityLevelBlocking,
                 auth = auth,
                 deviceEntry = deviceEntry,
-                lifecycleOwner = this
+                lifecycleOwner = this,
+                fragmentManager = fragmentManager!!
         )
 
         return binding.root

@@ -23,6 +23,7 @@ import android.widget.CheckBox
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import io.timelimit.android.R
 import io.timelimit.android.data.model.User
 import io.timelimit.android.databinding.FragmentManageChildAdvancedBinding
 import io.timelimit.android.livedata.liveDataFromFunction
@@ -31,6 +32,7 @@ import io.timelimit.android.livedata.mergeLiveData
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.UpdateCategoryTemporarilyBlockedAction
+import io.timelimit.android.ui.help.HelpDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.child.ManageChildFragmentArgs
@@ -58,6 +60,13 @@ class ManageChildAdvancedFragment : Fragment() {
 
         run {
             // blocked categories
+
+            binding.blockTemporarilyTitle.setOnClickListener {
+                HelpDialogFragment.newInstance(
+                        title = R.string.manage_child_block_temporarily_title,
+                        text = R.string.manage_child_block_temporarily_text
+                ).show(fragmentManager!!)
+            }
 
             val categoriesLive = logic.database.category().getCategoriesByChildId(params.childId)
 
@@ -104,8 +113,6 @@ class ManageChildAdvancedFragment : Fragment() {
                             childTimezone = child.timeZone,
                             activity = activity!!
                     )
-
-                    binding.disableTimeLimits.userName = child.name
                 }
             })
 

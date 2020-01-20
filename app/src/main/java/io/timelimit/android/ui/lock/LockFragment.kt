@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ import io.timelimit.android.sync.actions.AddCategoryAppsAction
 import io.timelimit.android.sync.actions.IncrementCategoryExtraTimeAction
 import io.timelimit.android.sync.actions.UpdateCategoryTemporarilyBlockedAction
 import io.timelimit.android.ui.MainActivity
+import io.timelimit.android.ui.help.HelpDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.AuthenticationFab
 import io.timelimit.android.ui.main.getActivityViewModel
@@ -210,6 +211,13 @@ class LockFragment : Fragment() {
         })
 
         // bind adding extra time controls
+        binding.extraTimeTitle.setOnClickListener {
+            HelpDialogFragment.newInstance(
+                    title = R.string.lock_extratime_title,
+                    text = R.string.lock_extratime_text
+            ).show(fragmentManager!!)
+        }
+
         binding.extraTimeBtnOk.setOnClickListener {
             if (auth.isParentAuthenticated()) {
                 runAsync {
@@ -265,8 +273,6 @@ class LockFragment : Fragment() {
                         childTimezone = child.timeZone,
                         activity = activity!!
                 )
-
-                binding.manageDisableTimeLimits.userName = child.name
             }
         })
 

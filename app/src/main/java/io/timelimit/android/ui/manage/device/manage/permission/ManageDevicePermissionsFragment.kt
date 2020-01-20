@@ -33,6 +33,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.data.model.Device
+import io.timelimit.android.data.model.UserType
 import io.timelimit.android.databinding.ManageDevicePermissionsFragmentBinding
 import io.timelimit.android.integration.platform.NewPermissionStatus
 import io.timelimit.android.integration.platform.ProtectionLevel
@@ -43,6 +44,7 @@ import io.timelimit.android.livedata.liveDataFromValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.ui.help.HelpDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticationFab
@@ -102,47 +104,47 @@ class ManageDevicePermissionsFragment : Fragment(), FragmentWithCustomTitle {
                 doesSupportAuth = liveDataFromValue(true)
         )
 
+        auth.authenticatedUser.map { it?.second?.type == UserType.Parent }.observe(this, Observer {
+            binding.isUserSignedIn = it
+        })
+
         // handlers
         binding.handlers = object: ManageDevicePermissionsFragmentHandlers {
             override fun openUsageStatsSettings() {
-                if (binding.isThisDevice == true) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        // According to user reports, some devices open the wrong screen
-                        // with the Settings.ACTION_USAGE_ACCESS_SETTINGS
-                        // but using an activity launcher to open this intent works for them.
-                        // This intent works at regular android too, so try this first
-                        // and use the "correct" one as fallback.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    // According to user reports, some devices open the wrong screen
+                    // with the Settings.ACTION_USAGE_ACCESS_SETTINGS
+                    // but using an activity launcher to open this intent works for them.
+                    // This intent works at regular android too, so try this first
+                    // and use the "correct" one as fallback.
 
-                        try {
-                            startActivity(
-                                    Intent()
-                                            .setClassName("com.android.settings", "com.android.settings.Settings\$UsageAccessSettingsActivity")
-                                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            )
-                        } catch (ex: Exception) {
-                            startActivity(
-                                    Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-                                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            )
-                        }
+                    try {
+                        startActivity(
+                                Intent()
+                                        .setClassName("com.android.settings", "com.android.settings.Settings\$UsageAccessSettingsActivity")
+                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
+                    } catch (ex: Exception) {
+                        startActivity(
+                                Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
                     }
                 }
             }
 
             override fun openNotificationAccessSettings() {
-                if (binding.isThisDevice == true) {
-                    try {
-                        startActivity(
-                                Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
-                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        )
-                    } catch (ex: Exception) {
-                        Toast.makeText(
-                                context,
-                                R.string.error_general,
-                                Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                try {
+                    startActivity(
+                            Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    )
+                } catch (ex: Exception) {
+                    Toast.makeText(
+                            context,
+                            R.string.error_general,
+                            Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
 
@@ -162,41 +164,60 @@ class ManageDevicePermissionsFragment : Fragment(), FragmentWithCustomTitle {
             }
 
             override fun manageDeviceAdmin() {
-                if (binding.isThisDevice == true) {
-                    val protectionLevel = logic.platformIntegration.getCurrentProtectionLevel()
+                val protectionLevel = logic.platformIntegration.getCurrentProtectionLevel()
 
-                    if (protectionLevel == ProtectionLevel.None) {
-                        if (InformAboutDeviceOwnerDialogFragment.shouldShow) {
-                            InformAboutDeviceOwnerDialogFragment().show(fragmentManager!!)
-                        } else {
-                            startActivity(
-                                    Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-                                            .putExtra(
-                                                    DevicePolicyManager.EXTRA_DEVICE_ADMIN,
-                                                    ComponentName(context!!, AdminReceiver::class.java)
-                                            )
-                            )
-                        }
+                if (protectionLevel == ProtectionLevel.None) {
+                    if (InformAboutDeviceOwnerDialogFragment.shouldShow) {
+                        InformAboutDeviceOwnerDialogFragment().show(fragmentManager!!)
                     } else {
                         startActivity(
-                                Intent(Settings.ACTION_SECURITY_SETTINGS)
-                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+                                        .putExtra(
+                                                DevicePolicyManager.EXTRA_DEVICE_ADMIN,
+                                                ComponentName(context!!, AdminReceiver::class.java)
+                                        )
                         )
                     }
+                } else {
+                    startActivity(
+                            Intent(Settings.ACTION_SECURITY_SETTINGS)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    )
                 }
             }
 
             override fun showAuthenticationScreen() {
                 activity.showAuthenticationScreen()
             }
+
+            override fun helpUsageStatsAccess() {
+                HelpDialogFragment.newInstance(
+                        title = R.string.manage_device_permissions_usagestats_title,
+                        text = R.string.manage_device_permissions_usagestats_text
+                ).show(fragmentManager!!)
+            }
+
+            override fun helpNotificationAccess() {
+                HelpDialogFragment.newInstance(
+                        title = R.string.manage_device_permission_notification_access_title,
+                        text = R.string.manage_device_permission_notification_access_text
+                ).show(fragmentManager!!)
+            }
+
+            override fun helpDrawOverOtherApps() {
+                HelpDialogFragment.newInstance(
+                        title = R.string.manage_device_permissions_overlay_title,
+                        text = R.string.manage_device_permissions_overlay_text
+                ).show(fragmentManager!!)
+            }
+
+            override fun helpAccesibility() {
+                HelpDialogFragment.newInstance(
+                        title = R.string.manage_device_permission_accessibility_title,
+                        text = R.string.manage_device_permission_accessibility_text
+                ).show(fragmentManager!!)
+            }
         }
-
-        // is this device
-        val isThisDevice = logic.deviceId.map { ownDeviceId -> ownDeviceId == args.deviceId }.ignoreUnchanged()
-
-        isThisDevice.observe(this, Observer {
-            binding.isThisDevice = it
-        })
 
         // permissions
         deviceEntry.observe(this, Observer {
@@ -233,4 +254,8 @@ interface ManageDevicePermissionsFragmentHandlers {
     fun openAccessibilitySettings()
     fun manageDeviceAdmin()
     fun showAuthenticationScreen()
+    fun helpUsageStatsAccess()
+    fun helpNotificationAccess()
+    fun helpDrawOverOtherApps()
+    fun helpAccesibility()
 }

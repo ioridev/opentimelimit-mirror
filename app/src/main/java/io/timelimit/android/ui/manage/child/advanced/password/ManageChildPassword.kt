@@ -19,8 +19,10 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import io.timelimit.android.R
 import io.timelimit.android.data.model.User
 import io.timelimit.android.databinding.ManageChildPasswordBinding
+import io.timelimit.android.ui.help.HelpDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 
 object ManageChildPassword {
@@ -32,6 +34,13 @@ object ManageChildPassword {
             auth: ActivityViewModel,
             fragmentManager: FragmentManager
     ) {
+        view.titleView.setOnClickListener {
+            HelpDialogFragment.newInstance(
+                    title = R.string.manage_child_password_title,
+                    text = R.string.manage_child_password_info
+            ).show(fragmentManager)
+        }
+
         childEntry.observe(lifecycleOwner, Observer {
             view.hasPassword = it?.password?.isNotEmpty() ?: false
         })
