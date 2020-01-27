@@ -14,6 +14,8 @@ Es gibt den Fall, dass ein Gerät nur von einem Benutzer verwendet wird. Insbeso
 
 Hinweise
 
+Ein Blick auf https://timelimit.io/de/konfigurationsansaetze/ kann hilfreich sein, wenn man TimeLimit nicht für den Standardfall einsetzt.
+
 Bei einigen Smartphone-Marken, insbesondere Huawei und Wiko, funktioniert TimeLimit nicht gut. Je nach Modell kann es mit den passenden Einstellungen besser funktionieren. Besser bedeutet aber nicht gut.
 
 Falls die App "nicht funktioniert" kann das an Energiesparfunktionen liegen. Wie Sie diese abschalten können, wird unter https://dontkillmyapp.com/ beschrieben. Wenden Sie sich an den Support, wenn das nicht hilft.
