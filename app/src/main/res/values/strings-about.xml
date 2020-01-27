@@ -17,6 +17,12 @@
 <resources>
     <string name="about_version">Version %s</string>
 
+    <string name="about_contact_title">Help ressources</string>
+    <string name="about_contact_mail">
+        https://timelimit.io/en/#support
+        \nhttps://timelimit.io/en/configsuggestions/
+    </string>
+
     <string name="about_source_title">Source code</string>
     <string name="about_source_text" translatable="false">
         <a href="https://codeberg.org/timelimit/opentimelimit-android">https://codeberg.org/timelimit/opentimelimit-android</a>
