@@ -1,3 +1,3 @@
-stability improvments:
-- reduced problems when opening the usage stats access consent screen
-- exception handling when reading the list of installed Apps
+- added option to change the parent timezone
+- moved help texts to dialogs
+- bugfixes
