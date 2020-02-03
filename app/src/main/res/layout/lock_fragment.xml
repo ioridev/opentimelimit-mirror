@@ -45,10 +45,6 @@
             type="io.timelimit.android.logic.BlockingReason" />
 
         <variable
-            name="areMultipleCategoriesBlocked"
-            type="Boolean" />
-
-        <variable
             name="blockedKindLabel"
             type="String" />
 
@@ -357,21 +353,12 @@
                                 android:layout_height="wrap_content" />
 
                             <Button
-                                android:enabled="@{safeUnbox(areMultipleCategoriesBlocked)}"
                                 android:onClick="@{() -> handlers.disableTemporarilyLockForAllCategories()}"
                                 android:text="@string/lock_disable_temporarily_all_categories"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content" />
 
                         </LinearLayout>
-
-                        <TextView
-                            android:visibility="@{safeUnbox(areMultipleCategoriesBlocked) ? View.GONE : View.VISIBLE}"
-                            tools:text="@string/lock_disable_temporarily_all_categories_disabled"
-                            android:text="@{@string/lock_disable_temporarily_all_categories_disabled(appCategoryTitle)}"
-                            android:textAppearance="?android:textAppearanceSmall"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
 
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -129,41 +129,52 @@ class CategoriesBlockingReasonUtil(private val appLogic: AppLogic) {
     ): LiveData<BlockingReason> {
         return category.switchMap { category ->
             val batteryOk = batteryLevel.map { it.isCategoryAllowed(category) }.ignoreUnchanged()
+            val elseCase = areLimitsTemporarilyDisabled.switchMap { areLimitsTemporarilyDisabled ->
+                if (areLimitsTemporarilyDisabled) {
+                    liveDataFromValue(BlockingReason.None)
+                } else {
+                    checkCategoryBlockedTimeAreas(
+                            temporarilyTrustedMinuteOfWeek = temporarilyTrustedMinuteOfWeek,
+                            blockedMinutesInWeek = category.blockedMinutesInWeek.dataNotToModify
+                    ).switchMap { blockedTimeAreasReason ->
+                        if (blockedTimeAreasReason != BlockingReason.None) {
+                            liveDataFromValue(blockedTimeAreasReason)
+                        } else {
+                            checkCategoryTimeLimitRules(
+                                    temporarilyTrustedDate = temporarilyTrustedDate,
+                                    category = category,
+                                    rules = appLogic.database.timeLimitRules().getTimeLimitRulesByCategory(category.id)
+                            )
+                        }
+                    }
+                }
+            }
+
 
             batteryOk.switchMap { ok ->
                 if (!ok) {
                     liveDataFromValue(BlockingReason.BatteryLimit)
                 } else if (category.temporarilyBlocked) {
-                    liveDataFromValue(BlockingReason.TemporarilyBlocked)
-                } else {
-                    areLimitsTemporarilyDisabled.switchMap { areLimitsTemporarilyDisabled ->
-                        if (areLimitsTemporarilyDisabled) {
-                            liveDataFromValue(BlockingReason.None)
-                        } else {
-                            checkCategoryBlockedTimeAreas(
-                                    temporarilyTrustedMinuteOfWeek = temporarilyTrustedMinuteOfWeek,
-                                    blockedMinutesInWeek = category.blockedMinutesInWeek.dataNotToModify
-                            ).switchMap { blockedTimeAreasReason ->
-                                if (blockedTimeAreasReason != BlockingReason.None) {
-                                    liveDataFromValue(blockedTimeAreasReason)
-                                } else {
-                                    checkCategoryTimeLimitRules(
-                                            temporarilyTrustedDate = temporarilyTrustedDate,
-                                            category = category,
-                                            rules = appLogic.database.timeLimitRules().getTimeLimitRulesByCategory(category.id)
-                                    )
-                                }
+                    if (category.temporarilyBlockedEndTime == 0L) {
+                        liveDataFromValue(BlockingReason.TemporarilyBlocked)
+                    } else {
+                        temporarilyTrustedTimeInMillis.switchMap { timeInMillis ->
+                            if (timeInMillis < category.temporarilyBlockedEndTime) {
+                                liveDataFromValue(BlockingReason.TemporarilyBlocked)
+                            } else {
+                                elseCase
                             }
                         }
                     }
+                } else {
+                    elseCase
                 }
-
             }
         }
     }
 
     private fun areLimitsDisabled(
-            temporarilyTrustedTimeInMillis: LiveData<Long?>,
+            temporarilyTrustedTimeInMillis: LiveData<Long>,
             childDisableLimitsUntil: LiveData<Long>
     ): LiveData<Boolean> = childDisableLimitsUntil.switchMap { childDisableLimitsUntil ->
         if (childDisableLimitsUntil == 0L) {
@@ -172,7 +183,7 @@ class CategoriesBlockingReasonUtil(private val appLogic: AppLogic) {
             temporarilyTrustedTimeInMillis.map {
                 trustedTimeInMillis ->
 
-                trustedTimeInMillis != null && childDisableLimitsUntil > trustedTimeInMillis
+                childDisableLimitsUntil > trustedTimeInMillis
             }.ignoreUnchanged()
         }
     }

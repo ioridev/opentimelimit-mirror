@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,13 +57,13 @@ abstract class CategoryDao {
     @Query("UPDATE category SET blocked_times = :blockedMinutesInWeek WHERE id = :categoryId")
     abstract fun updateCategoryBlockedTimes(categoryId: String, blockedMinutesInWeek: ImmutableBitmask)
 
-    @Query("UPDATE category SET temporarily_blocked = :blocked WHERE id = :categoryId")
-    abstract fun updateCategoryTemporarilyBlocked(categoryId: String, blocked: Boolean)
+    @Query("UPDATE category SET temporarily_blocked = :blocked, temporarily_blocked_end_time = :endTime WHERE id = :categoryId")
+    abstract fun updateCategoryTemporarilyBlocked(categoryId: String, blocked: Boolean, endTime: Long)
 
     @Query("SELECT * FROM category LIMIT :pageSize OFFSET :offset")
     abstract fun getCategoryPageSync(offset: Int, pageSize: Int): List<Category>
 
-    @Query("SELECT id, child_id, temporarily_blocked FROM category")
+    @Query("SELECT id, child_id, temporarily_blocked, temporarily_blocked_end_time FROM category")
     abstract fun getAllCategoriesShortInfo(): LiveData<List<CategoryShortInfo>>
 
     @Query("UPDATE category SET parent_category_id = :parentCategoryId WHERE id = :categoryId")
@@ -79,5 +79,7 @@ data class CategoryShortInfo(
         @ColumnInfo(name = "id")
         val categoryId: String,
         @ColumnInfo(name = "temporarily_blocked")
-        val temporarilyBlocked: Boolean
+        val temporarilyBlocked: Boolean,
+        @ColumnInfo(name = "temporarily_blocked_end_time")
+        val temporarilyBlockedEndTime: Long
 )

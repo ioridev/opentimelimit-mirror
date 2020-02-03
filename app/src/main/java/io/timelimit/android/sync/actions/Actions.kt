@@ -152,9 +152,13 @@ data class IncrementCategoryExtraTimeAction(val categoryId: String, val addedExt
         }
     }
 }
-data class UpdateCategoryTemporarilyBlockedAction(val categoryId: String, val blocked: Boolean): ParentAction() {
+data class UpdateCategoryTemporarilyBlockedAction(val categoryId: String, val blocked: Boolean, val endTime: Long?): ParentAction() {
     init {
         IdGenerator.assertIdValid(categoryId)
+
+        if (endTime != null && (!blocked)) {
+            throw IllegalArgumentException()
+        }
     }
 }
 data class UpdateCategoryTimeWarningsAction(val categoryId: String, val enable: Boolean, val flags: Int): ParentAction() {

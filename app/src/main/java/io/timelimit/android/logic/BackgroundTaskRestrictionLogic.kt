@@ -86,7 +86,10 @@ object BackgroundTaskRestrictionLogic {
                 result.status = BackgroundTaskLogicAppStatus.ShouldBlock
 
                 return
-            } else if (category.temporarilyBlocked  || parentCategory?.temporarilyBlocked == true) {
+            } else if (
+                    (category.temporarilyBlocked && ((category.temporarilyBlockedEndTime == 0L) || (category.temporarilyBlockedEndTime > nowTimestamp))) or
+                    (parentCategory?.temporarilyBlocked == true && ((parentCategory.temporarilyBlockedEndTime == 0L) || (parentCategory.temporarilyBlockedEndTime > nowTimestamp)))
+            ) {
                 result.status = BackgroundTaskLogicAppStatus.ShouldBlock
 
                 return

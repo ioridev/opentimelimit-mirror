@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ import io.timelimit.android.data.model.*
     TemporarilyAllowedApp::class,
     AppActivity::class,
     AllowedContact::class
-], version = 8)
+], version = 9)
 abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database {
     companion object {
         private val lock = Object()
@@ -75,7 +75,8 @@ abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database 
                             DatabaseMigrations.MIGRATE_TO_V5,
                             DatabaseMigrations.MIGRATE_TO_V6,
                             DatabaseMigrations.MIGRATE_TO_V7,
-                            DatabaseMigrations.MIGRATE_TO_V8
+                            DatabaseMigrations.MIGRATE_TO_V8,
+                            DatabaseMigrations.MIGRATE_TO_V9
                     )
                     .build()
         }

@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +44,8 @@ data class Category(
         val extraTimeInMillis: Long,
         @ColumnInfo(name = "temporarily_blocked")
         val temporarilyBlocked: Boolean,
+        @ColumnInfo(name = "temporarily_blocked_end_time")
+        val temporarilyBlockedEndTime: Long,
         @ColumnInfo(name = "parent_category_id")
         val parentCategoryId: String,
         @ColumnInfo(name = "block_all_notifications")
@@ -65,6 +67,7 @@ data class Category(
         private const val BLOCKED_MINUTES_IN_WEEK = "blockedMinutesInWeek"
         private const val EXTRA_TIME_IN_MILLIS = "extraTimeInMillis"
         private const val TEMPORARILY_BLOCKED = "temporarilyBlocked"
+        private const val TEMPORARILY_BLOCKED_END_TIME = "temporarilyBlockedEndTime"
         private const val PARENT_CATEGORY_ID = "parentCategoryId"
         private const val BlOCK_ALL_NOTIFICATIONS = "blockAllNotifications"
         private const val TIME_WARNINGS = "timeWarnings"
@@ -78,6 +81,7 @@ data class Category(
             var blockedMinutesInWeek: ImmutableBitmask? = null
             var extraTimeInMillis: Long? = null
             var temporarilyBlocked: Boolean? = null
+            var temporarilyBlockedEndTime: Long = 0
             // this field was added later so it has got a default value
             var parentCategoryId = ""
             var blockAllNotifications = false
@@ -95,6 +99,7 @@ data class Category(
                     BLOCKED_MINUTES_IN_WEEK -> blockedMinutesInWeek = ImmutableBitmaskJson.parse(reader.nextString(), BLOCKED_MINUTES_IN_WEEK_LENGTH)
                     EXTRA_TIME_IN_MILLIS -> extraTimeInMillis = reader.nextLong()
                     TEMPORARILY_BLOCKED -> temporarilyBlocked = reader.nextBoolean()
+                    TEMPORARILY_BLOCKED_END_TIME -> temporarilyBlockedEndTime = reader.nextLong()
                     PARENT_CATEGORY_ID -> parentCategoryId = reader.nextString()
                     BlOCK_ALL_NOTIFICATIONS -> blockAllNotifications = reader.nextBoolean()
                     TIME_WARNINGS -> timeWarnings = reader.nextInt()
@@ -113,6 +118,7 @@ data class Category(
                     blockedMinutesInWeek = blockedMinutesInWeek!!,
                     extraTimeInMillis = extraTimeInMillis!!,
                     temporarilyBlocked = temporarilyBlocked!!,
+                    temporarilyBlockedEndTime = temporarilyBlockedEndTime,
                     parentCategoryId = parentCategoryId,
                     blockAllNotifications = blockAllNotifications,
                     timeWarnings = timeWarnings,
@@ -152,6 +158,7 @@ data class Category(
         writer.name(BLOCKED_MINUTES_IN_WEEK).value(ImmutableBitmaskJson.serialize(blockedMinutesInWeek))
         writer.name(EXTRA_TIME_IN_MILLIS).value(extraTimeInMillis)
         writer.name(TEMPORARILY_BLOCKED).value(temporarilyBlocked)
+        writer.name(TEMPORARILY_BLOCKED_END_TIME).value(temporarilyBlockedEndTime)
         writer.name(PARENT_CATEGORY_ID).value(parentCategoryId)
         writer.name(BlOCK_ALL_NOTIFICATIONS).value(blockAllNotifications)
         writer.name(TIME_WARNINGS).value(timeWarnings)

@@ -20,9 +20,11 @@
     <string name="manage_child_block_temporarily_title">Vorübergehend Sperren</string>
     <string name="manage_child_block_temporarily_text">
         Wählen Sie Kategorien, die vorübergehend gesperrt werden sollen.
-        Vorübergehend bedeutet nicht, dass die Sperre automatisch aufgehoben wird.
-        Wenn Sie eine regelmäßige Sperrung benötigen, verwenden Sie die Sperrzeiten.
+        Sie können die Sperre automatisch aufheben lassen, indem Sie lange auf eine Kategorie tippen
+        und dann eine Endzeit auswählen.
     </string>
+    <string name="manage_child_block_temporarily_until">%1$s (bis %2$s)</string>
+    <string name="manage_child_block_temporarily_dialog_until">bis %s</string>
 
     <string name="manage_child_category_no_time_limits">Keine Zeitbegrenzung</string>
 

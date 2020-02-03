@@ -288,13 +288,6 @@ class LockFragment : Fragment() {
             binding.manageDisableTimeLimits.disableTimeLimitsUntilString = it
         })
 
-        // bind disable temporarily blocking
-        categories
-                .map { it != null && it.second.filter { category -> category.temporarilyBlocked }.size > 1 }
-                .observe(this, Observer {
-                    binding.areMultipleCategoriesBlocked = it!!
-                })
-
         binding.handlers = object: Handlers {
             override fun openMainApp() {
                 startActivity(Intent(context, MainActivity::class.java))
@@ -336,7 +329,8 @@ class LockFragment : Fragment() {
                             auth.tryDispatchParentAction(
                                     UpdateCategoryTemporarilyBlockedAction(
                                             categoryId = categoryId,
-                                            blocked = false
+                                            blocked = false,
+                                            endTime = null
                                     )
                             )
                         }
@@ -353,7 +347,8 @@ class LockFragment : Fragment() {
                             auth.tryDispatchParentAction(
                                     UpdateCategoryTemporarilyBlockedAction(
                                             categoryId = category.id,
-                                            blocked = false
+                                            blocked = false,
+                                            endTime = null
                                     )
                             )
                         }

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -243,9 +243,23 @@ class BlockingReasonUtil(private val appLogic: AppLogic) {
         }
 
         if (category.temporarilyBlocked) {
-            return liveDataFromValue(BlockingReason.TemporarilyBlocked)
+            if (category.temporarilyBlockedEndTime == 0L) {
+                return liveDataFromValue(BlockingReason.TemporarilyBlocked)
+            } else {
+                return getTemporarilyTrustedTimeInMillis().switchMap { time ->
+                    if (time < category.temporarilyBlockedEndTime) {
+                        liveDataFromValue(BlockingReason.TemporarilyBlocked)
+                    } else {
+                        getBlockingReasonStep4Point8(category, child, timeZone, isParentCategory, blockingLevel)
+                    }
+                }
+            }
+        } else {
+            return getBlockingReasonStep4Point8(category, child, timeZone, isParentCategory, blockingLevel)
         }
+    }
 
+    private fun getBlockingReasonStep4Point8(category: Category, child: User, timeZone: TimeZone, isParentCategory: Boolean, blockingLevel: BlockingLevel): LiveData<BlockingReason> {
         val areLimitsDisabled: LiveData<Boolean>
 
         if (child.disableLimitsUntil == 0L) {
@@ -254,7 +268,7 @@ class BlockingReasonUtil(private val appLogic: AppLogic) {
             areLimitsDisabled = getTemporarilyTrustedTimeInMillis().map {
                 trustedTimeInMillis ->
 
-                trustedTimeInMillis != null && child.disableLimitsUntil > trustedTimeInMillis
+                child.disableLimitsUntil > trustedTimeInMillis
             }
         }
 
@@ -355,7 +369,7 @@ class BlockingReasonUtil(private val appLogic: AppLogic) {
         }
     }
 
-    fun getTemporarilyTrustedTimeInMillis(): LiveData<Long?> {
+    fun getTemporarilyTrustedTimeInMillis(): LiveData<Long> {
         return liveDataFromFunction {
             appLogic.timeApi.getCurrentTimeInMillis()
         }

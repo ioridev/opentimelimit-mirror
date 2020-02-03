@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,16 +42,24 @@ class OverviewFragmentModel(application: Application): AndroidViewModel(applicat
         }
     }.ignoreUnchanged()
     private val userEntries = usersWithTemporarilyDisabledLimits.switchMap { users ->
-        categoryEntries.map { categories ->
-            users.map { user ->
-                OverviewFragmentItemUser(
-                        user = user.first,
-                        limitsTemporarilyDisabled = user.second,
-                        temporarilyBlocked = categories.find { category -> category.childId == user.first.id && category.temporarilyBlocked } != null
-                )
+        categoryEntries.switchMap { categories ->
+            liveDataFromFunction (5000) { logic.timeApi.getCurrentTimeInMillis() }.map { now ->
+                users.map { user ->
+                    OverviewFragmentItemUser(
+                            user = user.first,
+                            limitsTemporarilyDisabled = user.second,
+                            temporarilyBlocked = categories.find { category ->
+                                category.childId == user.first.id &&
+                                        category.temporarilyBlocked && (
+                                        category.temporarilyBlockedEndTime == 0L ||
+                                                category.temporarilyBlockedEndTime > now
+                                        )
+                            } != null
+                    )
+                }
             }
         }
-    }
+    }.ignoreUnchanged()
 
     private val ownDeviceId = logic.deviceId
     private val devices = logic.database.device().getAllDevicesLive()
