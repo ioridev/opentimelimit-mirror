@@ -1,3 +1,2 @@
-- added option to change the parent timezone
-- moved help texts to dialogs
-- bugfixes
+- background music playback limitation
+- end time support for temporarily blocking
