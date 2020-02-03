@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,6 +54,15 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        if (savedInstanceState == null) {
+            NavHostFragment.create(R.navigation.nav_graph).let { navhost ->
+                supportFragmentManager.beginTransaction()
+                        .replace(R.id.nav_host, navhost)
+                        .setPrimaryNavigationFragment(navhost)
+                        .commitNow()
+            }
+        }
+
         // prepare livedata
         val customTitle = currentNavigatorFragment.switchMap {
             if (it != null && it is FragmentWithCustomTitle) {
@@ -85,6 +94,9 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder {
 
         val fragmentContainer = supportFragmentManager.findFragmentById(R.id.nav_host)!!
         val fragmentContainerManager = fragmentContainer.childFragmentManager
+
+        currentNavigatorFragment.value = fragmentContainerManager.primaryNavigationFragment
+
         getNavController().addOnDestinationChangedListener { _, _, _ ->
             Threads.mainThreadHandler.post {
                 currentNavigatorFragment.value = fragmentContainerManager.fragments.first()
