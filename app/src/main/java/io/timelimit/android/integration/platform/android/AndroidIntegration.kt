@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.media.session.MediaSessionManager
+import android.media.session.PlaybackState
 import android.os.Build
 import android.os.PowerManager
 import android.os.UserManager
@@ -120,6 +121,23 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
 
     override fun getForegroundAppPermissionStatus(): RuntimePermissionStatus {
         return foregroundAppHelper.getPermissionStatus()
+    }
+
+    override fun getMusicPlaybackPackage(): String? {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (getNotificationAccessPermissionStatus() == NewPermissionStatus.Granted) {
+                val manager = context.getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
+                val sessions = manager.getActiveSessions(ComponentName(context, NotificationListener::class.java))
+
+                return sessions.find {
+                    it.playbackState?.state == PlaybackState.STATE_PLAYING ||
+                            it.playbackState?.state == PlaybackState.STATE_FAST_FORWARDING ||
+                            it.playbackState?.state == PlaybackState.STATE_REWINDING
+                }?.packageName
+            }
+        }
+
+        return null
     }
 
     override fun showOverlayMessage(text: String) {

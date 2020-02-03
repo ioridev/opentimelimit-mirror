@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,18 +34,13 @@ object LocalDatabaseAppLogicActionDispatcher {
 
         try {
             when(action) {
-                is AddUsedTimeAction -> {
-                    val categoryEntry = database.category().getCategoryByIdSync(action.categoryId)!!
-                    val parentCategoryEntry = if (categoryEntry.parentCategoryId.isNotEmpty())
-                        database.category().getCategoryByIdSync(categoryEntry.parentCategoryId)
-                    else
-                        null
+                is AddUsedTimeActionVersion2 -> {
+                    action.items.forEach { item ->
+                        database.category().getCategoryByIdSync(item.categoryId)!!
 
-                    fun handleAddUsedTime(categoryId: String) {
-                        // try to update
                         val updatedRows = database.usedTimes().addUsedTime(
-                                categoryId = categoryId,
-                                timeToAdd = action.timeToAdd,
+                                categoryId = item.categoryId,
+                                timeToAdd = item.timeToAdd,
                                 dayOfEpoch = action.dayOfEpoch
                         )
 
@@ -53,25 +48,19 @@ object LocalDatabaseAppLogicActionDispatcher {
                             // create new entry
 
                             database.usedTimes().insertUsedTime(UsedTimeItem(
-                                    categoryId = categoryId,
+                                    categoryId = item.categoryId,
                                     dayOfEpoch = action.dayOfEpoch,
-                                    usedMillis = action.timeToAdd.toLong()
+                                    usedMillis = item.timeToAdd.toLong()
                             ))
                         }
 
 
-                        if (action.extraTimeToSubtract != 0) {
+                        if (item.extraTimeToSubtract != 0) {
                             database.category().subtractCategoryExtraTime(
-                                    categoryId = categoryId,
-                                    removedExtraTime = action.extraTimeToSubtract
+                                    categoryId = item.categoryId,
+                                    removedExtraTime = item.extraTimeToSubtract
                             )
                         }
-                    }
-
-                    handleAddUsedTime(categoryEntry.id)
-
-                    if (parentCategoryEntry?.childId == categoryEntry.childId) {
-                        handleAddUsedTime(parentCategoryEntry.id)
                     }
 
                     null

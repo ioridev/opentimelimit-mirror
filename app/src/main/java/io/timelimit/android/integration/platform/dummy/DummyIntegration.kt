@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -120,6 +120,8 @@ class DummyIntegration(
         result.packageName = foregroundApp
         result.activityName = null
     }
+
+    override fun getMusicPlaybackPackage(): String? = null
 
     override fun setAppStatusMessage(message: AppStatusMessage?) {
         lastAppStatusMessage = message

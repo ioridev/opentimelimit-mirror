@@ -45,13 +45,25 @@ sealed class ChildAction: Action()
 // now the concrete actions
 //
 
-data class AddUsedTimeAction(val categoryId: String, val dayOfEpoch: Int, val timeToAdd: Int, val extraTimeToSubtract: Int): AppLogicAction() {
+data class AddUsedTimeActionVersion2(val dayOfEpoch: Int, val items: List<AddUsedTimeActionItem>): AppLogicAction() {
     init {
-        IdGenerator.assertIdValid(categoryId)
-
         if (dayOfEpoch < 0) {
             throw IllegalArgumentException()
         }
+
+        if (items.isEmpty()) {
+            throw IllegalArgumentException()
+        }
+
+        if (items.distinctBy { it.categoryId }.size != items.size) {
+            throw IllegalArgumentException()
+        }
+    }
+}
+
+data class AddUsedTimeActionItem(val categoryId: String, val timeToAdd: Int, val extraTimeToSubtract: Int) {
+    init {
+        IdGenerator.assertIdValid(categoryId)
 
         if (timeToAdd < 0) {
             throw IllegalArgumentException()
