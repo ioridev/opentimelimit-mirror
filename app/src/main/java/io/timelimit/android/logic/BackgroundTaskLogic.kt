@@ -83,6 +83,10 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
         temporarilyAllowedApps.map { it.isNotEmpty() }.ignoreUnchanged().observeForever {
             appLogic.platformIntegration.setShowNotificationToRevokeTemporarilyAllowedApps(it!!)
         }
+
+        appLogic.database.config().isExperimentalFlagsSetAsync(ExperimentalFlags.CUSTOM_HOME_SCREEN).observeForever {
+            appLogic.platformIntegration.setEnableCustomHomescreen(it)
+        }
     }
 
     private val cache = BackgroundTaskLogicCache(appLogic)

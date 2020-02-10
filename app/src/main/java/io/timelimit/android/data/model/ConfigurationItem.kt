@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,7 +81,8 @@ enum class ConfigurationItemType {
     ForegroundAppQueryRange,
     EnableAlternativeDurationSelection,
     LastScreenOnTime,
-    ExperimentalFlags
+    ExperimentalFlags,
+    DefaultHomescreen
 }
 
 object ConfigurationItemTypeUtil {
@@ -92,6 +93,7 @@ object ConfigurationItemTypeUtil {
     private const val ENABLE_ALTERNATIVE_DURATION_SELECTION = 5
     private const val LAST_SCREEN_ON_TIME = 6
     private const val EXPERIMENTAL_FLAGS = 7
+    private const val DEFAULT_HOMESCREEN = 8
 
     val TYPES = listOf(
             ConfigurationItemType.OwnDeviceId,
@@ -100,7 +102,8 @@ object ConfigurationItemTypeUtil {
             ConfigurationItemType.ForegroundAppQueryRange,
             ConfigurationItemType.EnableAlternativeDurationSelection,
             ConfigurationItemType.LastScreenOnTime,
-            ConfigurationItemType.ExperimentalFlags
+            ConfigurationItemType.ExperimentalFlags,
+            ConfigurationItemType.DefaultHomescreen
     )
 
     fun serialize(value: ConfigurationItemType) = when(value) {
@@ -111,6 +114,7 @@ object ConfigurationItemTypeUtil {
         ConfigurationItemType.EnableAlternativeDurationSelection -> ENABLE_ALTERNATIVE_DURATION_SELECTION
         ConfigurationItemType.LastScreenOnTime -> LAST_SCREEN_ON_TIME
         ConfigurationItemType.ExperimentalFlags -> EXPERIMENTAL_FLAGS
+        ConfigurationItemType.DefaultHomescreen -> DEFAULT_HOMESCREEN
     }
 
     fun parse(value: Int) = when(value) {
@@ -121,6 +125,7 @@ object ConfigurationItemTypeUtil {
         ENABLE_ALTERNATIVE_DURATION_SELECTION -> ConfigurationItemType.EnableAlternativeDurationSelection
         LAST_SCREEN_ON_TIME -> ConfigurationItemType.LastScreenOnTime
         EXPERIMENTAL_FLAGS -> ConfigurationItemType.ExperimentalFlags
+        DEFAULT_HOMESCREEN -> ConfigurationItemType.DefaultHomescreen
         else -> throw IllegalArgumentException()
     }
 }
@@ -147,4 +152,6 @@ object ExperimentalFlags {
     const val SYSTEM_LEVEL_BLOCKING = 2L
     const val MANIPULATION_ANNOY_USER_ONLY = 4L
     const val MANIPULATION_ANNOY_USER = MANIPULATION_ANNOY_USER_ONLY or DISABLE_BLOCK_ON_MANIPULATION // otherwise there would be a conflict between both features
+    const val CUSTOM_HOME_SCREEN = 8L
+    const val CUSTOM_HOMESCREEN_DELAY = 16L
 }

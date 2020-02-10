@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+    Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,6 +82,23 @@
             android:showOnLockScreen="true"
             android:exported="false"
             android:name=".ui.manipulation.AnnoyActivity" />
+
+        <activity
+            tools:ignore="UnusedAttribute"
+            android:enabled="false"
+            android:excludeFromRecents="true"
+            android:autoRemoveFromRecents="true"
+            android:taskAffinity=":dummyhome"
+            android:launchMode="singleTop"
+            android:theme="@style/AppHomescreenTheme"
+            android:name=".ui.homescreen.HomescreenActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <!-- system integration -->
 

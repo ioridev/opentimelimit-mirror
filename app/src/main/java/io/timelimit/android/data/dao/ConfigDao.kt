@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
  */
 package io.timelimit.android.data.dao
 
+import android.content.ComponentName
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import androidx.room.*
@@ -165,4 +166,10 @@ abstract class ConfigDao {
                     (getExperimentalFlagsSync() and (flags.inv())).toString(16)
         )
     }
+
+    fun getDefaultHomescreenSync(): ComponentName? = getValueOfKeySync(ConfigurationItemType.DefaultHomescreen)?.let {
+        ComponentName.unflattenFromString(it)
+    }
+
+    fun setDefaultHomescreenSync(componentName: ComponentName?) = updateValueSync(ConfigurationItemType.DefaultHomescreen, componentName?.flattenToString())
 }

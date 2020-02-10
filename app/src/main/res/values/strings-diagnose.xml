@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+    Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +29,6 @@
     <string name="diagnose_fga_query_range">Requested time range</string>
     <string name="diagnose_fga_query_range_min">Minimum (Default)</string>
 
-
     <string name="diagnose_exf_title">Experimental flags</string>
     <string name="diagnose_exf_lom">Disable locking after manipulations</string>
     <string name="diagnose_exf_slb">Block Apps at system level</string>
@@ -40,6 +39,9 @@
     <string name="diagnose_bat_status_charging">Charging/ full</string>
     <string name="diagnose_bat_status_mobile">Not charging</string>
     <string name="diagnose_bat_level">Level: %d\%%</string>
+
+    <string name="diagnose_exf_chs">TimeLimit as launcher</string>
+    <string name="diagnose_exf_chd">Delay launcher redirection</string>
 
     <string name="diagnose_bg_task_loop_ex">Background task loop exception</string>
 

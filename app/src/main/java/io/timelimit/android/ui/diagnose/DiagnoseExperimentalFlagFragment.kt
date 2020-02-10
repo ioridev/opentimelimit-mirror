@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import android.widget.CheckBox
 import androidx.lifecycle.Observer
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
+import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.databinding.DiagnoseExperimentalFlagFragmentBinding
 import io.timelimit.android.livedata.liveDataFromValue
@@ -72,6 +73,8 @@ class DiagnoseExperimentalFlagFragment : Fragment() {
                             Threads.database.execute {
                                 if (didCheck) {
                                     database.config().setExperimentalFlag(flag.enableFlags, true)
+
+                                    flag.postEnableHook?.invoke(database)
                                 } else {
                                     database.config().setExperimentalFlag(flag.disableFlags, false)
                                 }
@@ -92,7 +95,8 @@ data class DiagnoseExperimentalFlagItem(
         val label: Int,
         val enableFlags: Long,
         val disableFlags: Long,
-        val enable: (flags: Long) -> Boolean
+        val enable: (flags: Long) -> Boolean,
+        val postEnableHook: ((Database) -> Unit)? = null
 ) {
     companion object {
         val items = listOf(
@@ -115,6 +119,19 @@ data class DiagnoseExperimentalFlagItem(
                         enableFlags = ExperimentalFlags.MANIPULATION_ANNOY_USER,
                         disableFlags = ExperimentalFlags.MANIPULATION_ANNOY_USER_ONLY,
                         enable = { true }
+                ),
+                DiagnoseExperimentalFlagItem(
+                        label = R.string.diagnose_exf_chs,
+                        enableFlags = ExperimentalFlags.CUSTOM_HOME_SCREEN,
+                        disableFlags = ExperimentalFlags.CUSTOM_HOME_SCREEN or ExperimentalFlags.CUSTOM_HOMESCREEN_DELAY,
+                        enable = { true },
+                        postEnableHook = { it.config().setDefaultHomescreenSync(null) }
+                ),
+                DiagnoseExperimentalFlagItem(
+                        label = R.string.diagnose_exf_chd,
+                        enableFlags = ExperimentalFlags.CUSTOM_HOMESCREEN_DELAY,
+                        disableFlags = ExperimentalFlags.CUSTOM_HOMESCREEN_DELAY,
+                        enable = { flags -> flags and ExperimentalFlags.CUSTOM_HOME_SCREEN == ExperimentalFlags.CUSTOM_HOME_SCREEN }
                 )
         )
     }
