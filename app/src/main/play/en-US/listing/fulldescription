@@ -14,7 +14,7 @@ There is the scenario that one device is used by exactly one user. However, with
 
 Notes
 
-It can be a good idea to take a look at https://timelimit.io/en/configsuggestions/ if you don't use TimeLimit in the default scenario.
+It can be a good idea to take a look at <a href="https://timelimit.io/en/configsuggestions/">https://timelimit.io/en/configsuggestions/</a> if you don't use TimeLimit in the default scenario.
 
 TimeLimit does not work good at some smartphone brands (mostly Huawei and Wiko). With the correct settings, it can work better. But better is not good.
 
