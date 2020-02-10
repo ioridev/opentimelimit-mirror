@@ -115,6 +115,12 @@ data class DiagnoseExperimentalFlagItem(
                         enable = { true }
                 ),
                 DiagnoseExperimentalFlagItem(
+                        label = R.string.diagnose_exf_nas,
+                        enableFlags = ExperimentalFlags.NETWORKTIME_AT_SYSTEMLEVEL,
+                        disableFlags = ExperimentalFlags.NETWORKTIME_AT_SYSTEMLEVEL,
+                        enable = { true }
+                ),
+                DiagnoseExperimentalFlagItem(
                         label = R.string.diagnose_exf_mau,
                         enableFlags = ExperimentalFlags.MANIPULATION_ANNOY_USER,
                         disableFlags = ExperimentalFlags.MANIPULATION_ANNOY_USER_ONLY,

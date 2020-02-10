@@ -460,4 +460,13 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
             }
         }
     }
+
+
+    override fun setForceNetworkTime(enable: Boolean) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (policyManager.isDeviceOwnerApp(context.packageName)) {
+                policyManager.setAutoTimeRequired(deviceAdmin, enable)
+            }
+        }
+    }
 }

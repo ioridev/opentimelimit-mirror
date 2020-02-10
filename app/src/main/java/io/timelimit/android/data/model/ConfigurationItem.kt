@@ -154,4 +154,5 @@ object ExperimentalFlags {
     const val MANIPULATION_ANNOY_USER = MANIPULATION_ANNOY_USER_ONLY or DISABLE_BLOCK_ON_MANIPULATION // otherwise there would be a conflict between both features
     const val CUSTOM_HOME_SCREEN = 8L
     const val CUSTOM_HOMESCREEN_DELAY = 16L
+    const val NETWORKTIME_AT_SYSTEMLEVEL = 32L
 }
