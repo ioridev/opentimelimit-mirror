@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,18 +30,17 @@ import io.timelimit.android.ui.main.getActivityViewModel
 class UninstallFragment : Fragment() {
     private val auth: ActivityViewModel by lazy { getActivityViewModel(activity!!) }
     private val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
+    private lateinit var binding: FragmentUninstallBinding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val binding = FragmentUninstallBinding.inflate(inflater, container, false)
+        binding = FragmentUninstallBinding.inflate(inflater, container, false)
 
         binding.uninstall.isEnabled = binding.checkConfirm.isChecked
         binding.checkConfirm.setOnCheckedChangeListener { _, isChecked -> binding.uninstall.isEnabled = isChecked }
 
         binding.uninstall.setOnClickListener { reset(revokePermissions = binding.checkPermissions.isChecked) }
-        binding.checkConfirm.setOnLongClickListener {
+        binding.backdoorButton.setOnClickListener {
             BackdoorDialogFragment().show(fragmentManager!!)
-
-            true
         }
 
         return binding.root
@@ -50,6 +49,8 @@ class UninstallFragment : Fragment() {
     private fun reset(revokePermissions: Boolean) {
         if (auth.requestAuthenticationOrReturnTrue()) {
             logic.appSetupLogic.resetAppCompletely(revokePermissions = revokePermissions)
+        } else {
+            binding.showBackdoorButton = true
         }
     }
 }

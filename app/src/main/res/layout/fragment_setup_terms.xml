@@ -1,5 +1,5 @@
 <!--
-    Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+    Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,11 +48,14 @@
 
     <LinearLayout
         android:padding="8dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <Button
-            android:background="?selectableItemBackground"
+            style="?borderlessButtonStyle"
+            android:textColor="@color/red"
             android:id="@+id/btn_uninstall"
             android:text="@string/setup_terms_btn_uninstall"
             android:layout_width="wrap_content"
@@ -62,7 +65,6 @@
             android:layout_width="0dp"
             android:layout_height="0dp" />
         <Button
-            android:background="?selectableItemBackground"
             android:id="@+id/btn_accept"
             android:text="@string/terms_btn_accept"
             android:layout_width="wrap_content"

@@ -111,8 +111,9 @@
                             android:layout_height="wrap_content" />
 
                         <Button
-                            android:background="?selectableItemBackground"
-                            android:text="@string/manage_device_permission_btn_modify"
+                            style="?materialButtonOutlinedStyle"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginTop="8dp"                            android:text="@string/manage_device_permission_btn_modify"
                             android:layout_gravity="end"
                             android:onClick="@{() -> handlers.manageDeviceAdmin()}"
                             android:enabled="@{usageStatsAccess != RuntimePermissionStatus.NotRequired}"
@@ -172,8 +173,9 @@
                             android:layout_height="wrap_content" />
 
                         <Button
-                            android:background="?selectableItemBackground"
-                            android:text="@string/manage_device_permission_btn_modify"
+                            style="?materialButtonOutlinedStyle"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginTop="8dp"                            android:text="@string/manage_device_permission_btn_modify"
                             android:layout_gravity="end"
                             android:onClick="@{() -> handlers.openUsageStatsSettings()}"
                             android:enabled="@{usageStatsAccess != RuntimePermissionStatus.NotRequired}"
@@ -233,8 +235,9 @@
                             android:layout_height="wrap_content" />
 
                         <Button
-                            android:background="?selectableItemBackground"
-                            android:text="@string/manage_device_permission_btn_modify"
+                            style="?materialButtonOutlinedStyle"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginTop="8dp"                            android:text="@string/manage_device_permission_btn_modify"
                             android:layout_gravity="end"
                             android:onClick="@{() -> handlers.openNotificationAccessSettings()}"
                             android:enabled="@{notificationAccessPermission != NewPermissionStatus.NotSupported}"
@@ -294,8 +297,9 @@
                             android:layout_height="wrap_content" />
 
                         <Button
-                            android:background="?selectableItemBackground"
-                            android:text="@string/manage_device_permission_btn_modify"
+                            style="?materialButtonOutlinedStyle"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginTop="8dp"                            android:text="@string/manage_device_permission_btn_modify"
                             android:layout_gravity="end"
                             android:onClick="@{() -> handlers.openDrawOverOtherAppsScreen()}"
                             android:enabled="@{overlayPermission != RuntimePermissionStatus.NotRequired}"
@@ -345,8 +349,9 @@
                             android:layout_height="wrap_content" />
 
                         <Button
-                            android:background="?selectableItemBackground"
-                            android:text="@string/manage_device_permission_btn_modify"
+                            style="?materialButtonOutlinedStyle"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginTop="8dp"                            android:text="@string/manage_device_permission_btn_modify"
                             android:layout_gravity="end"
                             android:onClick="@{() -> handlers.openAccessibilitySettings()}"
                             android:layout_width="wrap_content"

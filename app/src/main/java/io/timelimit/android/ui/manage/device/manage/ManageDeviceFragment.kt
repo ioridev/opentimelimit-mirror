@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -188,7 +188,7 @@ class ManageDeviceFragment : Fragment(), FragmentWithCustomTitle {
         return binding.root
     }
 
-    override fun getCustomTitle() = deviceEntry.map { it?.name }
+    override fun getCustomTitle(): LiveData<String?> = deviceEntry.map { "${it?.name} < ${getString(R.string.main_tab_overview)}" }
 }
 
 interface ManageDeviceFragmentHandlers {

@@ -66,6 +66,7 @@
                 android:layout_height="wrap_content" />
 
             <Button
+                style="?materialButtonOutlinedStyle"
                 android:id="@+id/select_parent_button"
                 android:enabled="@{!isParentCategory}"
                 android:text="@string/category_settings_parent_category_button"
