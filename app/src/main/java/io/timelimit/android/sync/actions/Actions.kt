@@ -206,6 +206,20 @@ data class UpdateCategoryBatteryLimit(val categoryId: String, val chargingLimit:
     }
 }
 
+data class UpdateCategorySortingAction(val categoryIds: List<String>): ParentAction() {
+    init {
+        if (categoryIds.isEmpty()) {
+            throw IllegalArgumentException()
+        }
+
+        if (categoryIds.distinct().size != categoryIds.size) {
+            throw IllegalArgumentException()
+        }
+
+        categoryIds.forEach { IdGenerator.assertIdValid(it) }
+    }
+}
+
 // DeviceDao
 
 data class UpdateDeviceStatusAction(

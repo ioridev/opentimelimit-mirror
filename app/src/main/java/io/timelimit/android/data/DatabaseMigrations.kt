@@ -86,4 +86,10 @@ object DatabaseMigrations {
             database.execSQL("ALTER TABLE `category` ADD COLUMN `temporarily_blocked_end_time` INTEGER NOT NULL DEFAULT 0")
         }
     }
+
+    val MIGRATE_TO_V10 = object: Migration(9, 10) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE `category` ADD COLUMN `sort` INTEGER NOT NULL DEFAULT 0")
+        }
+    }
 }

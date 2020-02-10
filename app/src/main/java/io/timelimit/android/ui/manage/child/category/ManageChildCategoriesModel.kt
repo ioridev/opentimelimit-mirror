@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ import android.util.SparseLongArray
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import io.timelimit.android.data.extensions.mapToTimezone
+import io.timelimit.android.data.extensions.sorted
 import io.timelimit.android.data.model.HintsToShow
 import io.timelimit.android.date.DateInTimezone
 import io.timelimit.android.date.getMinuteOfWeek
@@ -76,8 +77,10 @@ class ManageChildCategoriesModel(application: Application): AndroidViewModel(app
         )
     }
 
+    private val sortedCategories = categories.map { it.sorted() }
+
     private val categoryItems = categoryForUnassignedAppsLive.switchMap { categoryForUnassignedApps ->
-        categories.switchMap { categories ->
+        sortedCategories.switchMap { categories ->
             timeLimitRules.switchMap { timeLimitRules ->
                 childDate.switchMap { childDate ->
                     usedTimeItemsForWeek.switchMap { usedTimeItemsForWeek ->
