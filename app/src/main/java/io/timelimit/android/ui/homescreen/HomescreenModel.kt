@@ -36,6 +36,7 @@ class HomescreenModel(application: Application): AndroidViewModel(application) {
 
         private var counter = 0
         private var hadFirstRunAfterLaunch = false
+        private var resumeCounter = 0
     }
 
     private val logic = DefaultAppLogic.with(application)
@@ -69,8 +70,8 @@ class HomescreenModel(application: Application): AndroidViewModel(application) {
 
             if (enableDelay && (!hadFirstRunAfterLaunch)) {
                 val timeApi = logic.timeApi
-                val start = timeApi.getCurrentUptimeInMillis()
-                val end = start + DELAY
+                var start = timeApi.getCurrentUptimeInMillis()
+                var end = start + DELAY
 
                 while (true) {
                     val now = timeApi.getCurrentUptimeInMillis()
@@ -83,6 +84,21 @@ class HomescreenModel(application: Application): AndroidViewModel(application) {
                     statusInternal.value = DelayHomescreenStatus(progress.toInt())
 
                     delay(50)
+
+                    // while screen not visible
+                    if (resumeCounter == 0) {
+                        val beforePause = timeApi.getCurrentUptimeInMillis()
+
+                        while (resumeCounter == 0) {
+                            delay(100)
+                        }
+
+                        val afterPause = timeApi.getCurrentUptimeInMillis()
+                        val delay = afterPause - beforePause
+
+                        start += delay
+                        end += delay
+                    }
                 }
             }
 
@@ -122,6 +138,15 @@ class HomescreenModel(application: Application): AndroidViewModel(application) {
         counter = 0
 
         Threads.database.execute { logic.database.config().setDefaultHomescreenSync(componentName) }
+    }
+
+
+    fun handleResume() {
+        resumeCounter++
+    }
+
+    fun handlePause() {
+        resumeCounter--
     }
 }
 

@@ -132,4 +132,16 @@ class HomescreenActivity: AppCompatActivity() {
     private fun hideProgress() {
         progress_card.visibility = View.GONE
     }
+
+    override fun onResume() {
+        super.onResume()
+
+        model.handleResume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        model.handlePause()
+    }
 }
