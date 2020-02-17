@@ -28,6 +28,10 @@ import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 
 class UninstallFragment : Fragment() {
+    companion object {
+        private const val STATUS_SHOW_BACKDOOR_BUTTON = "show_backdoor_button"
+    }
+
     private val auth: ActivityViewModel by lazy { getActivityViewModel(activity!!) }
     private val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
     private lateinit var binding: FragmentUninstallBinding
@@ -43,7 +47,15 @@ class UninstallFragment : Fragment() {
             BackdoorDialogFragment().show(fragmentManager!!)
         }
 
+        binding.showBackdoorButton = savedInstanceState?.getBoolean(STATUS_SHOW_BACKDOOR_BUTTON) ?: false
+
         return binding.root
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putBoolean(STATUS_SHOW_BACKDOOR_BUTTON, binding.showBackdoorButton)
     }
 
     private fun reset(revokePermissions: Boolean) {
