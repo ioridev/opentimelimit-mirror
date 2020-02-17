@@ -1,2 +1,3 @@
-- Erfassung und Einschränkung von Hintergrundmusikwiedergaben
-- vorübergehendes Sperren mit Endzeit
+- Designänderungen
+- Möglichkeit hinzugefügt, die Kategorien zu sortieren
+- Möglichkeit hinzugefügt, TimeLimit als Startbildschirm festzulegen, damit TimeLimit nach dem Hochfahren schneller gestaret wird

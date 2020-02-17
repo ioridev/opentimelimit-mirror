@@ -1,2 +1,3 @@
-- background music playback limitation
-- end time support for temporarily blocking
+- design changes
+- added option to sort the categories
+- added option to set TimeLimit as homescreen to make launching TimeLimit after booting faster
