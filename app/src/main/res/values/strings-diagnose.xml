@@ -33,16 +33,16 @@
     <string name="diagnose_exf_lom">Disable locking after manipulations</string>
     <string name="diagnose_exf_slb">Block Apps at system level</string>
     <string name="diagnose_exf_mau">Annoy user after manipulation</string>
+    <string name="diagnose_exf_chs">TimeLimit as launcher</string>
+    <string name="diagnose_exf_chd">Delay launcher redirection</string>
+    <string name="diagnose_exf_nas">Force network time at system level</string>
+    <string name="diagnose_exf_mld">Increase the main loop interval</string>
 
     <string name="diagnose_bat_title">Battery</string>
     <string name="diagnose_bat_status">Status: %s</string>
     <string name="diagnose_bat_status_charging">Charging/ full</string>
     <string name="diagnose_bat_status_mobile">Not charging</string>
     <string name="diagnose_bat_level">Level: %d\%%</string>
-
-    <string name="diagnose_exf_chs">TimeLimit as launcher</string>
-    <string name="diagnose_exf_chd">Delay launcher redirection</string>
-    <string name="diagnose_exf_nas">Force network time at system level</string>
 
     <string name="diagnose_bg_task_loop_ex">Background task loop exception</string>
 

@@ -33,16 +33,16 @@
     <string name="diagnose_exf_lom">Sperrung nach Manipulationen deaktivieren</string>
     <string name="diagnose_exf_slb">Apps auf Systemebene sperren</string>
     <string name="diagnose_exf_mau">Nutzer nach Manipulation nerven</string>
+    <string name="diagnose_exf_chs">TimeLimit als Startbildschirm</string>
+    <string name="diagnose_exf_chd">Startbildschirmweiterleitung verzögern</string>
+    <string name="diagnose_exf_nas">Netzwerkzeitnutzung auf Systemebene erzwingen</string>
+    <string name="diagnose_exf_mld">Hauptschleifenintervall erhöhen</string>
 
     <string name="diagnose_bat_title">Akku</string>
     <string name="diagnose_bat_status">Status: %s</string>
     <string name="diagnose_bat_status_charging">Aufladen/ voll</string>
     <string name="diagnose_bat_status_mobile">Entladen</string>
     <string name="diagnose_bat_level">Akkustand: %d\%%</string>
-
-    <string name="diagnose_exf_chs">TimeLimit als Startbildschirm</string>
-    <string name="diagnose_exf_chd">Startbildschirmweiterleitung verzögern</string>
-    <string name="diagnose_exf_nas">Netzwerkzeitnutzung auf Systemebene erzwingen</string>
 
     <string name="diagnose_bg_task_loop_ex">Hintergrundaufgabenschleifenfehler</string>
 
