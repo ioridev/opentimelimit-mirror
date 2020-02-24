@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.Transformations
@@ -27,7 +28,6 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import io.timelimit.android.R
-import io.timelimit.android.async.Threads
 import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.liveDataFromValue
@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder {
         private const val AUTH_DIALOG_TAG = "adt"
     }
 
-    private val currentNavigatorFragment = MutableLiveData<Fragment>()
+    private val currentNavigatorFragment = MutableLiveData<Fragment?>()
 
     override var ignoreStop: Boolean = false
 
@@ -95,13 +95,21 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder {
         val fragmentContainer = supportFragmentManager.findFragmentById(R.id.nav_host)!!
         val fragmentContainerManager = fragmentContainer.childFragmentManager
 
-        currentNavigatorFragment.value = fragmentContainerManager.primaryNavigationFragment
+        fragmentContainerManager.registerFragmentLifecycleCallbacks(object: FragmentManager.FragmentLifecycleCallbacks() {
+            override fun onFragmentStarted(fm: FragmentManager, f: Fragment) {
+                super.onFragmentStarted(fm, f)
 
-        getNavController().addOnDestinationChangedListener { _, _, _ ->
-            Threads.mainThreadHandler.post {
-                currentNavigatorFragment.value = fragmentContainerManager.fragments.first()
+                currentNavigatorFragment.value = f
             }
-        }
+
+            override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
+                super.onFragmentStopped(fm, f)
+
+                if (currentNavigatorFragment.value === f) {
+                    currentNavigatorFragment.value = null
+                }
+            }
+        }, false)
 
         title.observe(this, Observer { setTitle(it) })
     }
