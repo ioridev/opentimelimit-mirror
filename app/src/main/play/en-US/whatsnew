@@ -1,3 +1,3 @@
-- design changes
-- added option to sort the categories
-- added option to set TimeLimit as homescreen to make launching TimeLimit after booting faster
+- dark mode support
+- option to increase the main loop intervall
+- stability improvements
