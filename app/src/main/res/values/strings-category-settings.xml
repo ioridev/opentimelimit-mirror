@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+    Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
     </string>
     <string name="category_settings_extra_time_change">Change extra time</string>
     <string name="category_settings_extra_time_change_toast">The new extra time was saved</string>
+    <string name="category_settings_extra_time_switch_limit_to_day">Reset extra time after today</string>
 
     <string name="category_settings_delete_dialog">Do you want to delete the category %s?</string>
 

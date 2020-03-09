@@ -100,4 +100,10 @@ object DatabaseMigrations {
             // a new possible enum value was added, the version upgrade enables the downgrade mechanism
         }
     }
+
+    val MIGRATE_TO_V12 = object: Migration(11, 12) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE `category` ADD COLUMN `extra_time_day` INTEGER NOT NULL DEFAULT -1")
+        }
+    }
 }

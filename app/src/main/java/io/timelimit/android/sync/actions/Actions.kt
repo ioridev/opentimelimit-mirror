@@ -134,21 +134,29 @@ data class UpdateCategoryTitleAction(val categoryId: String, val newTitle: Strin
         IdGenerator.assertIdValid(categoryId)
     }
 }
-data class SetCategoryExtraTimeAction(val categoryId: String, val newExtraTime: Long): ParentAction() {
+data class SetCategoryExtraTimeAction(val categoryId: String, val newExtraTime: Long, val extraTimeDay: Int = -1): ParentAction() {
     init {
         IdGenerator.assertIdValid(categoryId)
 
         if (newExtraTime < 0) {
             throw IllegalArgumentException("newExtraTime must be >= 0")
         }
+
+        if (extraTimeDay < -1) {
+            throw IllegalArgumentException()
+        }
     }
 }
-data class IncrementCategoryExtraTimeAction(val categoryId: String, val addedExtraTime: Long): ParentAction() {
+data class IncrementCategoryExtraTimeAction(val categoryId: String, val addedExtraTime: Long, val extraTimeDay: Int = -1): ParentAction() {
     init {
         IdGenerator.assertIdValid(categoryId)
 
         if (addedExtraTime <= 0) {
             throw IllegalArgumentException("addedExtraTime must be more than zero")
+        }
+
+        if (extraTimeDay < -1) {
+            throw IllegalArgumentException()
         }
     }
 }
