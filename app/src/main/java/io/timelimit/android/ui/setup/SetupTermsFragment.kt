@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,9 +30,18 @@ import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.ui.obsolete.ObsoleteDialogFragment
 import kotlinx.android.synthetic.main.fragment_setup_terms.*
 
 class SetupTermsFragment : Fragment() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        if (savedInstanceState == null) {
+            ObsoleteDialogFragment.show(activity!!, true)
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_setup_terms, container, false)
     }
