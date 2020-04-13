@@ -16,11 +16,7 @@
 package io.timelimit.android.ui.setup
 
 
-import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
@@ -29,7 +25,6 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.extensions.safeNavigate
-import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.obsolete.ObsoleteDialogFragment
 import kotlinx.android.synthetic.main.fragment_setup_terms.*
 
@@ -53,33 +48,13 @@ class SetupTermsFragment : Fragment() {
             acceptTerms()
         }
 
-        btn_uninstall.setOnClickListener {
-            uninstall()
-        }
-
         terms_text.movementMethod = LinkMovementMethod.getInstance()
     }
 
     private fun acceptTerms() {
         Navigation.findNavController(view!!).safeNavigate(
-                SetupTermsFragmentDirections.actionSetupTermsFragmentToSetupDevicePermissionsFragment(),
+                SetupTermsFragmentDirections.actionSetupTermsFragmentToSetupSelectModeFragment(),
                 R.id.setupTermsFragment
         )
-    }
-
-    private fun uninstall() {
-        DefaultAppLogic.with(context!!).platformIntegration.disableDeviceAdmin()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            startActivity(
-                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context!!.packageName}"))
-                            .addCategory(Intent.CATEGORY_DEFAULT)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
-        } else {
-            startActivity(
-                    Intent(Intent.ACTION_UNINSTALL_PACKAGE, Uri.parse("package:${context!!.packageName}"))
-            )
-        }
     }
 }

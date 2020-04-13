@@ -40,6 +40,7 @@ import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.overview.main.MainFragment
+import io.timelimit.android.ui.parentmode.ParentModeFragment
 import io.timelimit.android.ui.setup.SetupTermsFragment
 
 class MainActivity : AppCompatActivity(), ActivityViewModelHolder {
@@ -83,7 +84,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder {
 
         // up button
         val shouldShowBackButtonForNavigatorFragment = currentNavigatorFragment.map { fragment ->
-            (!(fragment is MainFragment)) && (!(fragment is SetupTermsFragment))
+            (!(fragment is MainFragment)) && (!(fragment is SetupTermsFragment)) && (!(fragment is ParentModeFragment))
         }
 
         val shouldShowUpButton = shouldShowBackButtonForNavigatorFragment
@@ -164,7 +165,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder {
     }
 
     override fun onBackPressed() {
-        if (currentNavigatorFragment.value is SetupTermsFragment) {
+        if (currentNavigatorFragment.value is SetupTermsFragment || currentNavigatorFragment.value is ParentModeFragment) {
             // hack to prevent the user from going to the launch screen of the App if it is not set up
             finish()
         } else {

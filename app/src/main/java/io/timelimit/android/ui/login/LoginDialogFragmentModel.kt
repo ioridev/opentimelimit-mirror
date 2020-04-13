@@ -27,6 +27,7 @@ import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.crypto.PasswordHashing
 import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
+import io.timelimit.android.data.transaction
 import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.BlockingReasonUtil
 import io.timelimit.android.logic.DefaultAppLogic
@@ -34,6 +35,7 @@ import io.timelimit.android.sync.actions.ChildSignInAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.AuthenticatedUser
+import io.timelimit.android.ui.manage.parent.key.ScannedKey
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.*
@@ -142,6 +144,56 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
 
                             isLoginDone.value = true
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    fun tryCodeLogin(code: ScannedKey, model: ActivityViewModel) {
+        runAsync {
+            loginLock.withLock {
+                val user: User? = Threads.database.executeAndWait {
+                    logic.database.transaction().use {
+                        val keyEntry = logic.database.userKey().findUserKeyByPublicKeySync(code.publicKey)
+
+                        if (keyEntry == null) {
+                            Threads.mainThreadHandler.post {
+                                Toast.makeText(getApplication(), R.string.login_scan_code_err_not_linked, Toast.LENGTH_SHORT).show()
+                            }
+
+                            return@executeAndWait null
+                        }
+
+                        if (keyEntry.lastUse >= code.timestamp) {
+                            Threads.mainThreadHandler.post {
+                                Toast.makeText(getApplication(), R.string.login_scan_code_err_expired, Toast.LENGTH_SHORT).show()
+                            }
+
+                            return@executeAndWait null
+                        }
+
+                        logic.database.userKey().updateKeyTimestamp(code.publicKey, code.timestamp)
+                        it.setSuccess()
+
+                        logic.database.user().getUserByIdSync(keyEntry.userId)
+                    }
+                }
+
+                if (user != null && user.type == UserType.Parent) {
+                    val isGoodTime = blockingReasonUtil.getTrustedMinuteOfWeekLive(TimeZone.getTimeZone(user.timeZone)).map { minuteOfWeek ->
+                        user.blockedTimes.dataNotToModify[minuteOfWeek] == false
+                    }.waitForNonNullValue()
+
+                    if (isGoodTime) {
+                        model.setAuthenticatedUser(AuthenticatedUser(
+                                userId = user.id,
+                                passwordHash = user.password
+                        ))
+
+                        isLoginDone.value = true
+                    } else {
+                        Toast.makeText(getApplication(), R.string.login_blocked_time, Toast.LENGTH_SHORT).show()
                     }
                 }
             }

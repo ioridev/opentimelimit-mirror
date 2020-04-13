@@ -511,6 +511,9 @@ object LocalDatabaseParentActionDispatcher {
                         database.category().updateCategorySorting(categoryId, index)
                     }
                 }
+                is ResetUserKeyAction -> {
+                    database.userKey().deleteUserKeySync(action.userId)
+                }
             }.let { }
 
             database.setTransactionSuccessful()

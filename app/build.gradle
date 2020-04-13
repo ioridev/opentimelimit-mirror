@@ -107,4 +107,8 @@ dependencies {
     implementation 'com.jaredrummler:android-device-names:1.1.7'
 
     implementation 'com.squareup.okio:okio:2.1.0'
+
+    implementation 'org.whispersystems:curve25519-java:0.5.0'
+
+    implementation 'com.google.zxing:core:3.2.1'
 }

@@ -17,19 +17,20 @@ package io.timelimit.android.ui.login
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import io.timelimit.android.R
 import io.timelimit.android.data.model.User
 import io.timelimit.android.ui.list.TextViewHolder
 import kotlin.properties.Delegates
 
 class LoginUserAdapter : RecyclerView.Adapter<TextViewHolder>() {
-    var data: List<User>? by Delegates.observable(null as List<User>?) { _, _, _ -> notifyDataSetChanged() }
+    var data: List<LoginUserAdapterItem>? by Delegates.observable(null as List<LoginUserAdapterItem>?) { _, _, _ -> notifyDataSetChanged() }
     var listener: LoginUserAdapterListener? by Delegates.observable(null as LoginUserAdapterListener?) { _, _, _ -> notifyDataSetChanged() }
 
     init {
         setHasStableIds(true)
     }
 
-    fun getItem(position: Int): User {
+    fun getItem(position: Int): LoginUserAdapterItem {
         return data!![position]
     }
 
@@ -44,7 +45,12 @@ class LoginUserAdapter : RecyclerView.Adapter<TextViewHolder>() {
     }
 
     override fun getItemId(position: Int): Long {
-        return getItem(position).id.hashCode().toLong()
+        val item = getItem(position)
+
+        return when (item) {
+            is LoginUserAdapterUser -> item.item.id.hashCode().toLong()
+            LoginUserAdapterScan -> 1
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TextViewHolder {
@@ -55,10 +61,18 @@ class LoginUserAdapter : RecyclerView.Adapter<TextViewHolder>() {
         val item = getItem(position)
         val listener = this.listener
 
-        holder.textView.text = item.name
+        holder.textView.text = when (item) {
+            is LoginUserAdapterUser -> item.item.name
+            LoginUserAdapterScan -> holder.textView.context.getString(R.string.login_scan_code)
+        }
 
         if (listener !=null) {
-            holder.textView.setOnClickListener { listener.onUserClicked(item) }
+            holder.textView.setOnClickListener {
+                when (item) {
+                    is LoginUserAdapterUser -> listener.onUserClicked(item.item)
+                    LoginUserAdapterScan -> listener.onScanCodeRequested()
+                }
+            }
         } else {
             holder.textView.setOnClickListener(null)
         }
@@ -67,4 +81,9 @@ class LoginUserAdapter : RecyclerView.Adapter<TextViewHolder>() {
 
 interface LoginUserAdapterListener {
     fun onUserClicked(user: User)
+    fun onScanCodeRequested()
 }
+
+sealed class LoginUserAdapterItem
+data class LoginUserAdapterUser(val item: User): LoginUserAdapterItem()
+object LoginUserAdapterScan: LoginUserAdapterItem()

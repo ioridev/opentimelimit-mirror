@@ -454,6 +454,12 @@ data class ResetParentBlockedTimesAction(val parentId: String): ParentAction() {
     }
 }
 
+data class ResetUserKeyAction(val userId: String): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(userId)
+    }
+}
+
 // child actions
 object ChildSignInAction: ChildAction()
 

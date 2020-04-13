@@ -48,27 +48,18 @@
 
     <LinearLayout
         android:padding="8dp"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
         <Button
-            style="?borderlessButtonStyle"
-            android:textColor="@color/text_red"
-            android:id="@+id/btn_uninstall"
-            android:text="@string/setup_terms_btn_uninstall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-        <View
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="0dp" />
-        <Button
+            android:layout_marginEnd="4dp"
+            android:layout_gravity="end"
             android:id="@+id/btn_accept"
             android:text="@string/terms_btn_accept"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+
     </LinearLayout>
 
 </LinearLayout>

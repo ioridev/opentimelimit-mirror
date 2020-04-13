@@ -54,6 +54,10 @@
         (<a href="https://github.com/google/flexbox-layout/blob/master/LICENSE">Apache License, Version 2.0</a>)
         \n<a href="https://github.com/square/okio">Okio</a>
         (<a href="https://github.com/square/okio/blob/master/LICENSE.txt">Apache License, Version 2.0</a>)
+        \n<a href="https://github.com/signalapp/curve25519-java">curve25519-java</a>
+        (<a href="https://github.com/signalapp/curve25519-java/blob/master/LICENSE">GNU General Public License v3.0</a>)
+        \n<a href="https://github.com/zxing/zxing">ZXing</a>
+        (<a href="https://github.com/zxing/zxing/blob/master/LICENSE">Apache License 2.0</a>)
     </string>
 
     <string name="about_diagnose_title">Error diagnose</string>

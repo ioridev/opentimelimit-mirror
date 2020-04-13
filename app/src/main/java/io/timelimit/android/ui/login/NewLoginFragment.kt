@@ -34,6 +34,7 @@ import io.timelimit.android.data.model.User
 import io.timelimit.android.databinding.NewLoginFragmentBinding
 import io.timelimit.android.extensions.setOnEnterListenr
 import io.timelimit.android.ui.main.getActivityViewModel
+import io.timelimit.android.ui.manage.parent.key.ScannedKey
 import io.timelimit.android.ui.view.KeyboardViewListener
 
 class NewLoginFragment: DialogFragment() {
@@ -110,6 +111,12 @@ class NewLoginFragment: DialogFragment() {
                 // go to the next step
                 model.startSignIn(user)
             }
+
+            override fun onScanCodeRequested() {
+                CodeLoginDialogFragment().apply {
+                    setTargetFragment(this@NewLoginFragment, 0)
+                }.show(parentFragmentManager)
+            }
         }
 
         binding.userList.recycler.adapter = adapter
@@ -174,7 +181,7 @@ class NewLoginFragment: DialogFragment() {
                         binding.switcher.displayedChild = USER_LIST
                     }
 
-                    adapter.data = status.usersToShow
+                    adapter.data = status.usersToShow.map { LoginUserAdapterUser(it) } + LoginUserAdapterScan
                 }
                 is ParentUserLogin -> {
                     if (binding.switcher.displayedChild != PARENT_AUTH) {
@@ -253,5 +260,9 @@ class NewLoginFragment: DialogFragment() {
         })
 
         return binding.root
+    }
+
+    fun tryCodeLogin(code: ScannedKey) {
+        model.tryCodeLogin(code, getActivityViewModel(activity!!))
     }
 }

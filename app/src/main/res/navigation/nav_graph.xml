@@ -67,6 +67,9 @@
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+        <action
+            android:id="@+id/action_overviewFragment_to_parentModeFragment"
+            app:destination="@id/parentModeFragment" />
     </fragment>
     <fragment
         android:id="@+id/manageChildFragment"
@@ -124,8 +127,8 @@
         android:label="fragment_setup_terms"
         tools:layout="@layout/fragment_setup_terms" >
         <action
-            android:id="@+id/action_setupTermsFragment_to_setupDevicePermissionsFragment"
-            app:destination="@id/setupDevicePermissionsFragment"
+            android:id="@+id/action_setupTermsFragment_to_setupSelectModeFragment"
+            app:destination="@id/setupSelectModeFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
@@ -299,4 +302,21 @@
         android:name="io.timelimit.android.ui.diagnose.DiagnoseBatteryFragment"
         android:label="diagnose_battery_fragment"
         tools:layout="@layout/diagnose_battery_fragment" />
+    <fragment
+        android:id="@+id/setupSelectModeFragment"
+        android:name="io.timelimit.android.ui.setup.SetupSelectModeFragment"
+        android:label="SetupSelectModeFragment" >
+        <action
+            android:id="@+id/action_setupSelectModeFragment_to_setupDevicePermissionsFragment"
+            app:destination="@id/setupDevicePermissionsFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+    </fragment>
+    <fragment
+        android:id="@+id/parentModeFragment"
+        android:name="io.timelimit.android.ui.parentmode.ParentModeFragment"
+        android:label="parent_mode_fragment"
+        tools:layout="@layout/parent_mode_fragment" />
 </navigation>
