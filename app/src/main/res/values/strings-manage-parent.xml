@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+    Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,8 +26,6 @@
         To delete %1$s, you need the password of %1$s
         and the password of an other parent account.
         This should prevent that you lock out yourself.
-        If you don\'t know the password of %1$s and you can\'t use the password recovery,
-        then get in touch with the support.
     </string>
     <string name="manage_parent_remove_user_status_not_authenticated">
         Sign in with an other user to delete %1$s.
