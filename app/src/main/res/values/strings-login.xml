@@ -14,7 +14,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
 <resources>
-    <string name="login_user_selection_text">Chose an user to authenticate</string>
+    <string name="login_user_selection_text">Choose an user to authenticate</string>
     <string name="login_password_hint">Password</string>
     <string name="login_btn_do">Log in</string>
     <string name="login_snackbar_wrong">The password is invalid</string>
