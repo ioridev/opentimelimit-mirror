@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,7 +69,10 @@ class DatabaseBackup(private val context: Context) {
 
                 val database = RoomDatabase.with(context)
 
-                if (database.config().getOwnDeviceIdSync().orEmpty().isNotEmpty()) {
+                if (
+                        database.config().getOwnDeviceIdSync().orEmpty().isNotEmpty() ||
+                        database.config().getParentModeKeySync() != null
+                ) {
                     if (BuildConfig.DEBUG) {
                         Log.d(LOG_TAG, "database is not empty -> don't restore backup")
                     }
