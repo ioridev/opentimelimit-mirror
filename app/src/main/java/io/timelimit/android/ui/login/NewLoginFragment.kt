@@ -30,6 +30,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import io.timelimit.android.R
+import io.timelimit.android.async.Threads
 import io.timelimit.android.data.model.User
 import io.timelimit.android.databinding.NewLoginFragmentBinding
 import io.timelimit.android.extensions.setOnEnterListenr
@@ -169,7 +170,7 @@ class NewLoginFragment: DialogFragment() {
             }
         }
 
-        model.status.observe(this, Observer { status ->
+        model.status.observe(viewLifecycleOwner, Observer { status ->
             when (status) {
                 LoginDialogDone -> {
                     dismissAllowingStateLoss()
@@ -182,6 +183,10 @@ class NewLoginFragment: DialogFragment() {
                     }
 
                     adapter.data = status.usersToShow.map { LoginUserAdapterUser(it) } + LoginUserAdapterScan
+
+                    Threads.mainThreadHandler.post { binding.userList.recycler.requestFocus() }
+
+                    null
                 }
                 is ParentUserLogin -> {
                     if (binding.switcher.displayedChild != PARENT_AUTH) {
@@ -190,12 +195,12 @@ class NewLoginFragment: DialogFragment() {
                         binding.switcher.displayedChild = PARENT_AUTH
                     }
 
+                    binding.enterPassword.password.isEnabled = !status.isCheckingPassword
+
                     if (!binding.enterPassword.showCustomKeyboard) {
                         binding.enterPassword.password.requestFocus()
                         inputMethodManager.showSoftInput(binding.enterPassword.password, 0)
                     }
-
-                    binding.enterPassword.password.isEnabled = !status.isCheckingPassword
 
                     if (status.wasPasswordWrong) {
                         Toast.makeText(context!!, R.string.login_snackbar_wrong, Toast.LENGTH_SHORT).show()
