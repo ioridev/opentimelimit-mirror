@@ -1,1 +1,2 @@
-- improved dpad navigation
+- added system permission request dialog of newer Android versions to the whitelist
+- added info that the temporarily blocking is indefinitely by default

@@ -1,1 +1,2 @@
-- Steuerung bei DPAD-Nutzung verbessert
+- Systembereichtigungsanfragedialog bei neueren Android-Versionen zur Whitelist hinzugefügt
+- Hinweis hinzugefügt, dass das vorübergehende Sperren standardmäßig unbegrenzt ist
