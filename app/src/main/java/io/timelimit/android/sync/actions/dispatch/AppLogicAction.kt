@@ -28,9 +28,7 @@ object LocalDatabaseAppLogicActionDispatcher {
     fun dispatchAppLogicActionSync(action: AppLogicAction, deviceId: String, database: Database, manipulationLogic: ManipulationLogic) {
         DatabaseValidation.assertDeviceExists(database, deviceId)
 
-        database.beginTransaction()
-
-        try {
+        database.runInTransaction {
             when(action) {
                 is AddUsedTimeActionVersion2 -> {
                     action.items.forEach { item ->
@@ -328,10 +326,6 @@ object LocalDatabaseAppLogicActionDispatcher {
                     null
                 }
             }.let {  }
-
-            database.setTransactionSuccessful()
-        } finally {
-            database.endTransaction()
         }
     }
 }

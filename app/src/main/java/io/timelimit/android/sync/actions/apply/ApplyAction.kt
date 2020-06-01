@@ -18,7 +18,6 @@ package io.timelimit.android.sync.actions.apply
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.data.Database
-import io.timelimit.android.data.transaction
 import io.timelimit.android.integration.platform.PlatformIntegration
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.ManipulationLogic
@@ -54,36 +53,30 @@ object ApplyActionUtil {
         */
 
         Threads.database.executeAndWait {
-            database.transaction().use {
+            database.runInTransaction {
                 val ownDeviceId = database.config().getOwnDeviceIdSync()
 
                 if (ownDeviceId == null && ignoreIfDeviceIsNotConfigured) {
-                    return@executeAndWait
+                    return@runInTransaction
                 }
 
                 LocalDatabaseAppLogicActionDispatcher.dispatchAppLogicActionSync(action, ownDeviceId!!, database, manipulationLogic)
-
-                database.setTransactionSuccessful()
             }
         }
     }
 
     suspend fun applyParentAction(action: ParentAction, database: Database, platformIntegration: PlatformIntegration) {
         Threads.database.executeAndWait {
-            database.transaction().use {
+            database.runInTransaction {
                 LocalDatabaseParentActionDispatcher.dispatchParentActionSync(action, database)
-
-                database.setTransactionSuccessful()
             }
         }
     }
 
     suspend fun applyChildAction(action: ChildAction, childUserId: String, database: Database) {
         Threads.database.executeAndWait {
-            database.transaction().use {
+            database.runInTransaction {
                 LocalDatabaseChildActionDispatcher.dispatchChildActionSync(action, childUserId, database)
-
-                database.setTransactionSuccessful()
             }
         }
     }

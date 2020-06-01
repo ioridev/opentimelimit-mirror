@@ -15,20 +15,12 @@
  */
 package io.timelimit.android.ui.manage.parent.key
 
-import android.app.Activity
-import android.app.Dialog
-import android.content.ActivityNotFoundException
-import android.content.Intent
 import android.os.Bundle
-import android.util.Base64
 import android.widget.Toast
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
-import io.timelimit.android.crypto.Curve25519
 import io.timelimit.android.data.model.UserKey
-import io.timelimit.android.data.transaction
 import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.logic.DefaultAppLogic
 
@@ -53,7 +45,7 @@ class AddUserKeyDialogFragment: ScanKeyDialogFragment() {
             val userId = arguments!!.getString(USER_ID)!!
 
             Threads.database.execute {
-                database.transaction().use {
+                database.runInTransaction {
                     val old = database.userKey().findUserKeyByPublicKeySync(key.publicKey)
 
                     if (old == null) {
@@ -68,8 +60,6 @@ class AddUserKeyDialogFragment: ScanKeyDialogFragment() {
                         Threads.mainThreadHandler.post {
                             Toast.makeText(context, R.string.manage_user_key_added, Toast.LENGTH_SHORT).show()
                         }
-
-                        it.setSuccess()
                     } else {
                         Threads.mainThreadHandler.post {
                             Toast.makeText(context, R.string.manage_user_key_other_user, Toast.LENGTH_SHORT).show()

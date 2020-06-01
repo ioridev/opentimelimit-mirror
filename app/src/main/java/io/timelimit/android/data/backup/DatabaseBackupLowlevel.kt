@@ -20,7 +20,6 @@ import android.util.JsonWriter
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.JsonSerializable
 import io.timelimit.android.data.model.*
-import io.timelimit.android.data.transaction
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.OutputStream
@@ -92,9 +91,7 @@ object DatabaseBackupLowlevel {
     fun restoreFromBackupJson(database: Database, inputStream: InputStream) {
         val reader = JsonReader(InputStreamReader(inputStream, Charsets.UTF_8))
 
-        database.transaction().use {
-            transaction ->
-
+        database.runInTransaction {
             database.deleteAllData()
 
             reader.beginObject()
@@ -219,8 +216,6 @@ object DatabaseBackupLowlevel {
                 }
             }
             reader.endObject()
-
-            transaction.setSuccess()
         }
     }
 }

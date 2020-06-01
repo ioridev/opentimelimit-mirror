@@ -26,9 +26,7 @@ import java.util.*
 
 object LocalDatabaseParentActionDispatcher {
     fun dispatchParentActionSync(action: ParentAction, database: Database) {
-        database.beginTransaction()
-
-        try {
+        database.runInTransaction {
             when (action) {
                 is AddCategoryAppsAction -> {
                     // validate that the category exists
@@ -519,10 +517,6 @@ object LocalDatabaseParentActionDispatcher {
                     database.userKey().deleteUserKeySync(action.userId)
                 }
             }.let { }
-
-            database.setTransactionSuccessful()
-        } finally {
-            database.endTransaction()
         }
     }
 }
