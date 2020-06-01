@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,8 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
         private const val EXTRA_PACKAGE_NAME = "packageName"
         private const val EXTRA_ACTIVITY_NAME = "activityName"
         private const val LOGIN_DIALOG_TAG = "loginDialog"
+
+        val currentInstances = mutableSetOf<LockActivity>()
 
         fun start(context: Context, packageName: String, activityName: String?) {
             context.startActivity(
@@ -75,6 +77,14 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
 
             stopMediaPlayback()
         }
+
+        currentInstances.add(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        currentInstances.remove(this)
     }
 
     override fun getActivityViewModel(): ActivityViewModel {

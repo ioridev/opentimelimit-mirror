@@ -15,6 +15,7 @@
  */
 package io.timelimit.android.logic
 
+import android.content.pm.PackageManager
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import io.timelimit.android.BuildConfig
@@ -37,6 +38,7 @@ import io.timelimit.android.sync.actions.AddUsedTimeActionItemAdditionalCounting
 import io.timelimit.android.sync.actions.AddUsedTimeActionItemSessionDurationLimitSlot
 import io.timelimit.android.sync.actions.UpdateDeviceStatusAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
+import io.timelimit.android.ui.lock.LockActivity
 import io.timelimit.android.util.AndroidVersion
 import io.timelimit.android.util.TimeTextUtil
 import kotlinx.coroutines.delay
@@ -121,8 +123,21 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
     private val appTitleCache = QueryAppTitleCache(appLogic.platformIntegration)
 
+    private val isChromeOs = appLogic.context.packageManager.hasSystemFeature(PackageManager.FEATURE_PC)
+
     private suspend fun openLockscreen(blockedAppPackageName: String, blockedAppActivityName: String?) {
         appLogic.platformIntegration.setShowBlockingOverlay(true, "$blockedAppPackageName:${blockedAppActivityName?.removePrefix(blockedAppPackageName)}")
+
+        if (isChromeOs) {
+            LockActivity.currentInstances.forEach { it.finish() }
+
+            var i = 0
+
+            while (LockActivity.currentInstances.isNotEmpty() && i < 2000) {
+                delay(10)
+                i += 10
+            }
+        }
 
         if (appLogic.platformIntegration.isAccessibilityServiceEnabled()) {
             if (blockedAppPackageName != appLogic.platformIntegration.getLauncherAppPackageName()) {
