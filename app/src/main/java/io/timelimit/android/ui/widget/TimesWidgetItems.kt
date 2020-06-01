@@ -18,7 +18,11 @@ package io.timelimit.android.ui.widget
 import android.util.SparseLongArray
 import androidx.lifecycle.LiveData
 import io.timelimit.android.data.extensions.mapToTimezone
+import io.timelimit.android.data.model.getCurrentTimeSlotStartMinute
+import io.timelimit.android.data.model.getSlotSwitchMinutes
 import io.timelimit.android.date.DateInTimezone
+import io.timelimit.android.date.getMinuteOfWeek
+import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.liveDataFromFunction
 import io.timelimit.android.livedata.map
@@ -33,6 +37,11 @@ object TimesWidgetItems {
         val userTimezone = userEntry.mapToTimezone()
         val userDate = userTimezone.switchMap { timeZone ->
             liveDataFromFunction { DateInTimezone.newInstance(logic.timeApi.getCurrentTimeInMillis(), timeZone) }
+        }.ignoreUnchanged()
+        val userMinuteOfWeek = userTimezone.switchMap { timeZone ->
+            liveDataFromFunction {
+                getMinuteOfWeek(logic.timeApi.getCurrentTimeInMillis(), timeZone)
+            }
         }.ignoreUnchanged()
         val categories = userId.switchMap { logic.database.category().getCategoriesByChildId(it) }
         val usedTimeItemsForWeek = userDate.switchMap { date ->
@@ -49,35 +58,36 @@ object TimesWidgetItems {
                     categories.map { category -> category.id }
             )
         }
+        val timeLimitSlot = timeLimitRules.map { it.getSlotSwitchMinutes() }.switchMap {
+            userMinuteOfWeek.switchMap { minuteOfWeek ->
+                getCurrentTimeSlotStartMinute(it, userMinuteOfWeek.map { it % MinuteOfDay.LENGTH })
+            }
+        }
         val categoryItems = categories.switchMap { categories ->
             timeLimitRules.switchMap { timeLimitRules ->
-                userDate.switchMap { childDate ->
-                    usedTimeItemsForWeek.map { usedTimeItemsForWeek ->
-                        val rulesByCategoryId = timeLimitRules.groupBy { rule -> rule.categoryId }
-                        val usedTimesByCategory = usedTimeItemsForWeek.groupBy { item -> item.categoryId }
-                        val firstDayOfWeek = childDate.dayOfEpoch - childDate.dayOfWeek
+                timeLimitSlot.switchMap { timeLimitSlot ->
+                    userDate.switchMap { childDate ->
+                        usedTimeItemsForWeek.map { usedTimeItemsForWeek ->
+                            val rulesByCategoryId = timeLimitRules.groupBy { rule -> rule.categoryId }
+                            val usedTimesByCategory = usedTimeItemsForWeek.groupBy { item -> item.categoryId }
+                            val firstDayOfWeek = childDate.dayOfEpoch - childDate.dayOfWeek
 
-                        categories.map { category ->
-                            val rules = rulesByCategoryId[category.id] ?: emptyList()
-                            val usedTimeItemsForCategory = usedTimesByCategory[category.id]
-                                    ?: emptyList()
-
-                            TimesWidgetItem(
-                                    title = category.title,
-                                    remainingTimeToday = RemainingTime.getRemainingTime(
-                                            dayOfWeek = childDate.dayOfWeek,
-                                            usedTimes = SparseLongArray().apply {
-                                                usedTimeItemsForCategory.forEach { usedTimeItem ->
-
-                                                    val dayOfWeek = usedTimeItem.dayOfEpoch - firstDayOfWeek
-
-                                                    put(dayOfWeek, usedTimeItem.usedMillis)
-                                                }
-                                            },
-                                            rules = rules,
-                                            extraTime = category.getExtraTime(dayOfEpoch = childDate.dayOfEpoch)
-                                    )?.includingExtraTime
-                            )
+                            categories.map { category ->
+                                val rules = rulesByCategoryId[category.id] ?: emptyList()
+                                val usedTimeItemsForCategory = usedTimesByCategory[category.id]
+                                        ?: emptyList()
+                                TimesWidgetItem(
+                                        title = category.title,
+                                        remainingTimeToday = RemainingTime.getRemainingTime(
+                                                dayOfWeek = childDate.dayOfWeek,
+                                                usedTimes = usedTimeItemsForCategory,
+                                                rules = rules,
+                                                extraTime = category.getExtraTime(dayOfEpoch = childDate.dayOfEpoch),
+                                                minuteOfDay = timeLimitSlot,
+                                                firstDayOfWeekAsEpochDay = firstDayOfWeek
+                                        )?.includingExtraTime
+                                )
+                            }
                         }
                     }
                 }

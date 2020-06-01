@@ -31,6 +31,7 @@ interface Database {
     fun appActivity(): AppActivityDao
     fun allowedContact(): AllowedContactDao
     fun userKey(): UserKeyDao
+    fun sessionDuration(): SessionDurationDao
 
     fun beginTransaction()
     fun setTransactionSuccessful()

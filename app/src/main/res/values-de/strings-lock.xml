@@ -60,6 +60,10 @@
         und dieses Akkulimit wurde erreicht.
         Zum Wiederfreigeben muss der Akku aufgeladen werden.
     </string>
+    <string name="lock_reason_session_duration">
+        Für diese %s gibt es eine Sitzungsdauerbegrenzung.
+        Nach dem Ablauf der Pausenzeit wird die Sperre aufgehoben.
+    </string>
 
     <string name="lock_reason_short_no_category">keine Kategorie</string>
     <string name="lock_reason_short_temporarily_blocked">vorübergehend gesperrt</string>
@@ -67,6 +71,7 @@
     <string name="lock_reason_short_blocked_time_area">Sperrzeit</string>
     <string name="lock_reason_short_notification_blocking">alle Benachrichtigungen werden blockiert</string>
     <string name="lock_reason_short_battery_limit">Akkulimit unterschritten</string>
+    <string name="lock_reason_short_session_duration">Sitzungsdauergrenze erreicht</string>
 
     <string name="lock_overlay_warning">
         Öffnen des Sperrbildschirms fehlgeschlagen.

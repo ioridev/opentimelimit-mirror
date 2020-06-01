@@ -20,6 +20,7 @@ import io.timelimit.android.data.customtypes.ImmutableBitmask
 import io.timelimit.android.data.model.AppRecommendation
 import io.timelimit.android.data.model.TimeLimitRule
 import io.timelimit.android.data.model.UserType
+import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.integration.platform.NewPermissionStatus
 import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
@@ -45,9 +46,13 @@ sealed class ChildAction: Action()
 // now the concrete actions
 //
 
-data class AddUsedTimeActionVersion2(val dayOfEpoch: Int, val items: List<AddUsedTimeActionItem>): AppLogicAction() {
+data class AddUsedTimeActionVersion2(
+        val dayOfEpoch: Int,
+        val items: List<AddUsedTimeActionItem>,
+        val trustedTimestamp: Long
+): AppLogicAction() {
     init {
-        if (dayOfEpoch < 0) {
+        if (dayOfEpoch < 0 || trustedTimestamp < 0) {
             throw IllegalArgumentException()
         }
 
@@ -61,7 +66,11 @@ data class AddUsedTimeActionVersion2(val dayOfEpoch: Int, val items: List<AddUse
     }
 }
 
-data class AddUsedTimeActionItem(val categoryId: String, val timeToAdd: Int, val extraTimeToSubtract: Int) {
+data class AddUsedTimeActionItem(
+        val categoryId: String, val timeToAdd: Int, val extraTimeToSubtract: Int,
+        val additionalCountingSlots: Set<AddUsedTimeActionItemAdditionalCountingSlot>,
+        val sessionDurationLimits: Set<AddUsedTimeActionItemSessionDurationLimitSlot>
+) {
     init {
         IdGenerator.assertIdValid(categoryId)
 
@@ -70,6 +79,33 @@ data class AddUsedTimeActionItem(val categoryId: String, val timeToAdd: Int, val
         }
 
         if (extraTimeToSubtract < 0) {
+            throw IllegalArgumentException()
+        }
+    }
+}
+
+data class AddUsedTimeActionItemAdditionalCountingSlot(val start: Int, val end: Int) {
+    init {
+        if (start < MinuteOfDay.MIN || end > MinuteOfDay.MAX || start > end) {
+            throw IllegalArgumentException()
+        }
+
+        if (start == MinuteOfDay.MIN && end == MinuteOfDay.MAX) {
+            throw IllegalArgumentException()
+        }
+    }
+}
+
+data class AddUsedTimeActionItemSessionDurationLimitSlot(
+        val startMinuteOfDay: Int, val endMinuteOfDay: Int,
+        val maxSessionDuration: Int, val sessionPauseDuration: Int
+) {
+    init {
+        if (startMinuteOfDay < MinuteOfDay.MIN || endMinuteOfDay > MinuteOfDay.MAX || startMinuteOfDay > endMinuteOfDay) {
+            throw IllegalArgumentException()
+        }
+
+        if (maxSessionDuration <= 0 || sessionPauseDuration <= 0) {
             throw IllegalArgumentException()
         }
     }
@@ -346,7 +382,10 @@ data class UpdateCategoryBlockAllNotificationsAction(val categoryId: String, val
 
 data class CreateTimeLimitRuleAction(val rule: TimeLimitRule): ParentAction()
 
-data class UpdateTimeLimitRuleAction(val ruleId: String, val dayMask: Byte, val maximumTimeInMillis: Int, val applyToExtraTimeUsage: Boolean): ParentAction() {
+data class UpdateTimeLimitRuleAction(
+        val ruleId: String, val dayMask: Byte, val maximumTimeInMillis: Int, val applyToExtraTimeUsage: Boolean,
+        val start: Int, val end: Int, val sessionDurationMilliseconds: Int, val sessionPauseMilliseconds: Int
+): ParentAction() {
     init {
         IdGenerator.assertIdValid(ruleId)
 
@@ -355,6 +394,14 @@ data class UpdateTimeLimitRuleAction(val ruleId: String, val dayMask: Byte, val 
         }
 
         if (dayMask < 0 || dayMask > (1 or 2 or 4 or 8 or 16 or 32 or 64)) {
+            throw IllegalArgumentException()
+        }
+
+        if (start < MinuteOfDay.MIN || end > MinuteOfDay.MAX || start > end) {
+            throw IllegalArgumentException()
+        }
+
+        if (sessionDurationMilliseconds < 0 || sessionPauseMilliseconds < 0) {
             throw IllegalArgumentException()
         }
     }

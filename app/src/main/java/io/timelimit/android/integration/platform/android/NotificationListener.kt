@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -111,6 +111,7 @@ class NotificationListener: NotificationListenerService() {
                                                     BlockingReason.BlockedAtThisTime -> getString(R.string.lock_reason_short_blocked_time_area)
                                                     BlockingReason.NotificationsAreBlocked -> getString(R.string.lock_reason_short_notification_blocking)
                                                     BlockingReason.BatteryLimit -> getString(R.string.lock_reason_short_battery_limit)
+                                                    BlockingReason.SessionDurationLimit -> getString(R.string.lock_reason_short_session_duration)
                                                     BlockingReason.None -> throw IllegalStateException()
                                                 }
                                 )
