@@ -34,6 +34,7 @@ import io.timelimit.android.ui.help.HelpDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.child.ManageChildFragmentArgs
+import io.timelimit.android.ui.manage.child.advanced.limituserviewing.LimitUserViewingView
 import io.timelimit.android.ui.manage.child.advanced.manageblocktemporarily.ManageBlockTemporarilyView
 import io.timelimit.android.ui.manage.child.advanced.managedisabletimelimits.ManageDisableTimelimitsViewHelper
 import io.timelimit.android.ui.manage.child.advanced.password.ManageChildPassword
@@ -134,6 +135,15 @@ class ManageChildAdvancedFragment : Fragment() {
                 lifecycleOwner = this,
                 auth = auth,
                 fragmentManager = fragmentManager!!
+        )
+
+        LimitUserViewingView.bind(
+                view = binding.limitViewing,
+                auth = auth,
+                lifecycleOwner = viewLifecycleOwner,
+                fragmentManager = parentFragmentManager,
+                userEntry = childEntry,
+                userId = params.childId
         )
 
         return binding.root

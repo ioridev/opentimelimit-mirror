@@ -19,6 +19,7 @@ import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.customtypes.ImmutableBitmask
 import io.timelimit.android.data.model.AppRecommendation
 import io.timelimit.android.data.model.TimeLimitRule
+import io.timelimit.android.data.model.UserFlags
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.integration.platform.NewPermissionStatus
@@ -504,6 +505,16 @@ data class ResetParentBlockedTimesAction(val parentId: String): ParentAction() {
 data class ResetUserKeyAction(val userId: String): ParentAction() {
     init {
         IdGenerator.assertIdValid(userId)
+    }
+}
+
+data class UpdateUserFlagsAction(val userId: String, val modifiedBits: Long, val newValues: Long): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(userId)
+
+        if (modifiedBits or UserFlags.ALL_FLAGS != UserFlags.ALL_FLAGS || modifiedBits or newValues != modifiedBits) {
+            throw IllegalArgumentException()
+        }
     }
 }
 

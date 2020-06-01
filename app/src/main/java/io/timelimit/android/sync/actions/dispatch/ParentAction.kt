@@ -167,7 +167,8 @@ object LocalDatabaseParentActionDispatcher {
                             password = if (action.password == null) "" else action.password,
                             disableLimitsUntil = 0,
                             categoryForNotAssignedApps = "",
-                            blockedTimes = ImmutableBitmask(BitSet())
+                            blockedTimes = ImmutableBitmask(BitSet()),
+                            flags = 0
                     ))
                 }
                 is UpdateCategoryBlockedTimesAction -> {
@@ -515,6 +516,15 @@ object LocalDatabaseParentActionDispatcher {
                 }
                 is ResetUserKeyAction -> {
                     database.userKey().deleteUserKeySync(action.userId)
+                }
+                is UpdateUserFlagsAction -> {
+                    val user = database.user().getUserByIdSync(action.userId)!!
+
+                    val updatedUser = user.copy(
+                            flags = (user.flags and action.modifiedBits.inv()) or action.newValues
+                    )
+
+                    database.user().updateUserSync(updatedUser)
                 }
             }.let { }
         }

@@ -49,7 +49,9 @@ data class User(
         // empty or invalid = no category
         val categoryForNotAssignedApps: String,
         @ColumnInfo(name = "blocked_times")
-        val blockedTimes: ImmutableBitmask
+        val blockedTimes: ImmutableBitmask,
+        @ColumnInfo(name = "flags")
+        val flags: Long
 ): JsonSerializable {
     companion object {
         private const val ID = "id"
@@ -60,6 +62,7 @@ data class User(
         private const val DISABLE_LIMITS_UNTIL = "disableLimitsUntil"
         private const val CATEGORY_FOR_NOT_ASSIGNED_APPS = "categoryForNotAssignedApps"
         private const val BLOCKED_TIMES = "blockedTimes"
+        private const val FLAGS = "flags"
 
         fun parse(reader: JsonReader): User {
             var id: String? = null
@@ -70,6 +73,7 @@ data class User(
             var disableLimitsUntil: Long? = null
             var categoryForNotAssignedApps = ""
             var blockedTimes = ImmutableBitmask(BitSet())
+            var flags = 0L
 
             reader.beginObject()
             while (reader.hasNext()) {
@@ -82,6 +86,7 @@ data class User(
                     DISABLE_LIMITS_UNTIL -> disableLimitsUntil = reader.nextLong()
                     CATEGORY_FOR_NOT_ASSIGNED_APPS -> categoryForNotAssignedApps = reader.nextString()
                     BLOCKED_TIMES -> blockedTimes = ImmutableBitmaskJson.parse(reader.nextString(), Category.BLOCKED_MINUTES_IN_WEEK_LENGTH)
+                    FLAGS -> flags = reader.nextLong()
                     else -> reader.skipValue()
                 }
             }
@@ -95,7 +100,8 @@ data class User(
                     timeZone = timeZone!!,
                     disableLimitsUntil = disableLimitsUntil!!,
                     categoryForNotAssignedApps = categoryForNotAssignedApps,
-                    blockedTimes = blockedTimes
+                    blockedTimes = blockedTimes,
+                    flags = flags
             )
         }
     }
@@ -120,6 +126,9 @@ data class User(
         }
     }
 
+    val restrictViewingToParents: Boolean
+        get() = flags and UserFlags.RESTRICT_VIEWING_TO_PARENTS == UserFlags.RESTRICT_VIEWING_TO_PARENTS
+
     override fun serialize(writer: JsonWriter) {
         writer.beginObject()
 
@@ -131,6 +140,7 @@ data class User(
         writer.name(DISABLE_LIMITS_UNTIL).value(disableLimitsUntil)
         writer.name(CATEGORY_FOR_NOT_ASSIGNED_APPS).value(categoryForNotAssignedApps)
         writer.name(BLOCKED_TIMES).value(ImmutableBitmaskJson.serialize(blockedTimes))
+        writer.name(FLAGS).value(flags)
 
         writer.endObject()
     }
@@ -162,4 +172,9 @@ class UserTypeConverter {
 
     @TypeConverter
     fun toString(value: UserType) = UserTypeJson.serialize(value)
+}
+
+object UserFlags {
+    const val RESTRICT_VIEWING_TO_PARENTS = 1L
+    const val ALL_FLAGS = RESTRICT_VIEWING_TO_PARENTS
 }
