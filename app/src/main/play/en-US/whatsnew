@@ -1,2 +1,8 @@
-- added system permission request dialog of newer Android versions to the whitelist
-- added info that the temporarily blocking is indefinitely by default
+New features:
+
+- session duration limits (e.g. 10 minutes break after 30 minutes usage)
+- time limits depending on the time of the day
+
+Changes:
+
+- the status notification is not showed at the lockscreen anymore if a screen lock is configured
