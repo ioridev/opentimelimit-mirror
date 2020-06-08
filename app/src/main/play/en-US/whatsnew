@@ -1,8 +1,8 @@
-New features:
-
-- session duration limits (e.g. 10 minutes break after 30 minutes usage)
-- time limits depending on the time of the day
-
 Changes:
 
-- the status notification is not showed at the lockscreen anymore if a screen lock is configured
+- modified detection of the currently running App
+
+Fixed issues:
+
+- counting time for not active slots of the current day
+
