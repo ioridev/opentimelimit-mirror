@@ -36,4 +36,7 @@
     <string name="manage_parent_remove_user_status_ready">
         Geben Sie das Passwort von %1$s ein, um %1$s zu löschen.
     </string>
+    <string name="manage_parent_remove_user_status_last_without_login_limit">Das ist der letzte Benutzer,
+        der sich jederzeit anmelden kann. Daher kann dieser nicht entfernt werden.
+    </string>
 </resources>

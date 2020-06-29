@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,15 +40,23 @@ class DeleteParentModel(application: Application): AndroidViewModel(application)
 
     private val authenticatedUserLive = activityViewModelLive.switchMap { it.authenticatedUser }
 
+    private val isLastWithoutLoginLimit = parentUserIdLive.switchMap { userId ->
+        database.userLimitLoginCategoryDao().countOtherUsersWithoutLimitLoginCategoryLive(userId).map { it == 0L }
+    }
+
     val statusLive = parentUserIdLive.switchMap { parentUserId ->
-        authenticatedUserLive.map { authenticatedUser ->
-            if (authenticatedUser?.second?.type != UserType.Parent) {
-                Status.NotAuthenticated
-            } else {
-                if (authenticatedUser.second.id == parentUserId) {
-                    Status.WrongAccount
+        authenticatedUserLive.switchMap { authenticatedUser ->
+            isLastWithoutLoginLimit.map { lastWithoutLoginLimit ->
+                if (authenticatedUser?.second?.type != UserType.Parent) {
+                    Status.NotAuthenticated
                 } else {
-                    Status.Ready
+                    if (authenticatedUser.second.id == parentUserId) {
+                        Status.WrongAccount
+                    } else if (lastWithoutLoginLimit) {
+                        Status.LastWihtoutLoginLimit
+                    } else {
+                        Status.Ready
+                    }
                 }
             }
         }
@@ -111,5 +119,6 @@ class DeleteParentModel(application: Application): AndroidViewModel(application)
 enum class Status {
     NotAuthenticated,
     WrongAccount,
+    LastWihtoutLoginLimit,
     Ready
 }

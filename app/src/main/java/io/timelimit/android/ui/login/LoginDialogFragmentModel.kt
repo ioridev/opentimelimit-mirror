@@ -27,7 +27,9 @@ import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.crypto.PasswordHashing
 import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
+import io.timelimit.android.data.model.derived.CompleteUserLoginRelatedData
 import io.timelimit.android.livedata.*
+import io.timelimit.android.logic.BlockingReason
 import io.timelimit.android.logic.BlockingReasonUtil
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.ChildSignInAction
@@ -37,20 +39,18 @@ import io.timelimit.android.ui.main.AuthenticatedUser
 import io.timelimit.android.ui.manage.parent.key.ScannedKey
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.util.*
 
 class LoginDialogFragmentModel(application: Application): AndroidViewModel(application) {
     val selectedUserId = MutableLiveData<String?>().apply { value = null }
     private val logic = DefaultAppLogic.with(application)
     private val blockingReasonUtil = BlockingReasonUtil(logic)
     private val users = logic.database.user().getAllUsersLive()
-    private val selectedUser = users.switchMap { users ->
-        selectedUserId.map { userId ->
-            users.find { it.id == userId }
-        }
+    private val selectedUser = selectedUserId.switchMap { selectedUserId ->
+        if (selectedUserId != null)
+            logic.database.derivedDataDao().getUserLoginRelatedDataLive(selectedUserId)
+        else
+            liveDataFromValue(null as CompleteUserLoginRelatedData?)
     }
-    private val trustedTime = selectedUser.switchMap { blockingReasonUtil.getTrustedMinuteOfWeekLive(TimeZone.getTimeZone(it?.timeZone ?: "GMT")) }
-    private val currentDeviceUser = logic.deviceUserId
     private val isCheckingPassword = MutableLiveData<Boolean>().apply { value = false }
     private val wasPasswordWrong = MutableLiveData<Boolean>().apply { value = false }
     private val isLoginDone = MutableLiveData<Boolean>().apply { value = false }
@@ -60,31 +60,34 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
         if (isLoginDone) {
             liveDataFromValue(LoginDialogDone as LoginDialogStatus)
         } else {
-            selectedUser.switchMap { selectedUser ->
+            selectedUser.switchMap { selectedUserInfo ->
+                val selectedUser = selectedUserInfo?.loginRelatedData?.user
+
                 when (selectedUser?.type) {
                     UserType.Parent -> {
-                        val isAlreadyCurrentUser = currentDeviceUser.map { it == selectedUser.id }.ignoreUnchanged()
-                        val loginScreen = isAlreadyCurrentUser.switchMap { isAlreadyCurrentUser ->
-                            isCheckingPassword.switchMap { isCheckingPassword ->
-                                wasPasswordWrong.map { wasPasswordWrong ->
-                                    ParentUserLogin(
-                                            isAlreadyCurrentDeviceUser = isAlreadyCurrentUser,
-                                            isCheckingPassword = isCheckingPassword,
-                                            wasPasswordWrong = wasPasswordWrong
-                                    ) as LoginDialogStatus
-                                }
+                        val loginScreen = isCheckingPassword.switchMap { isCheckingPassword ->
+                            wasPasswordWrong.map { wasPasswordWrong ->
+                                ParentUserLogin(
+                                        isCheckingPassword = isCheckingPassword,
+                                        wasPasswordWrong = wasPasswordWrong
+                                ) as LoginDialogStatus
                             }
                         }
 
-                        if (selectedUser.blockedTimes.dataNotToModify.isEmpty) {
-                            loginScreen
-                        } else {
-                            trustedTime.switchMap { time ->
-                                if (selectedUser.blockedTimes.dataNotToModify[time]) {
-                                    liveDataFromValue(ParentUserLoginBlockedTime as LoginDialogStatus)
-                                } else {
-                                    loginScreen
-                                }
+                        AllowUserLoginStatusUtil.calculateLive(logic, selectedUser.id).switchMap { status ->
+                            if (status is AllowUserLoginStatus.Allow) {
+                                loginScreen
+                            } else if (status is AllowUserLoginStatus.ForbidByCurrentTime) {
+                                liveDataFromValue(ParentUserLoginBlockedTime as LoginDialogStatus)
+                            } else if (status is AllowUserLoginStatus.ForbidByCategory) {
+                                liveDataFromValue(
+                                        ParentUserLoginBlockedByCategory(
+                                                categoryTitle = status.categoryTitle,
+                                                reason = status.blockingReason
+                                        ) as LoginDialogStatus
+                                )
+                            } else {
+                                loginScreen
                             }
                         }
                     }
@@ -92,19 +95,17 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
                         if (selectedUser.password.isEmpty()) {
                             liveDataFromValue(CanNotSignInChildHasNoPassword(childName = selectedUser.name) as LoginDialogStatus)
                         } else {
-                            val isAlreadyCurrentUser = currentDeviceUser.map { it == selectedUser.id }.ignoreUnchanged()
+                            val isAlreadyCurrentUser = selectedUserInfo.deviceRelatedData.deviceEntry.currentUserId == selectedUser.id
 
-                            isAlreadyCurrentUser.switchMap { isSignedIn ->
-                                if (isSignedIn) {
-                                    liveDataFromValue(ChildAlreadyDeviceUser as LoginDialogStatus)
-                                } else {
-                                    isCheckingPassword.switchMap { isCheckingPassword ->
-                                        wasPasswordWrong.map { wasPasswordWrong ->
-                                            ChildUserLogin(
-                                                    isCheckingPassword = isCheckingPassword,
-                                                    wasPasswordWrong = wasPasswordWrong
-                                            ) as LoginDialogStatus
-                                        }
+                            if (isAlreadyCurrentUser) {
+                                liveDataFromValue(ChildAlreadyDeviceUser as LoginDialogStatus)
+                            } else {
+                                isCheckingPassword.switchMap { isCheckingPassword ->
+                                    wasPasswordWrong.map { wasPasswordWrong ->
+                                        ChildUserLogin(
+                                                isCheckingPassword = isCheckingPassword,
+                                                wasPasswordWrong = wasPasswordWrong
+                                        ) as LoginDialogStatus
                                     }
                                 }
                             }
@@ -129,20 +130,30 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
             loginLock.withLock {
                 logic.database.user().getParentUsersLive().waitForNonNullValue().singleOrNull()?.let { user ->
                     val emptyPasswordValid = Threads.crypto.executeAndWait { PasswordHashing.validateSync("", user.password) }
+                    val hasBlockedTimes = !user.blockedTimes.dataNotToModify.isEmpty
 
-                    if (emptyPasswordValid) {
-                        val isGoodTime = blockingReasonUtil.getTrustedMinuteOfWeekLive(TimeZone.getTimeZone(user.timeZone)).map { minuteOfWeek ->
-                            user.blockedTimes.dataNotToModify[minuteOfWeek] == false
-                        }.waitForNonNullValue()
-
-                        if (isGoodTime) {
-                            model.setAuthenticatedUser(AuthenticatedUser(
-                                    userId = user.id,
-                                    passwordHash = user.password
-                            ))
-
-                            isLoginDone.value = true
+                    val shouldSignIn = if (emptyPasswordValid) {
+                        Threads.database.executeAndWait {
+                            AllowUserLoginStatusUtil.calculateSync(
+                                    logic = logic,
+                                    userId = user.id
+                            ) is AllowUserLoginStatus.Allow
                         }
+                    } else {
+                        false
+                    }
+
+                    if (shouldSignIn) {
+                        model.setAuthenticatedUser(AuthenticatedUser(
+                                userId = user.id,
+                                passwordHash = user.password
+                        ))
+
+                        if (hasBlockedTimes) {
+                            Toast.makeText(getApplication(), R.string.manage_parent_blocked_times_toast, Toast.LENGTH_LONG).show()
+                        }
+
+                        isLoginDone.value = true
                     }
                 }
             }
@@ -179,15 +190,24 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
                 }
 
                 if (user != null && user.type == UserType.Parent) {
-                    val isGoodTime = blockingReasonUtil.getTrustedMinuteOfWeekLive(TimeZone.getTimeZone(user.timeZone)).map { minuteOfWeek ->
-                        user.blockedTimes.dataNotToModify[minuteOfWeek] == false
-                    }.waitForNonNullValue()
+                    val hasBlockedTimes = !user.blockedTimes.dataNotToModify.isEmpty
 
-                    if (isGoodTime) {
+                    val shouldSignIn = Threads.database.executeAndWait {
+                        AllowUserLoginStatusUtil.calculateSync(
+                                logic = logic,
+                                userId = user.id
+                        ) is AllowUserLoginStatus.Allow
+                    }
+
+                    if (shouldSignIn) {
                         model.setAuthenticatedUser(AuthenticatedUser(
                                 userId = user.id,
                                 passwordHash = user.password
                         ))
+
+                        if (hasBlockedTimes) {
+                            Toast.makeText(getApplication(), R.string.manage_parent_blocked_times_toast, Toast.LENGTH_LONG).show()
+                        }
 
                         isLoginDone.value = true
                     } else {
@@ -207,10 +227,10 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
                 try {
                     isCheckingPassword.value = true
 
-                    val userEntry = selectedUser.waitForNullableValue()
-                    val ownDeviceId = logic.deviceId.waitForNullableValue()
+                    val userEntryInfo = selectedUser.waitForNullableValue()
+                    val userEntry = userEntryInfo?.loginRelatedData?.user
 
-                    if (userEntry?.type != UserType.Parent || ownDeviceId == null) {
+                    if (userEntry?.type != UserType.Parent) {
                         selectedUserId.value = null
 
                         return@runAsync
@@ -229,7 +249,25 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
                             passwordHash = userEntry.password
                     )
 
+                    val hasBlockedTimes = !userEntry.blockedTimes.dataNotToModify.isEmpty
+                    val shouldSignIn = Threads.database.executeAndWait {
+                        AllowUserLoginStatusUtil.calculateSync(
+                                logic = logic,
+                                userId = userEntry.id
+                        ) is AllowUserLoginStatus.Allow
+                    }
+
+                    if (!shouldSignIn) {
+                        Toast.makeText(getApplication(), R.string.login_blocked_time, Toast.LENGTH_SHORT).show()
+
+                        return@runAsync
+                    }
+
                     model.setAuthenticatedUser(authenticatedUser)
+
+                    if (hasBlockedTimes) {
+                        Toast.makeText(getApplication(), R.string.manage_parent_blocked_times_toast, Toast.LENGTH_LONG).show()
+                    }
 
                     isLoginDone.value = true
                 } finally {
@@ -240,18 +278,17 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
     }
 
     fun tryChildLogin(
-            password: String,
-            model: ActivityViewModel
+            password: String
     ) {
         runAsync {
             loginLock.withLock {
                 try {
                     isCheckingPassword.value = true
 
-                    val userEntry = selectedUser.waitForNullableValue()
-                    val ownDeviceId = logic.deviceId.waitForNullableValue()
+                    val userEntryInfo = selectedUser.waitForNullableValue()
+                    val userEntry = userEntryInfo?.loginRelatedData?.user
 
-                    if (userEntry?.type != UserType.Child || ownDeviceId == null) {
+                    if (userEntry?.type != UserType.Child) {
                         selectedUserId.value = null
 
                         return@runAsync
@@ -301,8 +338,8 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
 sealed class LoginDialogStatus
 data class UserListLoginDialogStatus(val usersToShow: List<User>): LoginDialogStatus()
 object ParentUserLoginBlockedTime: LoginDialogStatus()
+data class ParentUserLoginBlockedByCategory(val categoryTitle: String, val reason: BlockingReason): LoginDialogStatus()
 data class ParentUserLogin(
-        val isAlreadyCurrentDeviceUser: Boolean,
         val isCheckingPassword: Boolean,
         val wasPasswordWrong: Boolean
 ): LoginDialogStatus()

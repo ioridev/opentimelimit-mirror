@@ -37,5 +37,8 @@
 
         <include layout="@layout/new_login_fragment_blocked_time" />
 
+        <include layout="@layout/new_login_fragment_parent_login_blocked"
+            android:id="@+id/parent_login_blocked" />
+
     </io.timelimit.android.ui.view.SafeViewFlipper>
 </layout>

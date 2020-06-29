@@ -35,6 +35,7 @@ interface Database {
     fun userKey(): UserKeyDao
     fun sessionDuration(): SessionDurationDao
     fun derivedDataDao(): DerivedDataDao
+    fun userLimitLoginCategoryDao(): UserLimitLoginCategoryDao
 
     fun <T> runInTransaction(block: () -> T): T
     fun <T> runInUnobservedTransaction(block: () -> T): T

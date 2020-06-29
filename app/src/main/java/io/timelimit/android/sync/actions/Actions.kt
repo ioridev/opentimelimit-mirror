@@ -518,6 +518,13 @@ data class UpdateUserFlagsAction(val userId: String, val modifiedBits: Long, val
     }
 }
 
+data class UpdateUserLimitLoginCategory(val userId: String, val categoryId: String?): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(userId)
+        categoryId?.let { IdGenerator.assertIdValid(categoryId) }
+    }
+}
+
 // child actions
 object ChildSignInAction: ChildAction()
 

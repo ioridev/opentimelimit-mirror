@@ -40,6 +40,7 @@ import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.manage.child.advanced.timezone.UserTimezoneView
 import io.timelimit.android.ui.manage.parent.delete.DeleteParentView
 import io.timelimit.android.ui.manage.parent.key.ManageUserKeyView
+import io.timelimit.android.ui.manage.parent.limitlogin.ParentLimitLoginView
 import kotlin.concurrent.fixedRateTimer
 
 class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
@@ -106,6 +107,14 @@ class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
 
         ManageUserKeyView.bind(
                 view = binding.userKey,
+                lifecycleOwner = viewLifecycleOwner,
+                userId = params.parentId,
+                auth = activity.getActivityViewModel(),
+                fragmentManager = parentFragmentManager
+        )
+
+        ParentLimitLoginView.bind(
+                view = binding.parentLimitLogin,
                 lifecycleOwner = viewLifecycleOwner,
                 userId = params.parentId,
                 auth = activity.getActivityViewModel(),

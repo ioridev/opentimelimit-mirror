@@ -234,6 +234,7 @@ data class CategoryItselfHandling (
     // blockAllNotifications is only relevant if premium or local mode
     // val shouldBlockNotifications = !okAll || blockAllNotifications
     val shouldBlockAtSystemLevel = !okBasic
+    val systemLevelBlockingReason: BlockingReason = activityBlockingReason  // different in the regular timelimit with multiple devices
 
     fun isValid(
             categoryRelatedData: CategoryRelatedData,

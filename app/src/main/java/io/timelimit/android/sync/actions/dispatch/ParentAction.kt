@@ -18,10 +18,7 @@ package io.timelimit.android.sync.actions.dispatch
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.customtypes.ImmutableBitmask
 import io.timelimit.android.data.extensions.getChildCategories
-import io.timelimit.android.data.model.Category
-import io.timelimit.android.data.model.CategoryApp
-import io.timelimit.android.data.model.User
-import io.timelimit.android.data.model.UserType
+import io.timelimit.android.data.model.*
 import io.timelimit.android.sync.actions.*
 import java.util.*
 
@@ -241,6 +238,10 @@ object LocalDatabaseParentActionDispatcher {
 
                         if (currentParents.size <= 1) {
                             throw IllegalStateException("would delete last parent")
+                        }
+
+                        if (database.userLimitLoginCategoryDao().countOtherUsersWithoutLimitLoginCategorySync(action.userId) == 0L) {
+                            throw IllegalStateException("would delete last user without login limit")
                         }
                     }
 
@@ -524,6 +525,29 @@ object LocalDatabaseParentActionDispatcher {
                     )
 
                     database.user().updateUserSync(updatedUser)
+                }
+                is UpdateUserLimitLoginCategory -> {
+                    val user = database.user().getUserByIdSync(action.userId)!!
+
+                    if (user.type != UserType.Parent) {
+                        throw IllegalArgumentException()
+                    }
+
+                    if (action.categoryId == null) {
+                        database.userLimitLoginCategoryDao().removeItemSync(action.userId)
+                    } else {
+                        if (database.userLimitLoginCategoryDao().countOtherUsersWithoutLimitLoginCategorySync(action.userId) == 0L) {
+                            throw IllegalStateException("there must be one user withou such limits")
+                        }
+
+                        database.category().getCategoryByIdSync(action.categoryId)!!
+
+                        database.userLimitLoginCategoryDao().insertOrReplaceItemSync(
+                                UserLimitLoginCategory(
+                                        userId = action.userId,
+                                        categoryId = action.categoryId
+                                )
+                        ) }
                 }
             }.let { }
         }
