@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,9 @@ abstract class TimeLimitRuleDao {
 
     @Query("SELECT * FROM time_limit_rule WHERE category_id IN (:categoryIds)")
     abstract fun getTimeLimitRulesByCategories(categoryIds: List<String>): LiveData<List<TimeLimitRule>>
+
+    @Query("SELECT * FROM time_limit_rule WHERE category_id = :categoryId")
+    abstract fun getTimeLimitRulesByCategorySync(categoryId: String): List<TimeLimitRule>
 
     @Query("DELETE FROM time_limit_rule WHERE category_id = :categoryId")
     abstract fun deleteTimeLimitRulesByCategory(categoryId: String)

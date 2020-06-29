@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ abstract class TimeApi {
     abstract fun getCurrentUptimeInMillis(): Long
     // function to run something delayed at the UI Thread
     abstract fun runDelayed(runnable: Runnable, delayInMillis: Long)
+    abstract fun runDelayedByUptime(runnable: Runnable, delayInMillis: Long)
     abstract fun cancelScheduledAction(runnable: Runnable)
     suspend fun sleep(timeInMillis: Long) = suspendCoroutine<Void?> {
         runDelayed(Runnable {

@@ -54,6 +54,9 @@ abstract class UsedTimeDao {
     @Query("SELECT * FROM used_time WHERE category_id IN (:categoryIds) AND day_of_epoch >= :startingDayOfEpoch AND day_of_epoch <= :endDayOfEpoch")
     abstract fun getUsedTimesByDayAndCategoryIds(categoryIds: List<String>, startingDayOfEpoch: Int, endDayOfEpoch: Int): LiveData<List<UsedTimeItem>>
 
+    @Query("SELECT * FROM used_time WHERE category_id = :categoryId")
+    abstract fun getUsedTimeItemsByCategoryId(categoryId: String): List<UsedTimeItem>
+
     // breaking it into multiple lines causes issues during compilation ...
     @Query("SELECT 2 AS type, start_time_of_day AS startMinuteOfDay, end_time_of_day AS endMinuteOfDay, used_time AS duration, day_of_epoch AS day, NULL AS lastUsage, NULL AS maxSessionDuration, NULL AS pauseDuration FROM used_time WHERE category_id = :categoryId UNION ALL SELECT 1 AS type, start_minute_of_day AS startMinuteOfDay, end_minute_of_day AS endMinuteOfDay, last_session_duration AS duration, NULL AS day, last_usage AS lastUsage, max_session_duration AS maxSessionDuration, session_pause_duration AS pauseDuration FROM session_duration WHERE category_id = :categoryId ORDER BY type, day DESC, lastUsage DESC, startMinuteOfDay, endMinuteOfDay")
     abstract fun getUsedTimeListItemsByCategoryId(categoryId: String): DataSource.Factory<Int, UsedTimeListItem>

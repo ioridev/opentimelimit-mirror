@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,8 @@ class DummyTimeApi(var timeStepSizeInMillis: Long): TimeApi() {
     override fun runDelayed(runnable: Runnable, delayInMillis: Long) {
         scheduledActions.add(ScheduledAction(currentUptime + delayInMillis, runnable))
     }
+
+    override fun runDelayedByUptime(runnable: Runnable, delayInMillis: Long) = runDelayed(runnable, delayInMillis)
 
     override fun cancelScheduledAction(runnable: Runnable) {
         scheduledActions.removeAll { it.action === runnable }

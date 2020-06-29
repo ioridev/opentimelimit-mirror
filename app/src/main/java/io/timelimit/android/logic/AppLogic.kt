@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,6 +69,7 @@ class AppLogic(
     fun getForegroundAppQueryInterval() = foregroundAppQueryInterval.value ?: 0L
 
     val defaultUserLogic = DefaultUserLogic(this)
+    val realTimeLogic = RealTimeLogic(this)
     val backgroundTaskLogic = BackgroundTaskLogic(this)
     val appSetupLogic = AppSetupLogic(this)
     private val syncAppsLogic = SyncInstalledAppsLogic(this)

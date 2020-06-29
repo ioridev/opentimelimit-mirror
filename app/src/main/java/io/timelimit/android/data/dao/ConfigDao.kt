@@ -142,7 +142,7 @@ abstract class ConfigDao {
 
     val experimentalFlags: LiveData<Long> by lazy { getExperimentalFlagsLive() }
 
-    private fun getExperimentalFlagsSync(): Long {
+    fun getExperimentalFlagsSync(): Long {
         val v = getValueOfKeySync(ConfigurationItemType.ExperimentalFlags)
 
         if (v == null) {

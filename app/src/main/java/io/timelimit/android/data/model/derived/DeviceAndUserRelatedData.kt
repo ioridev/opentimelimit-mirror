@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,21 +13,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.data.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import io.timelimit.android.data.model.TemporarilyAllowedApp
+package io.timelimit.android.data.model.derived
 
-@Dao
-abstract class TemporarilyAllowedAppDao {
-    @Query("SELECT package_name FROM temporarily_allowed_app")
-    abstract fun getTemporarilyAllowedAppsSync(): List<String>
-
-    @Insert
-    abstract fun addTemporarilyAllowedAppSync(app: TemporarilyAllowedApp)
-
-    @Query("DELETE FROM temporarily_allowed_app")
-    abstract fun removeAllTemporarilyAllowedAppsSync()
-}
+data class DeviceAndUserRelatedData(
+        val deviceRelatedData: DeviceRelatedData,
+        val userRelatedData: UserRelatedData?
+)

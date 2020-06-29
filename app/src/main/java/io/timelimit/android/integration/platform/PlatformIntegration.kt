@@ -72,6 +72,7 @@ abstract class PlatformIntegration(
     abstract fun setForceNetworkTime(enable: Boolean)
 
     var installedAppsChangeListener: Runnable? = null
+    var systemClockChangeListener: Runnable? = null
 }
 
 data class ForegroundAppSpec(var packageName: String?, var activityName: String?) {
