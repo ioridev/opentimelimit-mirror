@@ -57,7 +57,7 @@ class ManageChildAdvancedFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = FragmentManageChildAdvancedBinding.inflate(layoutInflater, container, false)
 
-        val categories = logic.database.category().getCategoriesByChildId(params.childId)
+        val userRelatedData = logic.database.derivedDataDao().getUserRelatedDataLive(params.childId)
 
         run {
             // blocked categories
@@ -72,7 +72,7 @@ class ManageChildAdvancedFragment : Fragment() {
             ManageBlockTemporarilyView.bind(
                     lifecycleOwner = this,
                     fragmentManager = fragmentManager!!,
-                    categories = categories,
+                    userRelatedData = userRelatedData,
                     container = binding.blockedCategoriesCheckboxContainer,
                     auth = auth,
                     childId = params.childId

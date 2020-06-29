@@ -24,12 +24,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import io.timelimit.android.R
 import io.timelimit.android.data.model.Category
+import io.timelimit.android.data.model.derived.UserRelatedData
 import io.timelimit.android.sync.actions.UpdateCategoryTemporarilyBlockedAction
 import io.timelimit.android.ui.main.ActivityViewModel
 
 object ManageBlockTemporarilyView {
     fun bind(
-            categories: LiveData<List<Category>>,
+            userRelatedData: LiveData<UserRelatedData?>,
             lifecycleOwner: LifecycleOwner,
             container: LinearLayout,
             fragmentManager: FragmentManager,
@@ -38,7 +39,7 @@ object ManageBlockTemporarilyView {
     ) {
         val context = container.context
         val items = ManageBlockTemporarilyItems.build(
-                categories = categories,
+                userRelatedData = userRelatedData,
                 timeApi = auth.logic.timeApi
         )
 

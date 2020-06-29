@@ -21,6 +21,7 @@ import io.timelimit.android.data.Database
 import io.timelimit.android.data.cache.multi.DataCacheHelperInterface
 import io.timelimit.android.data.cache.multi.createCache
 import io.timelimit.android.data.cache.multi.delayClosingItems
+import io.timelimit.android.data.cache.multi.openLiveAtDatabaseThread
 import io.timelimit.android.data.cache.single.*
 import io.timelimit.android.data.model.derived.DeviceAndUserRelatedData
 import io.timelimit.android.data.model.derived.DeviceRelatedData
@@ -138,4 +139,6 @@ class DerivedDataDao (private val database: Database) {
     }
 
     fun getUserAndDeviceRelatedDataLive(): LiveData<DeviceAndUserRelatedData?> = deviceAndUserRelatedDataLive
+
+    fun getUserRelatedDataLive(userId: String): LiveData<UserRelatedData?> = usableUserRelatedData.openLiveAtDatabaseThread(userId)
 }
