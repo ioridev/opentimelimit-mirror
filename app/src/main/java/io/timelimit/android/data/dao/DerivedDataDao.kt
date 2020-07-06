@@ -34,7 +34,6 @@ class DerivedDataDao (private val database: Database) {
         override fun <R> wrapOpenOrUpdate(block: () -> R): R = database.runInUnobservedTransaction { block() }
         override fun disposeItemFast(key: String, item: UserRelatedData?) = Unit
         override fun prepareForUser(item: UserRelatedData?): UserRelatedData? = item
-        override fun close() = Unit
     }.createCache()
 
     private val deviceRelatedDataCache = object: SingleItemDataCacheHelperInterface<DeviceRelatedData?, DeviceRelatedData?> {
@@ -51,7 +50,6 @@ class DerivedDataDao (private val database: Database) {
         override fun <R> wrapOpenOrUpdate(block: () -> R): R = database.runInUnobservedTransaction { block() }
         override fun disposeItemFast(key: String, item: UserLoginRelatedData?) = Unit
         override fun prepareForUser(item: UserLoginRelatedData?): UserLoginRelatedData? = item
-        override fun close() = Unit
     }.createCache()
 
     private val usableUserRelatedData = userRelatedDataCache.userInterface.delayClosingItems(15 * 1000 /* 15 seconds */)
@@ -73,12 +71,11 @@ class DerivedDataDao (private val database: Database) {
         }
 
         override fun updateItemSync(item: DeviceAndUserRelatedData?): DeviceAndUserRelatedData? {
-            try {
-                val newItem = openItemSync()
+            val newItem = openItemSync()
 
-                return if (newItem != item) newItem else item
-            } finally {
-                disposeItemFast(item)
+            return if (newItem != item) newItem else {
+                disposeItemFast(newItem)
+                item
             }
         }
 
@@ -119,12 +116,11 @@ class DerivedDataDao (private val database: Database) {
         }
 
         override fun updateItemSync(key: String, item: CompleteUserLoginRelatedData?): CompleteUserLoginRelatedData? {
-            try {
-                val newItem = openItemSync(key)
+            val newItem = openItemSync(key)
 
-                return if (newItem != item) newItem else item
-            } finally {
-                disposeItemFast(key, item)
+            return if (newItem != item) newItem else {
+                disposeItemFast(key, newItem)
+                item
             }
         }
 
@@ -138,7 +134,6 @@ class DerivedDataDao (private val database: Database) {
 
         override fun <R> wrapOpenOrUpdate(block: () -> R): R = database.runInUnobservedTransaction { block() }
         override fun prepareForUser(item: CompleteUserLoginRelatedData?): CompleteUserLoginRelatedData? = item
-        override fun close() = Unit
     }.createCache()
 
     private val usableDeviceAndUserRelatedDataCache = deviceAndUserRelatedDataCache.userInterface.delayClosingItem(5000)

@@ -19,6 +19,7 @@ import android.content.Context
 import android.util.Log
 import androidx.core.util.AtomicFile
 import io.timelimit.android.BuildConfig
+import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.data.RoomDatabase
 import kotlinx.coroutines.runBlocking
@@ -82,8 +83,9 @@ class DatabaseBackup(private val context: Context) {
 
                 try {
                     jsonFile.openRead().use { inputStream ->
-
-                        DatabaseBackupLowlevel.restoreFromBackupJson(database, inputStream)
+                        Threads.database.executeAndWait {
+                            DatabaseBackupLowlevel.restoreFromBackupJson(database, inputStream)
+                        }
                     }
 
                     if (BuildConfig.DEBUG) {

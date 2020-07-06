@@ -72,7 +72,12 @@ class AppLogic(
     val realTimeLogic = RealTimeLogic(this)
     val backgroundTaskLogic = BackgroundTaskLogic(this)
     val appSetupLogic = AppSetupLogic(this)
-    private val syncAppsLogic = SyncInstalledAppsLogic(this)
+
+    init {
+        SyncInstalledAppsLogic(this)
+        WatchdogLogic(this)
+    }
+
     val manipulationLogic = ManipulationLogic(this)
     val suspendAppsLogic = SuspendAppsLogic(this)
 

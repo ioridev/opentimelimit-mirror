@@ -37,6 +37,9 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
     private var batteryStatus = appLogic.platformIntegration.getBatteryStatus()
     private val pendingSync = AtomicBoolean(true)
     private val executor = Executors.newSingleThreadExecutor()
+    private var lastSuspendedApps: List<String>? = null
+    private val userAndDeviceRelatedDataLive = appLogic.database.derivedDataDao().getUserAndDeviceRelatedDataLive()
+    private var didLoadUserAndDeviceRelatedData = false
 
     private val backgroundRunnable = Runnable {
         while (pendingSync.getAndSet(false)) {
@@ -63,7 +66,7 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
         appLogic.database.registerWeakObserver(arrayOf(Table.App), WeakReference(this))
         appLogic.platformIntegration.getBatteryStatusLive().observeForever { batteryStatus = it; triggerUpdate() }
         appLogic.realTimeLogic.registerTimeModificationListener { triggerUpdate() }
-        appLogic.database.derivedDataDao().getUserAndDeviceRelatedDataLive().observeForever { triggerUpdate() }
+        userAndDeviceRelatedDataLive.observeForever { didLoadUserAndDeviceRelatedData = true; triggerUpdate() }
     }
 
     override fun onInvalidated(tables: Set<Table>) {
@@ -71,7 +74,9 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
     }
 
     private fun updateBlockingSync() {
-        val userAndDeviceRelatedData = appLogic.database.derivedDataDao().getUserAndDeviceRelatedDataSync()
+        if (!didLoadUserAndDeviceRelatedData) return
+
+        val userAndDeviceRelatedData = userAndDeviceRelatedDataLive.value
 
         val isRestrictedUser = userAndDeviceRelatedData?.userRelatedData?.user?.type == UserType.Child
         val enableBlockingAtSystemLevel = userAndDeviceRelatedData?.deviceRelatedData?.isExperimentalFlagSetSync(ExperimentalFlags.SYSTEM_LEVEL_BLOCKING) ?: false
@@ -80,10 +85,10 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
 
         if (!enableBlocking) {
             appLogic.platformIntegration.stopSuspendingForAllApps()
+            lastSuspendedApps = emptyList()
 
             lastAllowedCategoryList = emptySet()
             lastCategoryApps = emptyList()
-
             return
         }
 
@@ -187,14 +192,18 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
     }
 
     private fun applySuspendedApps(packageNames: List<String>) {
-        if (packageNames.isEmpty()) {
+        if (packageNames == lastSuspendedApps) {
+            // nothing to do
+        } else if (packageNames.isEmpty()) {
             appLogic.platformIntegration.stopSuspendingForAllApps()
+            lastSuspendedApps = emptyList()
         } else {
             val allApps = appLogic.platformIntegration.getLocalAppPackageNames()
             val appsToNotBlock = allApps.subtract(packageNames)
 
             appLogic.platformIntegration.setSuspendedApps(appsToNotBlock.toList(), false)
             appLogic.platformIntegration.setSuspendedApps(packageNames, true)
+            lastSuspendedApps = packageNames
         }
     }
 }
