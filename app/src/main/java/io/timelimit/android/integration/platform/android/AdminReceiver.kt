@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,19 +27,19 @@ import io.timelimit.android.sync.actions.TriedDisablingDeviceAdminAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 
 class AdminReceiver: DeviceAdminReceiver() {
-    override fun onEnabled(context: Context, intent: Intent?) {
+    override fun onEnabled(context: Context, intent: Intent) {
         super.onEnabled(context, intent)
 
         DefaultAppLogic.with(context).backgroundTaskLogic.syncDeviceStatusAsync()
     }
 
-    override fun onDisabled(context: Context, intent: Intent?) {
+    override fun onDisabled(context: Context, intent: Intent) {
         super.onDisabled(context, intent)
 
         DefaultAppLogic.with(context).backgroundTaskLogic.syncDeviceStatusAsync()
     }
 
-    override fun onDisableRequested(context: Context, intent: Intent?): CharSequence {
+    override fun onDisableRequested(context: Context, intent: Intent): CharSequence {
         runAsync {
             ApplyActionUtil.applyAppLogicAction(
                     action = TriedDisablingDeviceAdminAction,
@@ -51,13 +51,13 @@ class AdminReceiver: DeviceAdminReceiver() {
         return context.getString(R.string.admin_disable_warning)
     }
 
-    override fun onPasswordSucceeded(context: Context, intent: Intent?) {
+    override fun onPasswordSucceeded(context: Context, intent: Intent) {
         super.onPasswordSucceeded(context, intent)
 
         DefaultAppLogic.with(context).manipulationLogic.reportManualUnlock()
     }
 
-    override fun onPasswordSucceeded(context: Context, intent: Intent?, user: UserHandle?) {
+    override fun onPasswordSucceeded(context: Context, intent: Intent, user: UserHandle) {
         super.onPasswordSucceeded(context, intent, user)
 
         DefaultAppLogic.with(context).manipulationLogic.reportManualUnlock()

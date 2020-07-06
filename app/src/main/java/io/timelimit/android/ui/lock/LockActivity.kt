@@ -56,7 +56,7 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
     override var ignoreStop: Boolean = false
 
     val blockedPackageName: String by lazy {
-        intent.getStringExtra(EXTRA_PACKAGE_NAME)
+        intent.getStringExtra(EXTRA_PACKAGE_NAME)!!
     }
 
     private val blockedActivityName: String? by lazy {
