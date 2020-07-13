@@ -1,8 +1,8 @@
+New feature:
+
+- category nesting with more than two levels
+- limit login category as a successor of the time lock
+
 Changes:
 
-- modified detection of the currently running App
-
-Fixed issues:
-
-- counting time for not active slots of the current day
-
+Rewritten code to decide if/ why an App should be blocked. This is tested, but can still contain bugs. This change makes future bugs less likely and makes future extensions easier.
