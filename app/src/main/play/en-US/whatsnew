@@ -1,8 +1,6 @@
-New feature:
+detail changes:
 
-- category nesting with more than two levels
-- limit login category as a successor of the time lock
-
-Changes:
-
-Rewritten code to decide if/ why an App should be blocked. This is tested, but can still contain bugs. This change makes future bugs less likely and makes future extensions easier.
+- skip user selection during the authentication if there is only one user with a password
+- added FallbackHome to the whitelist
+- refactored text which is shown when a authentication is required
+- updated build tools and libraries

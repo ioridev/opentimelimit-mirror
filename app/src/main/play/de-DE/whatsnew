@@ -1,8 +1,6 @@
-Neue Funktionen:
+Detailänderungen:
 
-- Verschachtelung von Kategorien in mehr als zwei Ebenen
-- Anmeldeverhinderungskategorie als Nachfolger für das Zeitschloss
-
-Änderungen:
-
-Überarbeitung des Codes zum Entscheiden, ob/ warum eine App gesperrt werden soll. Dieser ist getestet, aber kann dennoch Fehler enthalten. Durch diese Überarbeitung werden zukünftige Fehler vermieden und Erweiterungen einfacher.
+- Überspringen der Benutzerauswahl bei der Authentifizierung, wenn es nur einen Benutzer mit Passwort gibt
+- FallbackHome zur Whitelist hinzugefügt
+- Text überarbeitet, der angezeigt wird, wenn eine Authentifizierung erforderlich ist
+- Build-Tools und Libraries aktualisiert
