@@ -104,7 +104,7 @@ class ManageDevicePermissionsFragment : Fragment(), FragmentWithCustomTitle {
                 doesSupportAuth = liveDataFromValue(true)
         )
 
-        auth.authenticatedUser.map { it?.second?.type == UserType.Parent }.observe(this, Observer {
+        auth.authenticatedUser.map { it?.type == UserType.Parent }.observe(this, Observer {
             binding.isUserSignedIn = it
         })
 

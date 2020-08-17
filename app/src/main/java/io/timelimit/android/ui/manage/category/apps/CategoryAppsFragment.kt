@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,8 +77,12 @@ class CategoryAppsFragment : Fragment() {
             }
 
             override fun onAddAppsClicked() {
-                if (auth.requestAuthenticationOrReturnTrue()) {
-                    AddCategoryAppsFragment.newInstance(params).show(fragmentManager!!)
+                if (auth.requestAuthenticationOrReturnTrueAllowChild(childId = params.childId)) {
+                    AddCategoryAppsFragment.newInstance(
+                            childId = params.childId,
+                            categoryId = params.categoryId,
+                            childAddLimitMode = !auth.isParentAuthenticated()
+                    ).show(parentFragmentManager)
                 }
             }
         }
@@ -87,6 +91,6 @@ class CategoryAppsFragment : Fragment() {
         recycler.adapter = adapter
 
         model.init(params)
-        model.appEntries.observe(this, Observer { adapter.data = it })
+        model.appEntries.observe(viewLifecycleOwner, Observer { adapter.data = it })
     }
 }

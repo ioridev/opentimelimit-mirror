@@ -135,7 +135,7 @@ class ManageParentBlockedTimesFragment : Fragment(), FragmentWithCustomTitle, Co
                 return false
             }
 
-            val authenticatedUser = auth.authenticatedUser.value?.second?.id ?: return false
+            val authenticatedUser = auth.authenticatedUser.value?.id ?: return false
             val targetUser = params.parentUserId
 
             if (authenticatedUser == targetUser) {

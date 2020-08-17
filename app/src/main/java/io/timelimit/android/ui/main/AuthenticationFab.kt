@@ -38,7 +38,7 @@ object AuthenticationFab {
     fun manageAuthenticationFab(
             fab: FloatingActionButton,
             shouldHighlight: MutableLiveData<Boolean>,
-            authenticatedUser: LiveData<Pair<AuthenticatedUser, User>?>,
+            authenticatedUser: LiveData<User?>,
             doesSupportAuth: LiveData<Boolean>,
             fragment: Fragment
     ) {
@@ -99,7 +99,7 @@ object AuthenticationFab {
             }
         }
 
-        val isParentAuthenticated = authenticatedUser.map { it != null && it.second.type == UserType.Parent }
+        val isParentAuthenticated = authenticatedUser.map { it != null && it.type == UserType.Parent }
         val shouldShowFab = (isParentAuthenticated.invert()).and(doesSupportAuth)
 
         val showFabObserver = Observer<Boolean> {

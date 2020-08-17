@@ -23,7 +23,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import io.timelimit.android.R
-import io.timelimit.android.data.model.Category
 import io.timelimit.android.data.model.derived.UserRelatedData
 import io.timelimit.android.sync.actions.UpdateCategoryTemporarilyBlockedAction
 import io.timelimit.android.ui.main.ActivityViewModel
@@ -43,7 +42,8 @@ object ManageBlockTemporarilyView {
                 timeApi = auth.logic.timeApi
         )
 
-        items.observe(lifecycleOwner, Observer { categories ->
+        items.observe(lifecycleOwner, Observer {
+            categories ->
 
             container.removeAllViews()
 
@@ -72,10 +72,17 @@ object ManageBlockTemporarilyView {
                 }
 
                 checkbox.setOnLongClickListener {
-                    if (auth.requestAuthenticationOrReturnTrue()) {
+                    val requireParent = category.checked && category.endTime == 0L
+                    val hasMatchingAuth = if (requireParent)
+                        auth.requestAuthenticationOrReturnTrue()
+                    else
+                        auth.requestAuthenticationOrReturnTrueAllowChild(childId)
+
+                    if (hasMatchingAuth) {
                         BlockTemporarilyDialogFragment.newInstance(
                                 childId = childId,
-                                categoryId = category.categoryId
+                                categoryId = category.categoryId,
+                                childAddLimitMode = !auth.isParentAuthenticated()
                         ).show(fragmentManager)
                     }
 

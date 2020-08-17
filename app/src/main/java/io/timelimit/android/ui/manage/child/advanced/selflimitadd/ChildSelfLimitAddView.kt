@@ -13,8 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
-package io.timelimit.android.ui.manage.child.advanced.limituserviewing
+package io.timelimit.android.ui.manage.child.advanced.selflimitadd
 
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
@@ -22,14 +21,14 @@ import androidx.lifecycle.LiveData
 import io.timelimit.android.R
 import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserFlags
-import io.timelimit.android.databinding.LimitUserViewingViewBinding
+import io.timelimit.android.databinding.AllowChildSelfLimitAddViewBinding
 import io.timelimit.android.ui.extension.bindHelpDialog
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.manage.child.advanced.userflagswitch.UserFlagSwitch
 
-object LimitUserViewingView {
+object ChildSelfLimitAddView {
     fun bind(
-            view: LimitUserViewingViewBinding,
+            view: AllowChildSelfLimitAddViewBinding,
             auth: ActivityViewModel,
             lifecycleOwner: LifecycleOwner,
             fragmentManager: FragmentManager,
@@ -37,8 +36,8 @@ object LimitUserViewingView {
             userId: String
     ) {
         view.titleView.bindHelpDialog(
-                titleRes = R.string.limit_user_viewing_title,
-                textRes = R.string.limit_user_viewing_help,
+                titleRes = R.string.child_self_limit_add_title,
+                textRes = R.string.child_self_limit_add_help,
                 fragmentManager = fragmentManager
         )
 
@@ -47,7 +46,7 @@ object LimitUserViewingView {
                 userId = userId,
                 userEntry = userEntry,
                 lifecycleOwner = lifecycleOwner,
-                flag = UserFlags.RESTRICT_VIEWING_TO_PARENTS,
+                flag = UserFlags.ALLOW_SELF_LIMIT_ADD,
                 auth = auth
         )
     }

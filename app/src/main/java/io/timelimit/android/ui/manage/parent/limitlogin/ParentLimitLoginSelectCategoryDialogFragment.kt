@@ -62,11 +62,11 @@ class ParentLimitLoginSelectCategoryDialogFragment: BottomSheetDialogFragment() 
                 a to b
             }
         }.observe(viewLifecycleOwner, Observer { (categoryList, user) ->
-            if (user?.second?.type != UserType.Parent) {
+            if (user?.type != UserType.Parent) {
                 dismissAllowingStateLoss(); return@Observer
             }
 
-            val isUserItself = user.second.id == userId
+            val isUserItself = user.id == userId
 
             val hasSelection = categoryList.find { it.selected } != null
 

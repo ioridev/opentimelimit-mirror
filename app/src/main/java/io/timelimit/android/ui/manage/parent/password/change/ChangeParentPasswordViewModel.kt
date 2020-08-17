@@ -115,7 +115,12 @@ class ChangeParentPasswordViewModel(application: Application): AndroidViewModel(
                     Log.d(LOG_TAG, "validated user a second time")
                 }
 
-                ApplyActionUtil.applyParentAction(action, logic.database, logic.platformIntegration)
+                ApplyActionUtil.applyParentAction(
+                        action = action,
+                        database = logic.database,
+                        platformIntegration = logic.platformIntegration,
+                        fromChildSelfLimitAddChildUserId = null
+                )
 
                 if (BuildConfig.DEBUG) {
                     Log.d(LOG_TAG, "applied action")

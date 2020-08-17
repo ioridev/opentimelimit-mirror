@@ -65,10 +65,10 @@ object ApplyActionUtil {
         }
     }
 
-    suspend fun applyParentAction(action: ParentAction, database: Database, platformIntegration: PlatformIntegration) {
+    suspend fun applyParentAction(action: ParentAction, database: Database, platformIntegration: PlatformIntegration, fromChildSelfLimitAddChildUserId: String?) {
         Threads.database.executeAndWait {
             database.runInTransaction {
-                LocalDatabaseParentActionDispatcher.dispatchParentActionSync(action, database)
+                LocalDatabaseParentActionDispatcher.dispatchParentActionSync(action, database, fromChildSelfLimitAddChildUserId)
             }
         }
     }

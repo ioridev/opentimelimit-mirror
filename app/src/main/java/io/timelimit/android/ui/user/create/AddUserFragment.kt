@@ -103,7 +103,7 @@ class AddUserFragment : Fragment(), FragmentWithCustomTitle {
 
             val (status, user) = data!!
 
-            if (user == null || user.second.type != UserType.Parent) {
+            if (user == null || user.type != UserType.Parent) {
                 binding.flipper.displayedChild = PAGE_AUTH
             } else {
                 when (status) {

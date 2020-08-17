@@ -44,7 +44,7 @@ class TryResetParentBlockedTimesDialogFragment: DialogFragment() {
         val auth = (activity!! as ActivityViewModelHolder).getActivityViewModel()
 
         auth.authenticatedUser.observe(this, Observer {
-            if (it?.second?.type != UserType.Parent) {
+            if (it?.type != UserType.Parent) {
                 dismissAllowingStateLoss()
             }
         })

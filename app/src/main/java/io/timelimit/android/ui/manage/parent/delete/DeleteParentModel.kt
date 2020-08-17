@@ -47,10 +47,10 @@ class DeleteParentModel(application: Application): AndroidViewModel(application)
     val statusLive = parentUserIdLive.switchMap { parentUserId ->
         authenticatedUserLive.switchMap { authenticatedUser ->
             isLastWithoutLoginLimit.map { lastWithoutLoginLimit ->
-                if (authenticatedUser?.second?.type != UserType.Parent) {
+                if (authenticatedUser?.type != UserType.Parent) {
                     Status.NotAuthenticated
                 } else {
-                    if (authenticatedUser.second.id == parentUserId) {
+                    if (authenticatedUser.id == parentUserId) {
                         Status.WrongAccount
                     } else if (lastWithoutLoginLimit) {
                         Status.LastWihtoutLoginLimit

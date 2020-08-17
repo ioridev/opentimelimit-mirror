@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,8 @@ object CategoryNotificationFilter {
             auth: ActivityViewModel,
             categoryLive: LiveData<Category?>,
             lifecycleOwner: LifecycleOwner,
-            fragmentManager: FragmentManager
+            fragmentManager: FragmentManager,
+            childId: String
     ) {
         view.titleView.setOnClickListener {
             HelpDialogFragment.newInstance(
@@ -48,18 +49,29 @@ object CategoryNotificationFilter {
             view.checkbox.isChecked = shouldBeChecked
             view.checkbox.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked != shouldBeChecked) {
-                    if (
-                            category != null &&
-                            auth.tryDispatchParentAction(
-                                    UpdateCategoryBlockAllNotificationsAction(
-                                            categoryId = category.id,
-                                            blocked = isChecked
-                                    )
-                            )
-                    ) {
-                        // ok
-                    } else {
-                        view.checkbox.isChecked = shouldBeChecked
+                    if (isChecked) {
+                        if (auth.requestAuthenticationOrReturnTrueAllowChild(childId) && category != null) {
+                            EnableNotificationFilterDialogFragment.newInstance(
+                                    childId = childId,
+                                    categoryId = category.id
+                            ).show(fragmentManager)
+                        }
+
+                        view.checkbox.isChecked = false
+                    } else /* not isChecked */ {
+                        if (
+                                category != null &&
+                                auth.tryDispatchParentAction(
+                                        UpdateCategoryBlockAllNotificationsAction(
+                                                categoryId = category.id,
+                                                blocked = isChecked
+                                        )
+                                )
+                        ) {
+                            // ok
+                        } else {
+                            view.checkbox.isChecked = true
+                        }
                     }
                 }
             }

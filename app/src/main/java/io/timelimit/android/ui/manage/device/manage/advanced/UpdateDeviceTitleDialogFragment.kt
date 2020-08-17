@@ -57,7 +57,7 @@ class UpdateDeviceTitleDialogFragment: EditTextBottomSheetDialog() {
         super.onCreate(savedInstanceState)
 
         auth.authenticatedUser.observe(this, Observer {
-            if (it?.second?.type != UserType.Parent) {
+            if (it?.type != UserType.Parent) {
                 dismissAllowingStateLoss()
             }
         })

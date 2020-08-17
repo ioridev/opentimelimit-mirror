@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,12 +19,14 @@ import android.app.Application
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
+import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.liveDataFromValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.switchMap
@@ -43,27 +45,42 @@ class ActivityViewModel(application: Application): AndroidViewModel(application)
     val shouldHighlightAuthenticationButton = MutableLiveData<Boolean>().apply { value = false }
 
     private val authenticatedUserMetadata = MutableLiveData<AuthenticatedUser?>().apply { value = null }
+    private val deviceUser = logic.deviceUserEntry
 
-    val authenticatedUser = authenticatedUserMetadata.switchMap {
+    private val authenticatedChild: LiveData<User?> = deviceUser.map { user ->
+        if (user?.type == UserType.Child && user.allowSelfLimitAdding) {
+            user
+        } else null
+    }
+
+    val authenticatedUserOrChild: LiveData<User?> = authenticatedUserMetadata.switchMap {
         authenticatedUser ->
 
         if (authenticatedUser == null) {
-            liveDataFromValue(null as Pair<AuthenticatedUser, User>?)
+            authenticatedChild
         } else {
-            database.user().getUserByIdLive(authenticatedUser.userId).map {
+            database.user().getUserByIdLive(authenticatedUser.userId).switchMap {
                 if (it == null || it.password != authenticatedUser.passwordHash) {
-                    null
+                    authenticatedChild
                 } else {
-                    Pair(authenticatedUser, it)
+                    liveDataFromValue(it as User?)
                 }
             }
         }
     }
 
-    fun isParentAuthenticated(): Boolean {
-        val user = authenticatedUser.value
+    val authenticatedUser = authenticatedUserOrChild.map { if (it?.type != UserType.Parent) null else it }
 
-        return user != null && user.second.type == UserType.Parent
+    fun isParentAuthenticated(): Boolean {
+        val user = authenticatedUserOrChild.value
+
+        return user != null && user.type == UserType.Parent
+    }
+
+    fun isParentOrChildAuthenticated(childId: String): Boolean {
+        val user = authenticatedUserOrChild.value
+
+        return user != null && (user.type == UserType.Parent || user.id == childId)
     }
 
     fun requestAuthentication() {
@@ -80,12 +97,22 @@ class ActivityViewModel(application: Application): AndroidViewModel(application)
         }
     }
 
-    fun tryDispatchParentAction(action: ParentAction): Boolean = tryDispatchParentActions(listOf(action))
+    fun requestAuthenticationOrReturnTrueAllowChild(childId: String): Boolean {
+        if (isParentOrChildAuthenticated(childId)) {
+            return true
+        } else {
+            requestAuthentication()
 
-    fun tryDispatchParentActions(actions: List<ParentAction>): Boolean {
-        val status = authenticatedUser.value
+            return false
+        }
+    }
 
-        if (status == null || status.second.type != UserType.Parent) {
+    fun tryDispatchParentAction(action: ParentAction, allowAsChild: Boolean = false): Boolean = tryDispatchParentActions(listOf(action), allowAsChild)
+
+    fun tryDispatchParentActions(actions: List<ParentAction>, allowAsChild: Boolean = false): Boolean {
+        val status = authenticatedUserOrChild.value
+
+        if (status == null || (status.type != UserType.Parent && !allowAsChild)) {
             requestAuthentication()
             return false
         }
@@ -96,7 +123,8 @@ class ActivityViewModel(application: Application): AndroidViewModel(application)
                     ApplyActionUtil.applyParentAction(
                             action = action,
                             database = database,
-                            platformIntegration = logic.platformIntegration
+                            platformIntegration = logic.platformIntegration,
+                            fromChildSelfLimitAddChildUserId = if (allowAsChild && status.type == UserType.Child) status.id else null
                     )
                 }
             } catch (ex: Exception) {

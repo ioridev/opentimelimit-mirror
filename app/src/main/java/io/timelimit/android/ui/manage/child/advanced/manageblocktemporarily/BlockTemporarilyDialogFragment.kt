@@ -44,6 +44,7 @@ class BlockTemporarilyDialogFragment: DialogFragment() {
         private const val DIALOG_TAG = "BlockTemporarilyDialogFragment"
         private const val EXTRA_CATEGORY_ID = "categoryId"
         private const val EXTRA_CHILD_ID = "childId"
+        private const val EXTRA_CHILD_ADD_LIMIT_MODE = "childAddLimitMode"
 
         private const val STATE_PAGE = "page"
 
@@ -51,10 +52,11 @@ class BlockTemporarilyDialogFragment: DialogFragment() {
         private const val PAGE_TIME = 1
         private const val PAGE_DATE = 2
 
-        fun newInstance(childId: String, categoryId: String) = BlockTemporarilyDialogFragment().apply {
+        fun newInstance(childId: String, categoryId: String, childAddLimitMode: Boolean) = BlockTemporarilyDialogFragment().apply {
             arguments = Bundle().apply {
                 putString(EXTRA_CHILD_ID, childId)
                 putString(EXTRA_CATEGORY_ID, categoryId)
+                putBoolean(EXTRA_CHILD_ADD_LIMIT_MODE, childAddLimitMode)
             }
         }
     }
@@ -62,16 +64,6 @@ class BlockTemporarilyDialogFragment: DialogFragment() {
     val auth: ActivityViewModel by lazy { (activity as ActivityViewModelHolder).getActivityViewModel() }
 
     lateinit var binding: BlockTemporarilyDialogBinding
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        auth.authenticatedUser.observe(this, Observer {
-            if (it?.second?.type != UserType.Parent) {
-                dismissAllowingStateLoss()
-            }
-        })
-    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?) = object: BottomSheetDialog(context!!, theme) {
         override fun onBackPressed() {
@@ -90,19 +82,47 @@ class BlockTemporarilyDialogFragment: DialogFragment() {
         val database = RoomDatabase.with(context!!)
         val categoryId = arguments!!.getString(EXTRA_CATEGORY_ID)!!
         val childId = arguments!!.getString(EXTRA_CHILD_ID)!!
+        val childAddLimitMode = arguments!!.getBoolean(EXTRA_CHILD_ADD_LIMIT_MODE)
+
+        val childCategories = database.category().getCategoriesByChildId(childId)
+
+        auth.authenticatedUserOrChild.observe(viewLifecycleOwner, Observer {
+            val parentAuthenticated = it?.type == UserType.Parent
+            val childAuthenticated = it?.id == childId && childAddLimitMode
+            val anyoneAuthenticated = parentAuthenticated || childAuthenticated
+
+            if (!anyoneAuthenticated) {
+                dismissAllowingStateLoss()
+            }
+        })
 
         fun now() = auth.logic.timeApi.getCurrentTimeInMillis()
 
         fun applyTimestamp(timestamp: Long) {
             val now = now()
 
+            val category = childCategories.value?.find { it.id == categoryId } ?: run {
+                Toast.makeText(context!!, R.string.error_general, Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            if (childAddLimitMode) {
+                if (category.temporarilyBlocked) {
+                    if (timestamp < category.temporarilyBlockedEndTime || category.temporarilyBlockedEndTime == 0L) {
+                        Toast.makeText(context!!, R.string.manage_disable_time_limits_toast_time_not_increased_but_child_mode, Toast.LENGTH_LONG).show()
+                        return
+                    }
+                }
+            }
+
             if (timestamp > now) {
                 auth.tryDispatchParentAction(
-                        UpdateCategoryTemporarilyBlockedAction(
+                        action = UpdateCategoryTemporarilyBlockedAction(
                                 categoryId = categoryId,
                                 blocked = true,
                                 endTime = timestamp
-                        )
+                        ),
+                        allowAsChild = childAddLimitMode
                 )
 
                 dismiss()
@@ -117,7 +137,7 @@ class BlockTemporarilyDialogFragment: DialogFragment() {
 
         val endOptionAdapter = BlockTemporarilyEndTimeAdapter()
 
-        database.category().getCategoriesByChildId(childId).observe(this, Observer { categories ->
+        childCategories.observe(viewLifecycleOwner, Observer { categories ->
             val now = now()
 
             val endTimes = categories
@@ -132,7 +152,7 @@ class BlockTemporarilyDialogFragment: DialogFragment() {
             } + DisableTimelimitsDuration.items
         })
 
-        database.user().getChildUserByIdLive(childId).observe(this, Observer { child ->
+        database.user().getChildUserByIdLive(childId).observe(viewLifecycleOwner, Observer { child ->
             if (child == null) {
                 dismiss()
                 return@Observer

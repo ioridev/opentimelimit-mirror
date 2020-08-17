@@ -63,7 +63,7 @@ class ConfigureHomescreenDelayDialogFragment: BottomSheetDialogFragment() {
         binding = ConfigureHomescreenDelayDialogBinding.inflate(inflater, container, false)
 
         auth.authenticatedUser.observe(viewLifecycleOwner, Observer {
-            if (it?.second?.type != UserType.Parent) {
+            if (it?.type != UserType.Parent) {
                 dismissAllowingStateLoss()
             }
         })

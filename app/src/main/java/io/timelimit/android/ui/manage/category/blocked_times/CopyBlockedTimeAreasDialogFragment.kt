@@ -59,7 +59,7 @@ class CopyBlockedTimeAreasDialogFragment : BottomSheetDialogFragment() {
         }
 
         auth.authenticatedUser.observe(this, Observer {
-            if (it?.second?.type != UserType.Parent) {
+            if (it?.type != UserType.Parent) {
                 dismissAllowingStateLoss()
             }
         })

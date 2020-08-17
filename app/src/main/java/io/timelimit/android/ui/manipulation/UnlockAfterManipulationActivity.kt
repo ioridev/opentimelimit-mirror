@@ -56,7 +56,7 @@ class UnlockAfterManipulationActivity : AppCompatActivity(), ActivityViewModelHo
         model.authenticatedUser.observe(this, Observer {
             user ->
 
-            if (user != null && user.second.type == UserType.Parent) {
+            if (user != null && user.type == UserType.Parent) {
                 onAuthSuccess()
             }
         })
