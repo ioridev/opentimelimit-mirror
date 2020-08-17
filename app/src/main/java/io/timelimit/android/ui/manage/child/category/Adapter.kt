@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -129,7 +129,7 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
                 }
                 binding.usedForAppsWithoutCategory = item.usedForNotAssignedApps
                 binding.leftSpace.layoutParams = LinearLayout.LayoutParams(
-                        (context.resources.displayMetrics.density * 32.0 * log2((item.categoryNestingLevel + 1).toDouble())).roundToInt(),
+                        CategoryItemLeftPadding.calculate(item.categoryNestingLevel, context),
                         0
                 )
 
