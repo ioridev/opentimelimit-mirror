@@ -166,4 +166,5 @@ object ExperimentalFlags {
     const val CUSTOM_HOMESCREEN_DELAY = 16L
     const val NETWORKTIME_AT_SYSTEMLEVEL = 32L
     const val HIGH_MAIN_LOOP_DELAY = 64L
+    const val MULTI_APP_DETECTION = 128L
 }

@@ -21,11 +21,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.Device
+import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.data.model.User
 import io.timelimit.android.integration.platform.PlatformIntegration
 import io.timelimit.android.integration.time.TimeApi
 import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.liveDataFromValue
+import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.switchMap
 
 class AppLogic(
@@ -66,7 +68,12 @@ class AppLogic(
     }.ignoreUnchanged()
 
     private val foregroundAppQueryInterval = database.config().getForegroundAppQueryIntervalAsync().apply { observeForever {  } }
+    private val enableMultiAppDetection = database.config().experimentalFlags
+            .map { it and ExperimentalFlags.MULTI_APP_DETECTION == ExperimentalFlags.MULTI_APP_DETECTION }.ignoreUnchanged()
+            .apply {observeForever {  } }
+
     fun getForegroundAppQueryInterval() = foregroundAppQueryInterval.value ?: 0L
+    fun getEnableMultiAppDetection() = enableMultiAppDetection.value ?: false
 
     val defaultUserLogic = DefaultUserLogic(this)
     val realTimeLogic = RealTimeLogic(this)
