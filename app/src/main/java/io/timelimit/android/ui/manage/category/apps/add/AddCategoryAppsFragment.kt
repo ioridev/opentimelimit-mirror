@@ -20,13 +20,18 @@ import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.appbar.AppBarLayout
 import io.timelimit.android.R
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.extensions.getCategoryWithParentCategories
@@ -147,7 +152,7 @@ class AddCategoryAppsFragment : DialogFragment() {
             }
         } else installedApps
 
-        filter.switchMap { filter ->
+        val listItems = filter.switchMap { filter ->
             shownApps.map { filter to it }
         }.map { (search, apps) ->
             apps.filter { search.matches(it) }
@@ -163,7 +168,24 @@ class AddCategoryAppsFragment : DialogFragment() {
             }
         }.map { apps ->
             apps.sortedBy { app -> app.title.toLowerCase() }
-        }.observe(this, Observer {
+        }
+
+        val emptyViewText: LiveData<String?> = listItems.switchMap { items ->
+            if (items.isNotEmpty()) {
+                // list is not empty ...
+                liveDataFromValue(null as String?)
+            } else /* items.isEmpty() */ {
+                shownApps.map { shownApps ->
+                    if (shownApps.isNotEmpty()) {
+                        getString(R.string.category_apps_add_empty_due_to_filter) as String?
+                    } else /* if (shownApps.isEmpty()) */ {
+                        getString(R.string.category_apps_add_empty_no_known_apps) as String?
+                    }
+                } as LiveData<String?>
+            }
+        }
+
+        listItems.observe(this, Observer {
             val selectedPackageNames = adapter.selectedApps
             val visiblePackageNames = it.map { it.packageName }.toSet()
             val hiddenSelectedPackageNames = selectedPackageNames.toMutableSet().apply { removeAll(visiblePackageNames) }.size
@@ -174,6 +196,8 @@ class AddCategoryAppsFragment : DialogFragment() {
             else
                 resources.getQuantityString(R.plurals.category_apps_add_dialog_hidden_entries, hiddenSelectedPackageNames, hiddenSelectedPackageNames)
         })
+
+        emptyViewText.observe(this, Observer { binding.emptyText = it })
 
         categoryTitleByPackageName.observe(this, Observer {
             adapter.categoryTitleByPackageName = it
@@ -238,6 +262,22 @@ class AddCategoryAppsFragment : DialogFragment() {
                     Toast.makeText(context, R.string.category_apps_add_dialog_cannot_add_activities_already_sth_selected, Toast.LENGTH_LONG).show()
 
                     false
+                }
+            }
+        }
+
+        // uses the idea from https://stackoverflow.com/a/57854900
+        binding.emptyView.layoutParams = CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT).apply {
+            behavior = object : CoordinatorLayout.Behavior<TextView>() {
+                override fun layoutDependsOn(parent: CoordinatorLayout, child: TextView, dependency: View) = dependency is AppBarLayout
+
+                override fun onDependentViewChanged(parent: CoordinatorLayout, child: TextView, dependency: View): Boolean {
+                    dependency as AppBarLayout
+
+                    (child.layoutParams as CoordinatorLayout.LayoutParams).topMargin = (dependency.height + dependency.y).toInt()
+                    child.requestLayout()
+
+                    return true
                 }
             }
         }
