@@ -165,6 +165,12 @@ data class DiagnoseExperimentalFlagItem(
                         enableFlags = ExperimentalFlags.MULTI_APP_DETECTION,
                         disableFlags = ExperimentalFlags.MULTI_APP_DETECTION,
                         enable = { LollipopForegroundAppHelper.enableMultiAppDetectionGeneral }
+                ),
+                DiagnoseExperimentalFlagItem(
+                        label = R.string.diagnose_exf_bss,
+                        enableFlags = ExperimentalFlags.BLOCK_SPLIT_SCREEN,
+                        disableFlags = ExperimentalFlags.BLOCK_SPLIT_SCREEN,
+                        enable = { true }
                 )
         )
     }
