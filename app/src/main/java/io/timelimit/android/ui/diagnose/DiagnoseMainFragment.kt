@@ -43,6 +43,13 @@ class DiagnoseMainFragment : Fragment(), FragmentWithCustomTitle {
             )
         }
 
+        binding.diagnoseConnectionButton.setOnClickListener {
+            navigation.safeNavigate(
+                    DiagnoseMainFragmentDirections.actionDiagnoseMainFragmentToDiagnoseConnectionFragment(),
+                    R.id.diagnoseMainFragment
+            )
+        }
+
         binding.diagnoseBatteryButton.setOnClickListener {
             navigation.safeNavigate(
                     DiagnoseMainFragmentDirections.actionDiagnoseMainFragmentToDiagnoseBatteryFragment(),

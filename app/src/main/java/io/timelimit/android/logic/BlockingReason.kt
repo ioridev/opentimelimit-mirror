@@ -29,7 +29,8 @@ enum class BlockingReason {
     TimeOverExtraTimeCanBeUsedLater,
     NotificationsAreBlocked,
     BatteryLimit,
-    SessionDurationLimit
+    SessionDurationLimit,
+    MissingRequiredNetwork
 }
 
 enum class BlockingLevel {

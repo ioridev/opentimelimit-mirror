@@ -25,6 +25,9 @@
     <string name="diagnose_clock_day_of_epoch">Day of epoch: %d</string>
     <string name="diagnose_clock_minute_of_week">Minute of week: %d</string>
 
+    <string name="diagnose_connection_title">Connection status</string>
+    <string name="diagnose_connection_network_id">Network ID</string>
+
     <string name="diagnose_fga_title">Foreground-App-Detection</string>
     <string name="diagnose_fga_query_range">Requested time range</string>
     <string name="diagnose_fga_query_range_min">Minimum (Default)</string>

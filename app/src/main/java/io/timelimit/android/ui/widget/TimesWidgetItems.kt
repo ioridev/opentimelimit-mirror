@@ -78,7 +78,8 @@ object TimesWidgetItems {
             categoryHandlingCache.reportStatus(
                     user = userRelatedData,
                     timeInMillis = timeInMillis,
-                    batteryStatus = logic.platformIntegration.getBatteryStatus()
+                    batteryStatus = logic.platformIntegration.getBatteryStatus(),
+                    currentNetworkId = null // not relevant here
             )
 
             var maxTime = Long.MAX_VALUE

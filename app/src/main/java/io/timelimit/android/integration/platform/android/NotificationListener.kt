@@ -31,6 +31,7 @@ import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.model.UserType
+import io.timelimit.android.integration.platform.getNetworkIdOrNull
 import io.timelimit.android.logic.*
 import io.timelimit.android.logic.blockingreason.AppBaseHandling
 import io.timelimit.android.logic.blockingreason.CategoryItselfHandling
@@ -115,6 +116,7 @@ class NotificationListener: NotificationListenerService() {
                                                     BlockingReason.NotificationsAreBlocked -> getString(R.string.lock_reason_short_notification_blocking)
                                                     BlockingReason.BatteryLimit -> getString(R.string.lock_reason_short_battery_limit)
                                                     BlockingReason.SessionDurationLimit -> getString(R.string.lock_reason_short_session_duration)
+                                                    BlockingReason.MissingRequiredNetwork -> getString(R.string.lock_reason_short_missing_required_network)
                                                     BlockingReason.None -> throw IllegalStateException()
                                                 }
                                 )
@@ -162,13 +164,15 @@ class NotificationListener: NotificationListenerService() {
             } else if (appHandling is AppBaseHandling.UseCategories) {
                 val battery = appLogic.platformIntegration.getBatteryStatus()
                 val now = appLogic.timeApi.getCurrentTimeInMillis()
+                val networkId = if (appHandling.needsNetworkId) appLogic.platformIntegration.getCurrentNetworkId().getNetworkIdOrNull() else null
 
                 val categoryHandlings = appHandling.categoryIds.map { categoryId ->
                     CategoryItselfHandling.calculate(
                             categoryRelatedData = deviceAndUserRelatedData.userRelatedData.categoryById[categoryId]!!,
                             user = deviceAndUserRelatedData.userRelatedData,
                             batteryStatus = battery,
-                            timeInMillis = now
+                            timeInMillis = now,
+                            currentNetworkId = networkId
                     )
                 }
 

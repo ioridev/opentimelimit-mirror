@@ -25,6 +25,9 @@
     <string name="diagnose_clock_day_of_epoch">Epochaltag: %d</string>
     <string name="diagnose_clock_minute_of_week">Minute der Woche: %d</string>
 
+    <string name="diagnose_connection_title">Verbindungsstatus</string>
+    <string name="diagnose_connection_network_id">Netzwerk-ID</string>
+
     <string name="diagnose_fga_title">Erkennung der aktiven App</string>
     <string name="diagnose_fga_query_range">Abfragezeitraum</string>
     <string name="diagnose_fga_query_range_min">Minimal (Standard)</string>

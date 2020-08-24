@@ -25,15 +25,18 @@ class CategoryHandlingCache {
     private lateinit var user: UserRelatedData
     private lateinit var batteryStatus: BatteryStatus
     private var timeInMillis: Long = 0
+    private var currentNetworkId: String? = null
 
     fun reportStatus(
             user: UserRelatedData,
             batteryStatus: BatteryStatus,
-            timeInMillis: Long
+            timeInMillis: Long,
+            currentNetworkId: String?
     ) {
         this.user = user
         this.batteryStatus = batteryStatus
         this.timeInMillis = timeInMillis
+        this.currentNetworkId = currentNetworkId
 
         val iterator = cachedItems.iterator()
 
@@ -46,7 +49,8 @@ class CategoryHandlingCache {
                             categoryRelatedData = category,
                             user = user,
                             batteryStatus = batteryStatus,
-                            timeInMillis = timeInMillis
+                            timeInMillis = timeInMillis,
+                            currentNetworkId = currentNetworkId
                     )
             ) {
                 iterator.remove()
@@ -66,6 +70,7 @@ class CategoryHandlingCache {
             categoryRelatedData = user.categoryById[categoryId]!!,
             user = user,
             batteryStatus = batteryStatus,
-            timeInMillis = timeInMillis
+            timeInMillis = timeInMillis,
+            currentNetworkId = currentNetworkId
     )
 }

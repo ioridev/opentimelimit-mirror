@@ -36,6 +36,13 @@
 
             <Button
                 style="?materialButtonOutlinedStyle"
+                android:id="@+id/diagnose_connection_button"
+                android:text="@string/diagnose_connection_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <Button
+                style="?materialButtonOutlinedStyle"
                 android:id="@+id/diagnose_battery_button"
                 android:text="@string/diagnose_bat_title"
                 android:layout_width="match_parent"

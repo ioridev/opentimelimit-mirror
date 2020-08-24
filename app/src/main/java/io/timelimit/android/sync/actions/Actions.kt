@@ -15,12 +15,10 @@
  */
 package io.timelimit.android.sync.actions
 
+import io.timelimit.android.crypto.HexString
 import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.customtypes.ImmutableBitmask
-import io.timelimit.android.data.model.AppRecommendation
-import io.timelimit.android.data.model.TimeLimitRule
-import io.timelimit.android.data.model.UserFlags
-import io.timelimit.android.data.model.UserType
+import io.timelimit.android.data.model.*
 import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.integration.platform.NewPermissionStatus
 import io.timelimit.android.integration.platform.ProtectionLevel
@@ -262,6 +260,21 @@ data class UpdateCategorySortingAction(val categoryIds: List<String>): ParentAct
         }
 
         categoryIds.forEach { IdGenerator.assertIdValid(it) }
+    }
+}
+
+data class AddCategoryNetworkId(val categoryId: String, val itemId: String, val hashedNetworkId: String): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(categoryId)
+        IdGenerator.assertIdValid(itemId)
+        HexString.assertIsHexString(hashedNetworkId)
+        if (hashedNetworkId.length != CategoryNetworkId.ANONYMIZED_NETWORK_ID_LENGTH) throw IllegalArgumentException()
+    }
+}
+
+data class ResetCategoryNetworkIds(val categoryId: String): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(categoryId)
     }
 }
 

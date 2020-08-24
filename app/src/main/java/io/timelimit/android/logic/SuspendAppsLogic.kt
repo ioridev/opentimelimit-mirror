@@ -98,7 +98,8 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
         categoryHandlingCache.reportStatus(
                 user = userRelatedData,
                 timeInMillis = now,
-                batteryStatus = batteryStatus
+                batteryStatus = batteryStatus,
+                currentNetworkId = null
         )
 
         val defaultCategory = userRelatedData.user.categoryForNotAssignedApps

@@ -53,7 +53,8 @@ object AllowUserLoginStatusUtil {
             cache.reportStatus(
                     user = data.limitLoginCategoryUserRelatedData,
                     timeInMillis = timeInMillis,
-                    batteryStatus = batteryStatus
+                    batteryStatus = batteryStatus,
+                    currentNetworkId = null // only checks shouldBlockAtSystemLevel which ignores the network id
             )
 
             val categoryIds = data.limitLoginCategoryUserRelatedData.getCategoryWithParentCategories(data.loginRelatedData.limitLoginCategory.categoryId)

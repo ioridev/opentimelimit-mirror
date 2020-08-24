@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+    Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -216,6 +216,13 @@
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
         <action
+            android:id="@+id/action_diagnoseMainFragment_to_diagnoseConnectionFragment"
+            app:destination="@id/diagnoseConnectionFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+        <action
             android:id="@+id/action_diagnoseMainFragment_to_diagnoseForegroundAppFragment"
             app:destination="@id/diagnoseForegroundAppFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
@@ -242,6 +249,11 @@
         android:name="io.timelimit.android.ui.diagnose.DiagnoseClockFragment"
         android:label="diagnose_clock_fragment"
         tools:layout="@layout/diagnose_clock_fragment" />
+    <fragment
+        android:id="@+id/diagnoseConnectionFragment"
+        android:name="io.timelimit.android.ui.diagnose.DiagnoseConnectionFragment"
+        android:label="fragment_diagnose_connection"
+        tools:layout="@layout/fragment_diagnose_connection" />
     <fragment
         android:id="@+id/diagnoseForegroundAppFragment"
         android:name="io.timelimit.android.ui.diagnose.DiagnoseForegroundAppFragment"

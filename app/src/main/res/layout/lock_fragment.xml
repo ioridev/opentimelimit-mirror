@@ -48,6 +48,10 @@
             name="blockedKindLabel"
             type="String" />
 
+        <variable
+            name="missingNetworkIdPermission"
+            type="boolean" />
+
         <import type="android.view.View" />
         <import type="io.timelimit.android.logic.BlockingReason" />
         <import type="android.text.TextUtils" />
@@ -259,6 +263,20 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
 
+                        <TextView
+                            android:paddingStart="8dp"
+                            android:paddingEnd="0dp"
+                            tools:ignore="UnusedAttribute"
+                            android:drawablePadding="16dp"
+                            android:drawableTint="?colorOnSurface"
+                            android:drawableStart="@drawable/ic_baseline_wifi_lock_24"
+                            android:visibility="@{reason == BlockingReason.MissingRequiredNetwork ? View.VISIBLE : View.GONE}"
+                            android:textAppearance="?android:textAppearanceMedium"
+                            android:text="@{@string/lock_reason_missing_required_network(blockedKindLabel)}"
+                            tools:text="@string/lock_reason_missing_required_network"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
                         <ProgressBar
                             android:visibility="@{reason == null ? View.VISIBLE : View.GONE}"
                             android:padding="8dp"
@@ -431,10 +449,38 @@
                 </androidx.cardview.widget.CardView>
 
                 <io.timelimit.android.ui.view.ManageDisableTimelimitsView
-                    android:visibility="@{reason == BlockingReason.BlockedAtThisTime || reason == BlockingReason.TimeOver || reason == BlockingReason.TimeOverExtraTimeCanBeUsedLater || reason == BlockingReason.SessionDurationLimit ? View.VISIBLE : View.GONE}"
+                    android:visibility="@{reason == BlockingReason.BlockedAtThisTime || reason == BlockingReason.TimeOver || reason == BlockingReason.TimeOverExtraTimeCanBeUsedLater || reason == BlockingReason.SessionDurationLimit || reason == BlockingReason.MissingRequiredNetwork ? View.VISIBLE : View.GONE}"
                     android:id="@+id/manage_disable_time_limits"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
+
+                <androidx.cardview.widget.CardView
+                    android:visibility="@{reason == BlockingReason.MissingRequiredNetwork &amp;&amp; missingNetworkIdPermission ? View.VISIBLE : View.GONE}"
+                    android:foreground="?selectableItemBackground"
+                    android:onClick="@{() -> handlers.requestLocationPermission()}"
+                    app:cardUseCompatPadding="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:padding="8dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:text="@string/lock_grant_permission_title"
+                            android:textAppearance="?android:textAppearanceLarge"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:text="@string/lock_grant_permission_text"
+                            android:textAppearance="?android:textAppearanceMedium"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
                     android:foreground="?selectableItemBackground"
