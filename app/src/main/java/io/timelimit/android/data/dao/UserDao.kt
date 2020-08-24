@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,9 @@ import io.timelimit.android.data.model.User
 abstract class UserDao {
     @Query("SELECT * from user WHERE id = :userId")
     abstract fun getUserByIdLive(userId: String): LiveData<User?>
+
+    @Query("SELECT * from user WHERE id = :userId")
+    abstract suspend fun getUserByIdCoroutine(userId: String): User?
 
     @Query("SELECT * from user WHERE id = :userId AND type = \"child\"")
     abstract fun getChildUserByIdLive(userId: String): LiveData<User?>

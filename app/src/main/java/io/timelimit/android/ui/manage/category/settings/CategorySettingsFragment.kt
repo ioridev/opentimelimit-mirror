@@ -35,6 +35,7 @@ import io.timelimit.android.ui.help.HelpDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.category.ManageCategoryFragmentArgs
+import io.timelimit.android.ui.manage.category.settings.addusedtime.AddUsedTimeDialogFragment
 import io.timelimit.android.ui.view.SelectTimeSpanViewListener
 
 class CategorySettingsFragment : Fragment() {
@@ -117,6 +118,7 @@ class CategorySettingsFragment : Fragment() {
 
         binding.btnDeleteCategory.setOnClickListener { deleteCategory() }
         binding.editCategoryTitleGo.setOnClickListener { renameCategory() }
+        binding.addUsedTimeBtn.setOnClickListener { addUsedTime() }
 
         binding.extraTimeTitle.setOnClickListener {
             HelpDialogFragment.newInstance(
@@ -212,6 +214,15 @@ class CategorySettingsFragment : Fragment() {
     private fun deleteCategory() {
         if (auth.requestAuthenticationOrReturnTrue()) {
             DeleteCategoryDialogFragment.newInstance(params).show(parentFragmentManager)
+        }
+    }
+
+    private fun addUsedTime() {
+        if (auth.requestAuthenticationOrReturnTrue()) {
+            AddUsedTimeDialogFragment.newInstance(
+                    childId = params.childId,
+                    categoryId = params.categoryId
+            ).show(parentFragmentManager)
         }
     }
 }

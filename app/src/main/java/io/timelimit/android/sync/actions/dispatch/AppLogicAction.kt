@@ -36,12 +36,16 @@ object LocalDatabaseAppLogicActionDispatcher {
                                 ?: throw CategoryNotFoundException()
 
                         fun handle(start: Int, end: Int) {
+                            val lengthInMinutes = (end - start) + 1
+                            val lengthInMs = lengthInMinutes * 1000 * 60
+
                             val updatedRows = database.usedTimes().addUsedTime(
                                     categoryId = item.categoryId,
                                     timeToAdd = item.timeToAdd,
                                     dayOfEpoch = action.dayOfEpoch,
                                     start = start,
-                                    end = end
+                                    end = end,
+                                    maximum = lengthInMs
                             )
 
                             if (updatedRows == 0) {
@@ -50,7 +54,7 @@ object LocalDatabaseAppLogicActionDispatcher {
                                 database.usedTimes().insertUsedTime(UsedTimeItem(
                                         categoryId = item.categoryId,
                                         dayOfEpoch = action.dayOfEpoch,
-                                        usedMillis = item.timeToAdd.toLong(),
+                                        usedMillis = item.timeToAdd.coerceAtMost(lengthInMs).toLong(),
                                         startTimeOfDay = start,
                                         endTimeOfDay = end
                                 ))
