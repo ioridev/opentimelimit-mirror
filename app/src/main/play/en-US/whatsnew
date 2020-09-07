@@ -1,4 +1,3 @@
-- block/ allow depending on the current network
-- allow adding used time manually (possible with the self limitation, too)
-- allow extending blocked time areas with the self limitation
-- optionally auto leave the splitscreen mode
+- extended manually adding used time; it applies to all current rules and not only the current day
+- extended integrated help
+- removed time lock for parent users; it was replaced by the limit login category some time ago
