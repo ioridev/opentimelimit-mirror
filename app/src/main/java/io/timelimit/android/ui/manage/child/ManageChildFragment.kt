@@ -25,6 +25,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import androidx.viewpager.widget.ViewPager
+import com.google.android.material.snackbar.Snackbar
 import io.timelimit.android.R
 import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
@@ -100,6 +101,11 @@ class ManageChildFragment : Fragment(), FragmentWithCustomTitle {
             childFragmentManager.beginTransaction()
                     .replace(R.id.container, ManageChildCategoriesFragment.newInstance(params))
                     .commit()
+        }
+
+
+        if (savedInstanceState == null && params.fromRedirect) {
+            Snackbar.make(coordinator, R.string.manage_child_redirected_toast, Snackbar.LENGTH_LONG).show()
         }
     }
 

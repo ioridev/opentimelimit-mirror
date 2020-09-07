@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@
  */
 package io.timelimit.android.ui.setup
 
-
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
@@ -24,37 +23,30 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import io.timelimit.android.R
+import io.timelimit.android.databinding.SetupHelpInfoFragmentBinding
 import io.timelimit.android.extensions.safeNavigate
-import io.timelimit.android.ui.obsolete.ObsoleteDialogFragment
-import kotlinx.android.synthetic.main.fragment_setup_terms.*
+import io.timelimit.android.ui.help.HelpDialogFragment
 
-class SetupTermsFragment : Fragment() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        if (savedInstanceState == null) {
-            ObsoleteDialogFragment.show(activity!!, true)
-        }
-    }
-
+class SetupHelpInfoFragment: Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_setup_terms, container, false)
-    }
+        val binding = SetupHelpInfoFragmentBinding.inflate(inflater, container, false)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        binding.textWithLinks.movementMethod = LinkMovementMethod.getInstance()
 
-        btn_accept.setOnClickListener {
-            acceptTerms()
+        binding.userKeyView.titleView.setOnClickListener {
+            HelpDialogFragment.newInstance(
+                    title = R.string.manage_user_key_title,
+                    text = R.string.manage_user_key_info
+            ).show(parentFragmentManager)
         }
 
-        terms_text.movementMethod = LinkMovementMethod.getInstance()
-    }
+        binding.nextButton.setOnClickListener {
+            Navigation.findNavController(view!!).safeNavigate(
+                    SetupHelpInfoFragmentDirections.actionSetupHelpInfoFragmentToSetupSelectModeFragment(),
+                    R.id.setupHelpInfoFragment
+            )
+        }
 
-    private fun acceptTerms() {
-        Navigation.findNavController(view!!).safeNavigate(
-                SetupTermsFragmentDirections.actionSetupTermsFragmentToSetupHelpInfoFragment(),
-                R.id.setupTermsFragment
-        )
+        return binding.root
     }
 }
