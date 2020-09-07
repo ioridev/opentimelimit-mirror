@@ -49,7 +49,8 @@ data class User(
         // empty or invalid = no category
         val categoryForNotAssignedApps: String,
         @ColumnInfo(name = "blocked_times")
-        val blockedTimes: ImmutableBitmask,
+        @Deprecated(message = "this feature was removed; the limit login category is a replacement")
+        val obsoleteBlockedTimes: String = "",
         @ColumnInfo(name = "flags")
         val flags: Long
 ): JsonSerializable {
@@ -61,7 +62,7 @@ data class User(
         private const val TIMEZONE = "timeZone"
         private const val DISABLE_LIMITS_UNTIL = "disableLimitsUntil"
         private const val CATEGORY_FOR_NOT_ASSIGNED_APPS = "categoryForNotAssignedApps"
-        private const val BLOCKED_TIMES = "blockedTimes"
+        private const val OBSOLETE_BLOCKED_TIMES = "blockedTimes"
         private const val FLAGS = "flags"
 
         fun parse(reader: JsonReader): User {
@@ -72,7 +73,6 @@ data class User(
             var timeZone: String? = null
             var disableLimitsUntil: Long? = null
             var categoryForNotAssignedApps = ""
-            var blockedTimes = ImmutableBitmask(BitSet())
             var flags = 0L
 
             reader.beginObject()
@@ -85,7 +85,6 @@ data class User(
                     TIMEZONE -> timeZone = reader.nextString()
                     DISABLE_LIMITS_UNTIL -> disableLimitsUntil = reader.nextLong()
                     CATEGORY_FOR_NOT_ASSIGNED_APPS -> categoryForNotAssignedApps = reader.nextString()
-                    BLOCKED_TIMES -> blockedTimes = ImmutableBitmaskJson.parse(reader.nextString(), Category.BLOCKED_MINUTES_IN_WEEK_LENGTH)
                     FLAGS -> flags = reader.nextLong()
                     else -> reader.skipValue()
                 }
@@ -100,7 +99,6 @@ data class User(
                     timeZone = timeZone!!,
                     disableLimitsUntil = disableLimitsUntil!!,
                     categoryForNotAssignedApps = categoryForNotAssignedApps,
-                    blockedTimes = blockedTimes,
                     flags = flags
             )
         }
@@ -142,7 +140,7 @@ data class User(
         writer.name(TIMEZONE).value(timeZone)
         writer.name(DISABLE_LIMITS_UNTIL).value(disableLimitsUntil)
         writer.name(CATEGORY_FOR_NOT_ASSIGNED_APPS).value(categoryForNotAssignedApps)
-        writer.name(BLOCKED_TIMES).value(ImmutableBitmaskJson.serialize(blockedTimes))
+        writer.name(OBSOLETE_BLOCKED_TIMES).value("")
         writer.name(FLAGS).value(flags)
 
         writer.endObject()

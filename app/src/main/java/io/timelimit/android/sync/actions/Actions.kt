@@ -503,18 +503,6 @@ data class RenameChildAction(val childId: String, val newName: String): ParentAc
     }
 }
 
-data class UpdateParentBlockedTimesAction(val parentId: String, val blockedTimes: ImmutableBitmask): ParentAction() {
-    init {
-        IdGenerator.assertIdValid(parentId)
-    }
-}
-
-data class ResetParentBlockedTimesAction(val parentId: String): ParentAction() {
-    init {
-        IdGenerator.assertIdValid(parentId)
-    }
-}
-
 data class ResetUserKeyAction(val userId: String): ParentAction() {
     init {
         IdGenerator.assertIdValid(userId)

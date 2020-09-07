@@ -20,35 +20,19 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import io.timelimit.android.data.extensions.getCategoryWithParentCategories
 import io.timelimit.android.data.model.derived.CompleteUserLoginRelatedData
-import io.timelimit.android.date.getMinuteOfWeek
 import io.timelimit.android.integration.platform.BatteryStatus
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.BlockingReason
 import io.timelimit.android.logic.blockingreason.CategoryHandlingCache
-import java.util.*
 
 sealed class AllowUserLoginStatus {
     data class Allow(val maxTime: Long): AllowUserLoginStatus()
-    data class ForbidByCurrentTime(val maxTime: Long): AllowUserLoginStatus()
     data class ForbidByCategory(val categoryTitle: String, val blockingReason: BlockingReason, val maxTime: Long): AllowUserLoginStatus()
     object ForbidUserNotFound: AllowUserLoginStatus()
 }
 
 object AllowUserLoginStatusUtil {
     private fun calculate(data: CompleteUserLoginRelatedData, timeInMillis: Long, cache: CategoryHandlingCache, batteryStatus: BatteryStatus): AllowUserLoginStatus = synchronized(cache) {
-        if (!data.loginRelatedData.user.blockedTimes.dataNotToModify.isEmpty) {
-            val minuteOfWeek = getMinuteOfWeek(timeInMillis, TimeZone.getTimeZone(data.loginRelatedData.user.timeZone))
-
-            if (data.loginRelatedData.user.blockedTimes.dataNotToModify[minuteOfWeek]) {
-                val nextAllowedSlot = data.loginRelatedData.user.blockedTimes.dataNotToModify.nextClearBit(minuteOfWeek)
-                val minutesToWait: Long = (nextAllowedSlot - minuteOfWeek).toLong()
-                // not very nice but it works
-                val msToWait = if (minutesToWait <= 1) 5000 else (minutesToWait - 1) * 1000 * 60
-
-                return AllowUserLoginStatus.ForbidByCurrentTime(maxTime = timeInMillis + msToWait)
-            }
-        }
-
         return if (data.limitLoginCategoryUserRelatedData != null && data.loginRelatedData.limitLoginCategory != null) {
             cache.reportStatus(
                     user = data.limitLoginCategoryUserRelatedData,
@@ -66,31 +50,18 @@ object AllowUserLoginStatusUtil {
                 AllowUserLoginStatus.ForbidByCategory(
                         categoryTitle = blockingHandling.createdWithCategoryRelatedData.category.title,
                         blockingReason = blockingHandling.systemLevelBlockingReason,
-                        maxTime = blockingHandling.dependsOnMaxTime.coerceAtMost(
-                                if (data.loginRelatedData.user.blockedTimes.dataNotToModify.isEmpty)
-                                    Long.MAX_VALUE
-                                else
-                                    timeInMillis + 1000 * 5
-                        )
+                        maxTime = blockingHandling.dependsOnMaxTime
                 )
             } else {
                 val maxTimeByCategories = handlings.minBy { it.dependsOnMaxTime }?.dependsOnMaxTime ?: Long.MAX_VALUE
 
                 AllowUserLoginStatus.Allow(
-                        maxTime = maxTimeByCategories.coerceAtMost(
-                                if (data.loginRelatedData.user.blockedTimes.dataNotToModify.isEmpty)
-                                    Long.MAX_VALUE
-                                else
-                                    timeInMillis + 1000 * 5
-                        )
+                        maxTime = maxTimeByCategories
                 )
             }
         } else {
             AllowUserLoginStatus.Allow(
-                    maxTime = if (data.loginRelatedData.user.blockedTimes.dataNotToModify.isEmpty)
-                        Long.MAX_VALUE
-                    else
-                        timeInMillis + 1000 * 5
+                    maxTime = Long.MAX_VALUE
             )
         }
     }
@@ -156,7 +127,6 @@ object AllowUserLoginStatusUtil {
 
             val scheduledTime: Long = when (result) {
                 AllowUserLoginStatus.ForbidUserNotFound -> Long.MAX_VALUE
-                is AllowUserLoginStatus.ForbidByCurrentTime -> result.maxTime
                 is AllowUserLoginStatus.Allow -> result.maxTime
                 is AllowUserLoginStatus.ForbidByCategory -> result.maxTime
             }

@@ -34,7 +34,6 @@ import io.timelimit.android.async.Threads
 import io.timelimit.android.data.model.User
 import io.timelimit.android.databinding.NewLoginFragmentBinding
 import io.timelimit.android.extensions.setOnEnterListenr
-import io.timelimit.android.logic.BlockingReason
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.parent.key.ScannedKey
 import io.timelimit.android.ui.view.KeyboardViewListener
@@ -49,8 +48,7 @@ class NewLoginFragment: DialogFragment() {
         private const val CHILD_MISSING_PASSWORD = 2
         private const val CHILD_ALREADY_CURRENT_USER = 3
         private const val CHILD_AUTH = 4
-        private const val BLOCKED_LOGIN_TIME = 5
-        private const val PARENT_LOGIN_BLOCKED = 6
+        private const val PARENT_LOGIN_BLOCKED = 5
     }
 
     private val model: LoginDialogFragmentModel by lazy {
@@ -212,15 +210,6 @@ class NewLoginFragment: DialogFragment() {
 
                     null
                 }
-                ParentUserLoginBlockedTime -> {
-                    if (binding.switcher.displayedChild != BLOCKED_LOGIN_TIME) {
-                        binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
-                        binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
-                        binding.switcher.displayedChild = BLOCKED_LOGIN_TIME
-                    }
-
-                    null
-                }
                 is CanNotSignInChildHasNoPassword -> {
                     if (binding.switcher.displayedChild != CHILD_MISSING_PASSWORD) {
                         binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
@@ -270,18 +259,7 @@ class NewLoginFragment: DialogFragment() {
                     }
 
                     binding.parentLoginBlocked.categoryTitle = status.categoryTitle
-                    binding.parentLoginBlocked.reason = when (status.reason) {
-                        BlockingReason.TemporarilyBlocked -> getString(R.string.lock_reason_short_temporarily_blocked)
-                        BlockingReason.TimeOver -> getString(R.string.lock_reason_short_time_over)
-                        BlockingReason.TimeOverExtraTimeCanBeUsedLater -> getString(R.string.lock_reason_short_time_over)
-                        BlockingReason.BlockedAtThisTime -> getString(R.string.lock_reason_short_blocked_time_area)
-                        BlockingReason.NotificationsAreBlocked -> getString(R.string.lock_reason_short_notification_blocking)
-                        BlockingReason.BatteryLimit -> getString(R.string.lock_reason_short_battery_limit)
-                        BlockingReason.SessionDurationLimit -> getString(R.string.lock_reason_short_session_duration)
-                        BlockingReason.MissingRequiredNetwork -> getString(R.string.lock_reason_short_missing_required_network)
-                        BlockingReason.NotPartOfAnCategory -> "???"
-                        BlockingReason.None -> "???"
-                    }
+                    binding.parentLoginBlocked.reason = LoginDialogFragmentModel.formatBlockingReasonForLimitLoginCategory(status.reason, context!!)
 
                     null
                 }

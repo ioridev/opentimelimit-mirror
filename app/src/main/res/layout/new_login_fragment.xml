@@ -35,8 +35,6 @@
         <include android:id="@+id/child_password"
             layout="@layout/new_login_fragment_child_password" />
 
-        <include layout="@layout/new_login_fragment_blocked_time" />
-
         <include layout="@layout/new_login_fragment_parent_login_blocked"
             android:id="@+id/parent_login_blocked" />
 

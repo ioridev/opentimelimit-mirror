@@ -111,7 +111,6 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             timeZone = timeZone,
                             disableLimitsUntil = 0,
                             categoryForNotAssignedApps = "",
-                            blockedTimes = ImmutableBitmask(BitSet()),
                             flags = 0
                     )
 
@@ -129,7 +128,6 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             timeZone = timeZone,
                             disableLimitsUntil = 0,
                             categoryForNotAssignedApps = "",
-                            blockedTimes = ImmutableBitmask(BitSet()),
                             flags = 0
                     )
 
