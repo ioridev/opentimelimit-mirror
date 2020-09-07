@@ -27,6 +27,9 @@ abstract class TimeLimitRuleDao {
     @Query("SELECT * FROM time_limit_rule WHERE category_id = :categoryId")
     abstract fun getTimeLimitRulesByCategory(categoryId: String): LiveData<List<TimeLimitRule>>
 
+    @Query("SELECT * FROM time_limit_rule WHERE category_id = :categoryId")
+    abstract suspend fun getTimeLimitRulesByCategoryCoroutine(categoryId: String): List<TimeLimitRule>
+
     @Query("SELECT * FROM time_limit_rule WHERE category_id IN (:categoryIds)")
     abstract fun getTimeLimitRulesByCategories(categoryIds: List<String>): LiveData<List<TimeLimitRule>>
 
