@@ -1,1 +1,1 @@
-- fix reset of session duration limits if the lockscreen for them is closed automatically
+- fix invisible timezone selection when using the dark mode
