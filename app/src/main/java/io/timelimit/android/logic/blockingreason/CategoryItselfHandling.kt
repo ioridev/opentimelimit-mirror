@@ -166,6 +166,7 @@ data class CategoryItselfHandling (
                     .coerceAtMost(dependsOnMaxTimeByTemporarilyDisabledLimits)
                     .coerceAtMost(dependsOnMaxTimeByRules)
                     .coerceAtMost(dependsOnMaxTimeBySessionDurationLimitItems)
+                    .coerceAtLeast(timeInMillis + 100)  // prevent loops in case of calculation bugs
 
             val shouldCountTime = relatedRules.isNotEmpty()
             val shouldCountExtraTime = remainingTime?.usingExtraTime == true
