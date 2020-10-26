@@ -42,6 +42,7 @@
     <string name="diagnose_exf_mld">Hauptschleifenintervall erhöhen</string>
     <string name="diagnose_exf_mad">Versuche, mehrere aktive Apps zu erkennen (Splitscreen-Untersützung)</string>
     <string name="diagnose_exf_bss">Splitscreen automatisch beenden per Bedienhilfe</string>
+    <string name="diagnose_exf_hmw">Manipulationswarnung in der Kategorienliste ausblenden</string>
 
     <string name="diagnose_bat_title">Akku</string>
     <string name="diagnose_bat_status">Status: %s</string>

@@ -168,4 +168,5 @@ object ExperimentalFlags {
     const val HIGH_MAIN_LOOP_DELAY = 64L
     const val MULTI_APP_DETECTION = 128L
     const val BLOCK_SPLIT_SCREEN = 256L
+    const val HIDE_MANIPULATION_WARNING = 512L
 }
