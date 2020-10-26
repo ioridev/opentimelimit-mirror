@@ -81,6 +81,10 @@ class OverviewFragment : CoroutineFragment() {
                     }.let { }
                 }
             }
+
+            override fun onShowAllUsersClicked() {
+                model.showAllUsers()
+            }
         }
 
         model.listEntries.observe(this, Observer { adapter.data = it })

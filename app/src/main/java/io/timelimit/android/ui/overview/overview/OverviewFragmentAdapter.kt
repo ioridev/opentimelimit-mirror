@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,6 +68,7 @@ class OverviewFragmentAdapter : RecyclerView.Adapter<OverviewFragmentViewHolder>
         is OverviewFragmentItemDevice -> OverviewFragmentViewType.DeviceItem
         is OverviewFragmentActionAddUser -> OverviewFragmentViewType.AddUserItem
         is OverviewFragmentHeaderIntro -> OverviewFragmentViewType.Introduction
+        is ShowMoreOverviewFragmentItem -> OverviewFragmentViewType.ShowMoreButton
     }
 
     override fun getItemViewType(position: Int) = getItemType(getItem(position)).ordinal
@@ -114,6 +115,11 @@ class OverviewFragmentAdapter : RecyclerView.Adapter<OverviewFragmentViewHolder>
         OverviewFragmentViewType.Introduction.ordinal -> IntroViewHolder(
                 LayoutInflater.from(parent.context)
                         .inflate(R.layout.fragment_overview_intro, parent, false)
+        )
+
+        OverviewFragmentViewType.ShowMoreButton.ordinal -> ShowMoreViewHolder(
+                LayoutInflater.from(parent.context)
+                        .inflate(R.layout.show_more_list_item, parent, false)
         )
 
         else -> throw IllegalStateException()
@@ -177,6 +183,15 @@ class OverviewFragmentAdapter : RecyclerView.Adapter<OverviewFragmentViewHolder>
             }
             is OverviewFragmentActionAddUser -> { /* nothing to do */ }
             is OverviewFragmentHeaderIntro -> { /* nothing to do */ }
+            is ShowMoreOverviewFragmentItem -> {
+                holder as ShowMoreViewHolder
+
+                when (item) {
+                    is ShowMoreOverviewFragmentItem.ShowAllUsers -> {
+                        holder.itemView.setOnClickListener { handlers?.onShowAllUsersClicked() }
+                    }
+                }.let {  }
+            }
         }.let {  }
     }
 }
@@ -186,7 +201,8 @@ enum class OverviewFragmentViewType {
     UserItem,
     DeviceItem,
     AddUserItem,
-    Introduction
+    Introduction,
+    ShowMoreButton
 }
 
 sealed class OverviewFragmentViewHolder(view: View): RecyclerView.ViewHolder(view)
@@ -195,9 +211,11 @@ class AddUserViewHolder(view: View): OverviewFragmentViewHolder(view)
 class UserViewHolder(val binding: FragmentOverviewUserItemBinding): OverviewFragmentViewHolder(binding.root)
 class DeviceViewHolder(val binding: FragmentOverviewDeviceItemBinding): OverviewFragmentViewHolder(binding.root)
 class IntroViewHolder(view: View): OverviewFragmentViewHolder(view)
+class ShowMoreViewHolder(view: View): OverviewFragmentViewHolder(view)
 
 interface OverviewFragmentHandlers {
     fun onAddUserClicked()
     fun onUserClicked(user: User)
     fun onDeviceClicked(device: Device)
+    fun onShowAllUsersClicked()
 }

@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,3 +31,6 @@ data class OverviewFragmentItemDevice(val device: Device, val deviceUser: User?,
 data class OverviewFragmentItemUser(val user: User, val temporarilyBlocked: Boolean, val limitsTemporarilyDisabled: Boolean): OverviewFragmentItem()
 object OverviewFragmentActionAddUser: OverviewFragmentItem()
 object OverviewFragmentHeaderIntro: OverviewFragmentItem()
+sealed class ShowMoreOverviewFragmentItem: OverviewFragmentItem() {
+    object ShowAllUsers: ShowMoreOverviewFragmentItem()
+}
