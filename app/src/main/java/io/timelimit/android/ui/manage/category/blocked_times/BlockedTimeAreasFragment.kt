@@ -24,37 +24,62 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.material.snackbar.Snackbar
 import io.timelimit.android.R
+import io.timelimit.android.async.Threads
+import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.customtypes.ImmutableBitmask
 import io.timelimit.android.data.model.Category
+import io.timelimit.android.data.model.HintsToShow
 import io.timelimit.android.data.model.withConfigCopiedToOtherDates
 import io.timelimit.android.livedata.map
+import io.timelimit.android.livedata.waitForNonNullValue
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.UpdateCategoryBlockedTimesAction
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
-import io.timelimit.android.ui.manage.category.ManageCategoryFragmentArgs
+import io.timelimit.android.ui.mustread.MustReadFragment
 import kotlinx.android.synthetic.main.fragment_blocked_time_areas.*
 
 class BlockedTimeAreasFragment : Fragment(), CopyBlockedTimeAreasDialogFragmentListener {
     companion object {
-        fun newInstance(params: ManageCategoryFragmentArgs): BlockedTimeAreasFragment {
-            val result = BlockedTimeAreasFragment()
-            result.arguments = params.toBundle()
-            return result
+        private const val CHILD_ID = "childId"
+        private const val CATEGORY_ID = "categoryId"
+
+        fun newInstance(childId: String, categoryId: String) = BlockedTimeAreasFragment().apply {
+            arguments = Bundle().apply {
+                putString(CHILD_ID, childId)
+                putString(CATEGORY_ID, categoryId)
+            }
         }
     }
 
-    private val params: ManageCategoryFragmentArgs by lazy { ManageCategoryFragmentArgs.fromBundle(arguments!!) }
-    private val database: Database by lazy { DefaultAppLogic.with(context!!).database }
-    private val category: LiveData<Category?> by lazy { database.category().getCategoryByChildIdAndId(params.childId, params.categoryId) }
-    private val auth: ActivityViewModel by lazy { getActivityViewModel(activity!!) }
+    private val database: Database by lazy { DefaultAppLogic.with(requireContext()).database }
+    private val category: LiveData<Category?> by lazy { database.category().getCategoryByChildIdAndId(childId, categoryId) }
+    private val auth: ActivityViewModel by lazy { getActivityViewModel(requireActivity()) }
     private val items = MutableLiveData<BlockedTimeItems>()
+    private val childId: String get() = requireArguments().getString(CHILD_ID)!!
+    private val categoryId: String get() = requireArguments().getString(CATEGORY_ID)!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         items.value = MinuteOfWeekItems
+
+        if (savedInstanceState == null) {
+            database.let { database ->
+                runAsync {
+                    val wasShown = database.config().wereHintsShown(HintsToShow.BLOCKED_TIME_AREAS_OBSOLETE).waitForNonNullValue()
+
+                    if (!wasShown) {
+                        MustReadFragment.newInstance(R.string.must_read_blocked_time_areas_obsolete).show(parentFragmentManager)
+
+                        Threads.database.execute {
+                            database.config().setHintsShownSync(HintsToShow.BLOCKED_TIME_AREAS_OBSOLETE)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -65,7 +90,7 @@ class BlockedTimeAreasFragment : Fragment(), CopyBlockedTimeAreasDialogFragmentL
         if (
                 auth.tryDispatchParentAction(
                         action = UpdateCategoryBlockedTimesAction(
-                                categoryId = params.categoryId,
+                                categoryId = categoryId,
                                 blockedTimes = newMask
                         ),
                         allowAsChild = true
@@ -77,7 +102,7 @@ class BlockedTimeAreasFragment : Fragment(), CopyBlockedTimeAreasDialogFragmentL
                             it.setAction(R.string.generic_undo) {
                                 auth.tryDispatchParentAction(
                                         UpdateCategoryBlockedTimesAction(
-                                                categoryId = params.categoryId,
+                                                categoryId = categoryId,
                                                 blockedTimes = oldMask
                                         )
                                 )
@@ -103,7 +128,7 @@ class BlockedTimeAreasFragment : Fragment(), CopyBlockedTimeAreasDialogFragmentL
 
         btn_copy_to_other_days.setOnClickListener {
             if (auth.requestAuthenticationOrReturnTrue()) {
-                CopyBlockedTimeAreasDialogFragment.newInstance(this@BlockedTimeAreasFragment).show(fragmentManager!!)
+                CopyBlockedTimeAreasDialogFragment.newInstance(this@BlockedTimeAreasFragment).show(parentFragmentManager)
             }
         }
 
@@ -114,7 +139,7 @@ class BlockedTimeAreasFragment : Fragment(), CopyBlockedTimeAreasDialogFragmentL
                 checkAuthentication = {
                     if (auth.isParentAuthenticated()) {
                         BlockedTimeAreasLogic.Authentication.FullyAvailable
-                    } else if (auth.isParentOrChildAuthenticated(childId = params.childId)) {
+                    } else if (auth.isParentOrChildAuthenticated(childId = childId)) {
                         BlockedTimeAreasLogic.Authentication.OnlyAllowAddingLimits(
                                 showHintHook = { Snackbar.make(coordinator.parent as View, R.string.blocked_time_areas_snackbar_child_hint, Snackbar.LENGTH_LONG).show() },
                                 showErrorHook = { auth.requestAuthentication() }

@@ -165,7 +165,7 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             id = allowedGamesCategoryId,
                             childId = childUserId,
                             title = defaultCategories.allowedGamesTitle,
-                            blockedMinutesInWeek = defaultCategories.allowedGamesBlockedTimes,
+                            blockedMinutesInWeek = ImmutableBitmask((BitSet())),
                             extraTimeInMillis = 0,
                             extraTimeDay = -1,
                             temporarilyBlocked = false,
@@ -201,12 +201,8 @@ class AppSetupLogic(private val appLogic: AppLogic) {
         DatabaseBackup.with(appLogic.context).tryCreateDatabaseBackupAsync()
     }
 
-    fun resetAppCompletely(revokePermissions: Boolean = false) {
+    fun resetAppCompletely() {
         appLogic.platformIntegration.setEnableSystemLockdown(false)
-
-        if (revokePermissions) {
-            appLogic.platformIntegration.disableDeviceAdmin()
-        }
 
         runAsync {
             appLogic.appSetupLogic.dangerousResetApp()

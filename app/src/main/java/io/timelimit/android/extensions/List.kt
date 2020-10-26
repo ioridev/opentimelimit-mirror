@@ -14,18 +14,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.timelimit.android.data.model
+package io.timelimit.android.extensions
 
-data class UsedTimeListItem(
-        val categoryId: String,
-        val categoryTitle: String,
-        val startMinuteOfDay: Int,
-        val endMinuteOfDay: Int,
-        val duration: Long,
-        // used time item
-        val day: Long?,
-        // session duration
-        val lastUsage: Long?,
-        val maxSessionDuration: Long?,
-        val pauseDuration: Long?
-)
+fun <T> List<T>.takeDistributedElements(max: Int): List<T> {
+    if (max < 0) throw IllegalArgumentException()
+    if (max == 0) return emptyList()
+    if (this.size <= max) return this
+
+    return mutableListOf<T>(this.first()).also { result ->
+        this.forEachIndexed { index, item ->
+            if (index > 0 && result.size * this.size / index < max) result.add(item)
+        }
+    }
+}

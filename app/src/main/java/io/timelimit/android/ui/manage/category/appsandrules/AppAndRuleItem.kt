@@ -14,18 +14,17 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.timelimit.android.data.model
+package io.timelimit.android.ui.manage.category.appsandrules
 
-data class UsedTimeListItem(
-        val categoryId: String,
-        val categoryTitle: String,
-        val startMinuteOfDay: Int,
-        val endMinuteOfDay: Int,
-        val duration: Long,
-        // used time item
-        val day: Long?,
-        // session duration
-        val lastUsage: Long?,
-        val maxSessionDuration: Long?,
-        val pauseDuration: Long?
-)
+import io.timelimit.android.data.model.TimeLimitRule
+
+sealed class AppAndRuleItem {
+    data class AppEntry(val title: String, val packageName: String, val packageNameWithoutActivityName: String): AppAndRuleItem()
+    object AddAppItem: AppAndRuleItem()
+    object ExpandAppsItem: AppAndRuleItem()
+    data class RuleEntry(val rule: TimeLimitRule): AppAndRuleItem()
+    object ExpandRulesItem: AppAndRuleItem()
+    object RulesIntro: AppAndRuleItem()
+    object AddRuleItem: AppAndRuleItem()
+    data class Headline(val stringRessource: Int): AppAndRuleItem()
+}

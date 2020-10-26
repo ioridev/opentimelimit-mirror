@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,12 +67,6 @@ class ChildAppsModel(application: Application): AndroidViewModel(application) {
                                                 .distinctBy { it.packageName }
                                                 .sortedBy { it.title.toLowerCase() }
 
-                                        if (categoryId == null) {
-                                            result.add(ChildAppsAssignAll(
-                                                    packageNames = sortedApps.map { it.packageName }
-                                            ))
-                                        }
-
                                         result.addAll(
                                                 sortedApps.map { app ->
                                                     ChildAppsApp(
@@ -131,4 +125,3 @@ sealed class ChildAppsEntry
 data class ChildAppsCategoryHeader(val title: String, val categoryId: String?): ChildAppsEntry()
 data class ChildAppsApp(val app: App, val shownCategoryName: String?): ChildAppsEntry()
 data class ChildAppsEmptyCategory(val categoryId: String?): ChildAppsEntry()
-data class ChildAppsAssignAll(val packageNames: List<String>): ChildAppsEntry()

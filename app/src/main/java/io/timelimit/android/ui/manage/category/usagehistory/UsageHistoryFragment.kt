@@ -20,40 +20,62 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.paging.LivePagedListBuilder
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import io.timelimit.android.R
 import io.timelimit.android.databinding.FragmentUsageHistoryBinding
-import io.timelimit.android.logic.DefaultAppLogic
-import io.timelimit.android.ui.manage.category.ManageCategoryFragmentArgs
 
-class UsageHistoryFragment : Fragment() {
+class UsageHistoryFragment : Fragment(), SelectUsageHistoryCategoryDialog.Listener {
     companion object {
-        fun newInstance(params: ManageCategoryFragmentArgs) = UsageHistoryFragment().apply {
-            arguments = params.toBundle()
+        private const val USER_ID = "userId"
+        private const val CATEGORY_ID = "categoryId"
+
+        fun newInstance(userId: String, categoryId: String?) = UsageHistoryFragment().apply {
+            arguments = Bundle().apply {
+                putString(USER_ID, userId)
+                if (categoryId != null) putString(CATEGORY_ID, categoryId)
+            }
         }
     }
 
+    private val model: UsageHistoryModel by viewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = FragmentUsageHistoryBinding.inflate(inflater, container, false)
-        val params = ManageCategoryFragmentArgs.fromBundle(arguments!!)
-        val database = DefaultAppLogic.with(context!!).database
         val adapter = UsageHistoryAdapter()
 
-        LivePagedListBuilder(
-                database.usedTimes().getUsedTimeListItemsByCategoryId(params.categoryId),
-                10
-        )
-                .build()
-                .observe(viewLifecycleOwner, Observer {
-                    binding.isEmpty = it.isEmpty()
-                    adapter.submitList(it)
-                })
+        if (requireArguments().getString(CATEGORY_ID) != null) {
+            binding.selectCategoryButton.visibility = View.GONE
+        }
+
+        if (!model.didInit) {
+            model.userId.value = requireArguments().getString(USER_ID)!!
+            model.categoryId.value = requireArguments().getString(CATEGORY_ID)
+
+            model.didInit = true
+        }
+
+        model.categoryId.observe(viewLifecycleOwner) { adapter.showCategoryTitle = it == null }
+        model.selectedCategoryName.observe(viewLifecycleOwner) { binding.selectCategoryButton.text = it ?: getString(R.string.usage_history_filter_all_categories) }
+        model.listContent.observe(viewLifecycleOwner) {
+            binding.isEmpty = it.isEmpty()
+            adapter.submitList(it)
+        }
 
         binding.recycler.adapter = adapter
         binding.recycler.layoutManager = LinearLayoutManager(context)
 
+        binding.selectCategoryButton.setOnClickListener {
+            SelectUsageHistoryCategoryDialog.newInstance(
+                    userId = model.userId.value!!,
+                    currentCategoryId = model.categoryId.value,
+                    target = this
+            ).show(parentFragmentManager)
+        }
+
         return binding.root
     }
+
+    override fun onAllCategoriesSelected() { model.categoryId.value = null }
+    override fun onCategoryFilterSelected(categoryId: String) { model.categoryId.value = categoryId }
 }

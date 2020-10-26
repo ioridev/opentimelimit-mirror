@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,21 +20,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
+import io.timelimit.android.R
 import io.timelimit.android.databinding.FragmentUninstallBinding
-import io.timelimit.android.logic.AppLogic
-import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.livedata.liveDataFromValue
 import io.timelimit.android.ui.backdoor.BackdoorDialogFragment
-import io.timelimit.android.ui.main.ActivityViewModel
-import io.timelimit.android.ui.main.getActivityViewModel
+import io.timelimit.android.ui.main.*
+import kotlinx.android.synthetic.main.single_fragment_wrapper.*
 
-class UninstallFragment : Fragment() {
+class UninstallFragment : Fragment(), FragmentWithCustomTitle {
     companion object {
         private const val STATUS_SHOW_BACKDOOR_BUTTON = "show_backdoor_button"
     }
 
-    private val auth: ActivityViewModel by lazy { getActivityViewModel(activity!!) }
-    private val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
+    private val activity: ActivityViewModelHolder by lazy { getActivity() as ActivityViewModelHolder }
+    private val auth: ActivityViewModel by lazy { activity.getActivityViewModel() }
     private var showBackdoorButton = false
+    private lateinit var navigation: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,16 +47,16 @@ class UninstallFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        navigation = Navigation.findNavController(container!!)
+
         val binding = FragmentUninstallBinding.inflate(inflater, container, false)
 
         binding.uninstall.isEnabled = binding.checkConfirm.isChecked
         binding.checkConfirm.setOnCheckedChangeListener { _, isChecked -> binding.uninstall.isEnabled = isChecked }
 
         binding.uninstall.setOnClickListener {
-            val revokePermissions = binding.checkPermissions.isChecked
-
             if (auth.requestAuthenticationOrReturnTrue()) {
-                logic.appSetupLogic.resetAppCompletely(revokePermissions = revokePermissions)
+                auth.logic.appSetupLogic.resetAppCompletely()
             } else {
                 showBackdoorButton = true
                 binding.showBackdoorButton = true
@@ -60,12 +64,30 @@ class UninstallFragment : Fragment() {
         }
 
         binding.backdoorButton.setOnClickListener {
-            BackdoorDialogFragment().show(fragmentManager!!)
+            BackdoorDialogFragment().show(parentFragmentManager)
         }
 
         binding.showBackdoorButton = showBackdoorButton
 
+        auth.logic.deviceId.observe(viewLifecycleOwner) {
+            if (it == null) { navigation.popBackStack() }
+        }
+
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        AuthenticationFab.manageAuthenticationFab(
+                fab = fab,
+                fragment = this,
+                shouldHighlight = activity.getActivityViewModel().shouldHighlightAuthenticationButton,
+                authenticatedUser = activity.getActivityViewModel().authenticatedUser,
+                doesSupportAuth = liveDataFromValue(true)
+        )
+
+        fab.setOnClickListener { activity.showAuthenticationScreen() }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -74,6 +96,5 @@ class UninstallFragment : Fragment() {
         outState.putBoolean(STATUS_SHOW_BACKDOOR_BUTTON, showBackdoorButton)
     }
 
-    private fun reset(revokePermissions: Boolean) {
-    }
+    override fun getCustomTitle(): LiveData<String?> = liveDataFromValue(getString(R.string.uninstall_reset_title))
 }

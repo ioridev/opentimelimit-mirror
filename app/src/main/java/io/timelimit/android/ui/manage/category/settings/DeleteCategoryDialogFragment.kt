@@ -1,3 +1,18 @@
+/*
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
 package io.timelimit.android.ui.manage.category.settings
 
 import android.os.Bundle
@@ -14,26 +29,31 @@ import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.DeleteCategoryAction
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
-import io.timelimit.android.ui.manage.category.ManageCategoryFragmentArgs
 import io.timelimit.android.ui.util.ConfirmDeleteDialogFragment
 
 class DeleteCategoryDialogFragment: ConfirmDeleteDialogFragment() {
     companion object {
         private const val TAG = "DeleteCategoryDialogFragment"
+        private const val CHILD_ID = "childId"
+        private const val CATEGORY_ID = "categoryId"
 
-        fun newInstance(args: ManageCategoryFragmentArgs) = DeleteCategoryDialogFragment().apply {
-            arguments = args.toBundle()
+        fun newInstance(childId: String, categoryId: String) = DeleteCategoryDialogFragment().apply {
+            arguments = Bundle().apply {
+                putString(CHILD_ID, childId)
+                putString(CATEGORY_ID, categoryId)
+            }
         }
     }
 
-    private val params: ManageCategoryFragmentArgs by lazy { ManageCategoryFragmentArgs.fromBundle(arguments!!) }
-    private val appLogic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
-    private val auth: ActivityViewModel by lazy { getActivityViewModel(activity!!) }
+    private val appLogic: AppLogic by lazy { DefaultAppLogic.with(requireContext()) }
+    private val auth: ActivityViewModel by lazy { getActivityViewModel(requireActivity()) }
+    private val childId: String get() = requireArguments().getString(CHILD_ID)!!
+    private val categoryId: String get() = requireArguments().getString(CATEGORY_ID)!!
 
     val categoryEntry: LiveData<Category?> by lazy {
         appLogic.database.category().getCategoryByChildIdAndId(
-                categoryId = params.categoryId,
-                childId = params.childId
+                categoryId = categoryId,
+                childId = childId
         )
     }
 
@@ -63,7 +83,7 @@ class DeleteCategoryDialogFragment: ConfirmDeleteDialogFragment() {
 
     override fun onConfirmDeletion() {
         auth.tryDispatchParentAction(DeleteCategoryAction(
-                categoryId = params.categoryId
+                categoryId = categoryId
         ))
 
         dismiss()

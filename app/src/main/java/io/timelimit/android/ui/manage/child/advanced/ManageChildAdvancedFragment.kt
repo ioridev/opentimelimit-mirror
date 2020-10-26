@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,6 @@ import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.help.HelpDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
-import io.timelimit.android.ui.manage.child.ManageChildFragmentArgs
 import io.timelimit.android.ui.manage.child.advanced.limituserviewing.LimitUserViewingView
 import io.timelimit.android.ui.manage.child.advanced.manageblocktemporarily.ManageBlockTemporarilyView
 import io.timelimit.android.ui.manage.child.advanced.managedisabletimelimits.ManageDisableTimelimitsViewHelper
@@ -43,22 +42,22 @@ import io.timelimit.android.ui.manage.child.advanced.timezone.UserTimezoneView
 
 class ManageChildAdvancedFragment : Fragment() {
     companion object {
-        private const val LOG_TAG = "ManageChildAdvanced"
+        private const val CHILD_ID = "childId"
 
-        fun newInstance(params: ManageChildFragmentArgs) = ManageChildAdvancedFragment().apply {
-            arguments = params.toBundle()
+        fun newInstance(childId: String) = ManageChildAdvancedFragment().apply {
+            arguments = Bundle().apply { putString(CHILD_ID, childId) }
         }
     }
 
-    private val params: ManageChildFragmentArgs by lazy { ManageChildFragmentArgs.fromBundle(arguments!!) }
+    private val childId: String get() = arguments!!.getString(CHILD_ID)!!
     private val auth: ActivityViewModel by lazy { getActivityViewModel(activity!!) }
     private val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
-    private val childEntry: LiveData<User?> by lazy { logic.database.user().getChildUserByIdLive(params.childId) }
+    private val childEntry: LiveData<User?> by lazy { logic.database.user().getChildUserByIdLive(childId) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = FragmentManageChildAdvancedBinding.inflate(layoutInflater, container, false)
 
-        val userRelatedData = logic.database.derivedDataDao().getUserRelatedDataLive(params.childId)
+        val userRelatedData = logic.database.derivedDataDao().getUserRelatedDataLive(childId)
 
         run {
             // blocked categories
@@ -76,7 +75,7 @@ class ManageChildAdvancedFragment : Fragment() {
                     userRelatedData = userRelatedData,
                     container = binding.blockedCategoriesCheckboxContainer,
                     auth = auth,
-                    childId = params.childId
+                    childId = childId
             )
         }
 
@@ -88,7 +87,7 @@ class ManageChildAdvancedFragment : Fragment() {
 
                 if (child != null) {
                     binding.disableTimeLimits.handlers = ManageDisableTimelimitsViewHelper.createHandlers(
-                            childId = params.childId,
+                            childId = childId,
                             childTimezone = child.timeZone,
                             activity = activity!!
                     )
@@ -113,25 +112,25 @@ class ManageChildAdvancedFragment : Fragment() {
                 view = binding.userTimezone,
                 fragmentManager = fragmentManager!!,
                 lifecycleOwner = this,
-                userId = params.childId,
+                userId = childId,
                 auth = auth
         )
 
         binding.renameChildButton.setOnClickListener {
             if (auth.requestAuthenticationOrReturnTrue()) {
-                UpdateChildNameDialogFragment.newInstance(params.childId).show(fragmentManager!!)
+                UpdateChildNameDialogFragment.newInstance(childId).show(parentFragmentManager)
             }
         }
 
         binding.deleteUserButton.setOnClickListener {
             if (auth.requestAuthenticationOrReturnTrue()) {
-                DeleteChildDialogFragment.newInstance(params.childId).show(fragmentManager!!)
+                DeleteChildDialogFragment.newInstance(childId).show(parentFragmentManager)
             }
         }
 
         ManageChildPassword.bind(
                 view = binding.password,
-                childId = params.childId,
+                childId = childId,
                 childEntry = childEntry,
                 lifecycleOwner = this,
                 auth = auth,
@@ -144,7 +143,7 @@ class ManageChildAdvancedFragment : Fragment() {
                 lifecycleOwner = viewLifecycleOwner,
                 fragmentManager = parentFragmentManager,
                 userEntry = childEntry,
-                userId = params.childId
+                userId = childId
         )
 
         ChildSelfLimitAddView.bind(
@@ -153,7 +152,7 @@ class ManageChildAdvancedFragment : Fragment() {
                 lifecycleOwner = viewLifecycleOwner,
                 fragmentManager = parentFragmentManager,
                 userEntry = childEntry,
-                userId = params.childId
+                userId = childId
         )
 
         return binding.root

@@ -33,4 +33,9 @@
         Apps with category are removed from the previous category when they are added to a new category -
         use parent and child categories to \"add\" an App to multiple categories
     </string>
+    <string name="must_read_blocked_time_areas_obsolete">
+        The blocked time areas are deprecated. You can use time limit rules for parts
+        of a day with zero minutes usage duration instead. The blocked time areas will be
+        removed in the future.
+    </string>
 </resources>

@@ -13,19 +13,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+package io.timelimit.android.ui.manage.category.timelimit_rules
 
-package io.timelimit.android.data.model
+import io.timelimit.android.data.model.TimeLimitRule
 
-data class UsedTimeListItem(
-        val categoryId: String,
-        val categoryTitle: String,
-        val startMinuteOfDay: Int,
-        val endMinuteOfDay: Int,
-        val duration: Long,
-        // used time item
-        val day: Long?,
-        // session duration
-        val lastUsage: Long?,
-        val maxSessionDuration: Long?,
-        val pauseDuration: Long?
-)
+interface TimeLimitRulesHandlers {
+    fun onTimeLimitRuleClicked(rule: TimeLimitRule)
+    fun onAddTimeLimitRuleClicked()
+}

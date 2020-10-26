@@ -25,4 +25,5 @@
     <string name="usage_history_time_area">from %s until %s</string>
     <string name="usage_history_item_session_duration_limit">Session duration limit of %s with %s break</string>
     <string name="usage_history_item_last_usage">Last usage: %s</string>
+    <string name="usage_history_filter_all_categories">All Categories</string>
 </resources>

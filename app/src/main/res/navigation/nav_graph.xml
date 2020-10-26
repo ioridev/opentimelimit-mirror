@@ -70,6 +70,20 @@
         <action
             android:id="@+id/action_overviewFragment_to_parentModeFragment"
             app:destination="@id/parentModeFragment" />
+        <action
+            android:id="@+id/action_overviewFragment_to_aboutFragmentWrapped"
+            app:destination="@id/aboutFragmentWrapped"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+        <action
+            android:id="@+id/action_overviewFragment_to_uninstallFragment"
+            app:destination="@id/uninstallFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
     </fragment>
     <fragment
         android:id="@+id/manageChildFragment"
@@ -89,6 +103,34 @@
         <argument
             android:name="fromRedirect"
             app:argType="boolean" />
+        <action
+            android:id="@+id/action_manageChildFragment_to_childAppsFragmentWrapper"
+            app:destination="@id/childAppsFragmentWrapper"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+        <action
+            android:id="@+id/action_manageChildFragment_to_childAdvancedFragmentWrapper"
+            app:destination="@id/childAdvancedFragmentWrapper"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+        <action
+            android:id="@+id/action_manageChildFragment_to_contactsFragment"
+            app:destination="@id/contactsFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+        <action
+            android:id="@+id/action_manageChildFragment_to_childUsageHistoryFragmentWrapper"
+            app:destination="@id/childUsageHistoryFragmentWrapper"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
     </fragment>
     <fragment
         android:id="@+id/manageCategoryFragment"
@@ -101,6 +143,20 @@
         <argument
             android:name="categoryId"
             app:argType="string" />
+        <action
+            android:id="@+id/action_manageCategoryFragment_to_categoryAdvancedFragmentWrapper"
+            app:destination="@id/categoryAdvancedFragmentWrapper"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+        <action
+            android:id="@+id/action_manageCategoryFragment_to_blockedTimeAreasFragmentWrapper"
+            app:destination="@id/blockedTimeAreasFragmentWrapper"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
     </fragment>
     <fragment
         android:id="@+id/addUserFragment"
@@ -329,5 +385,73 @@
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+    </fragment>
+    <fragment
+        android:id="@+id/aboutFragmentWrapped"
+        android:name="io.timelimit.android.ui.fragment.AboutFragmentWrapped"
+        android:label="AboutFragmentWrapped" >
+        <action
+            android:id="@+id/action_aboutFragmentWrapped_to_diagnoseMainFragment"
+            app:destination="@id/diagnoseMainFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+    </fragment>
+    <fragment
+        android:id="@+id/uninstallFragment"
+        android:name="io.timelimit.android.ui.overview.uninstall.UninstallFragment"
+        android:label="fragment_uninstall"
+        tools:layout="@layout/fragment_uninstall" />
+    <fragment
+        android:id="@+id/childAppsFragmentWrapper"
+        android:name="io.timelimit.android.ui.fragment.ChildAppsFragmentWrapper"
+        android:label="ChildAppsFragmentWrapper" >
+        <argument
+            android:name="childId"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/childAdvancedFragmentWrapper"
+        android:name="io.timelimit.android.ui.fragment.ChildAdvancedFragmentWrapper"
+        android:label="ChildAdvancedFragmentWrapper" >
+        <argument
+            android:name="childId"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/contactsFragment"
+        android:name="io.timelimit.android.ui.contacts.ContactsFragment"
+        android:label="contacts_fragment"
+        tools:layout="@layout/contacts_fragment" />
+    <fragment
+        android:id="@+id/childUsageHistoryFragmentWrapper"
+        android:name="io.timelimit.android.ui.fragment.ChildUsageHistoryFragmentWrapper"
+        android:label="ChildUsageHistoryFragmentWrapper" >
+        <argument
+            android:name="childId"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/blockedTimeAreasFragmentWrapper"
+        android:name="io.timelimit.android.ui.fragment.BlockedTimeAreasFragmentWrapper"
+        android:label="BlockedTimeAreasFragmentWrapper" >
+        <argument
+            android:name="childId"
+            app:argType="string" />
+        <argument
+            android:name="categoryId"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/categoryAdvancedFragmentWrapper"
+        android:name="io.timelimit.android.ui.fragment.CategoryAdvancedFragmentWrapper"
+        android:label="CategoryAdvancedFragmentWrapper" >
+        <argument
+            android:name="childId"
+            app:argType="string" />
+        <argument
+            android:name="categoryId"
+            app:argType="string" />
     </fragment>
 </navigation>
