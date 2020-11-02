@@ -22,15 +22,10 @@
     <string name="generic_save">Save</string>
     <string name="generic_create">Create</string>
     <string name="generic_delete">Delete</string>
-    <string name="generic_retry">Retry</string>
     <string name="generic_go">Go</string>
     <string name="generic_manage_card">Manage</string>
     <string name="generic_enable">Enable</string>
     <string name="generic_show_more">Show more</string>
-    <plurals name="generic_plural_app">
-        <item quantity="one">%d App</item>
-        <item quantity="other">%d Apps</item>
-    </plurals>
 
     <string name="generic_swipe_to_dismiss">Swipe to the side to remove this message</string>
 
@@ -334,7 +329,6 @@
         Some options are unavailable because no parent user is signed in
     </string>
 
-    <string name="contacts_title">Contacts</string>
     <string name="contacts_snackbar_added">Contact was added</string>
     <string name="contacts_title_long">Allowed contacts</string>
     <string name="contacts_description">This is a list of phone numbers.
@@ -376,16 +370,6 @@
         <item>@string/day_of_week_friday</item>
         <item>@string/day_of_week_saturday</item>
         <item>@string/day_of_week_sunday</item>
-    </string-array>
-
-    <string-array name="days_of_week_array_short">
-        <item>@string/day_of_week_monday_short</item>
-        <item>@string/day_of_week_tuesday_short</item>
-        <item>@string/day_of_week_wednesday_short</item>
-        <item>@string/day_of_week_thursday_short</item>
-        <item>@string/day_of_week_friday_short</item>
-        <item>@string/day_of_week_saturday_short</item>
-        <item>@string/day_of_week_sunday_short</item>
     </string-array>
 
     <string name="delete_child_title">Delete user</string>
@@ -480,7 +464,6 @@
 
     <string name="lock_disable_temporarily_lock_title">Disable temporary blocking</string>
     <string name="lock_disable_temporarily_all_categories">all categories</string>
-    <string name="lock_disable_temporarily_all_categories_disabled">Only the category %s is blocked</string>
 
     <string name="lock_grant_permission_title">Grant permission</string>
     <string name="lock_grant_permission_text">Allow TimeLimit to see the connected network</string>
@@ -534,7 +517,6 @@
 
     <string name="login_user_selection_text">Choose an user to authenticate</string>
     <string name="login_password_hint">Password</string>
-    <string name="login_btn_do">Log in</string>
     <string name="login_snackbar_wrong">The password is invalid</string>
     <string name="login_dialog_password_text">Enter your password to sign in</string>
     <string name="login_child_without_password">You can\'t sign in as %s because there was no password configured</string>
@@ -586,10 +568,6 @@
 
     <string name="category_networks_toast_enable_location_service">Please enable location access</string>
 
-    <string name="manage_category_section_assigned_apps">assigned Apps</string>
-    <string name="manage_category_section_all_apps">all Apps</string>
-
-    <string name="manage_child_tab_categories">Categories</string>
     <string name="manage_child_tab_other">Advanced settings</string>
 
     <string name="manage_child_category_no_time_limits">no time limit</string>
@@ -766,14 +744,6 @@
         This permission can only be disabled by TimeLimit/ a parent which uninstalls TimeLimit.
     </string>
 
-    <string name="manage_device_permission_tap_top_open_settings">
-        Touch this option to open the corresponding section of the system settings
-    </string>
-
-    <string name="manage_device_permission_open_at_target_device">
-        Open the screen at the other device to modify the permissions
-    </string>
-
     <string name="manage_device_permission_status_granted">The permission was granted</string>
     <string name="manage_device_permission_status_not_granted">The permission was not granted</string>
     <string name="manage_device_permission_status_not_required">The permission is not needed due to the old Android version</string>
@@ -854,7 +824,6 @@
     <string name="manage_user_key_add">add key</string>
     <string name="manage_user_key_remove">remove key</string>
     <string name="manage_user_key_added">The key was added</string>
-    <string name="manage_user_key_removed">The key was removed</string>
     <string name="manage_user_key_invalid">This was no valid TimeLimit key</string>
     <string name="manage_user_key_other_user">This key is already linked to an other user</string>
 
@@ -920,9 +889,6 @@
     <string name="overview_user_item_temporarily_disabled_until">Time limits temporarily disabled until %s</string>
     <string name="overview_user_item_role_child">is restricted</string>
     <string name="overview_user_item_role_parent">can change settings</string>
-
-    <string name="overview_finish_setup_title">Finish setup</string>
-    <string name="overview_finish_setup_text">You could setup timelimit manually now. However, here you can do it more easily.</string>
 
     <string name="parent_limit_login_title">Limit login category</string>
     <string name="parent_limit_login_help">Here you can select a category. As soon as Apps of this
@@ -1038,7 +1004,6 @@
         along with this program. If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses/</a>.
     </string>
     <string name="terms_btn_accept">Accept and continue</string>
-    <string name="setup_terms_btn_uninstall">Uninstall</string>
 
     <string name="uninstall_reset_title">Reset App</string>
     <string name="uninstall_reset_text">
@@ -1096,9 +1061,6 @@
     <string name="util_time_unused">Unused</string>
     <string name="util_time_used">Used <xliff:g example="4 minutes" id="used time">%1$s</xliff:g></string>
 
-    <string name="util_time_until">until <xliff:g id="value">%1$s</xliff:g>
-    </string>
-
     <string name="widget_empty_view">If this device is assigned to a child
         and this child has got categories, then the categories should
         appear here.
@@ -1108,7 +1070,6 @@
 
     <string name="app_name" translatable="false">TimeLimit</string>
 
-    <string name="admin_description_google">This allows TimeLimit to detect if it was stopped.</string>
     <string name="admin_description_direct">This allows TimeLimit to prevent it from being disabled.</string>
 
     <string name="admin_disable_warning">Do you want to disable the device admin?</string>
