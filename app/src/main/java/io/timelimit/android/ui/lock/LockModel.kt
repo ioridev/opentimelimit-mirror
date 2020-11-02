@@ -32,7 +32,9 @@ import io.timelimit.android.integration.platform.BatteryStatus
 import io.timelimit.android.integration.platform.NetworkId
 import io.timelimit.android.integration.platform.getNetworkIdOrNull
 import io.timelimit.android.livedata.*
-import io.timelimit.android.logic.*
+import io.timelimit.android.logic.BlockingLevel
+import io.timelimit.android.logic.BlockingReason
+import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.logic.blockingreason.AppBaseHandling
 import io.timelimit.android.logic.blockingreason.CategoryHandlingCache
 import io.timelimit.android.logic.blockingreason.CategoryItselfHandling

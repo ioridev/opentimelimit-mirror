@@ -15,19 +15,11 @@
  */
 package io.timelimit.android.ui.manage.device.manage
 
-import android.app.admin.DevicePolicyManager
-import android.content.ComponentName
-import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -37,15 +29,11 @@ import io.timelimit.android.R
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.databinding.FragmentManageDeviceBinding
 import io.timelimit.android.extensions.safeNavigate
-import io.timelimit.android.integration.platform.ProtectionLevel
-import io.timelimit.android.integration.platform.android.AdminReceiver
 import io.timelimit.android.livedata.liveDataFromValue
 import io.timelimit.android.livedata.map
-import io.timelimit.android.livedata.mergeLiveData
 import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
-import io.timelimit.android.sync.actions.SetDeviceUserAction
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticationFab

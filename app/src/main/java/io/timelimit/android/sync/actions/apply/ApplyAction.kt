@@ -21,7 +21,9 @@ import io.timelimit.android.data.Database
 import io.timelimit.android.integration.platform.PlatformIntegration
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.ManipulationLogic
-import io.timelimit.android.sync.actions.*
+import io.timelimit.android.sync.actions.AppLogicAction
+import io.timelimit.android.sync.actions.ChildAction
+import io.timelimit.android.sync.actions.ParentAction
 import io.timelimit.android.sync.actions.dispatch.LocalDatabaseAppLogicActionDispatcher
 import io.timelimit.android.sync.actions.dispatch.LocalDatabaseChildActionDispatcher
 import io.timelimit.android.sync.actions.dispatch.LocalDatabaseParentActionDispatcher

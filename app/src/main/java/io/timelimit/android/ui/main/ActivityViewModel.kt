@@ -26,7 +26,6 @@ import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
-import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.liveDataFromValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.switchMap

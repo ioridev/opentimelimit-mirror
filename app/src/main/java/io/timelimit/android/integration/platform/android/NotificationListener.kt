@@ -32,7 +32,10 @@ import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.integration.platform.getNetworkIdOrNull
-import io.timelimit.android.logic.*
+import io.timelimit.android.logic.AppLogic
+import io.timelimit.android.logic.BlockingReason
+import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.logic.QueryAppTitleCache
 import io.timelimit.android.logic.blockingreason.AppBaseHandling
 import io.timelimit.android.logic.blockingreason.CategoryItselfHandling
 

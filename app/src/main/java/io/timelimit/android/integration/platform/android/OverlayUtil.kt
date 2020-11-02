@@ -17,11 +17,11 @@ package io.timelimit.android.integration.platform.android
 
 import android.app.Application
 import android.content.Context
-import android.view.WindowManager
 import android.graphics.PixelFormat
 import android.os.Build
 import android.provider.Settings
 import android.view.LayoutInflater
+import android.view.WindowManager
 import androidx.appcompat.view.ContextThemeWrapper
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads

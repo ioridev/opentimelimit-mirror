@@ -20,10 +20,7 @@ import android.util.JsonWriter
 import androidx.room.*
 import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.JsonSerializable
-import io.timelimit.android.data.customtypes.ImmutableBitmask
 import io.timelimit.android.data.customtypes.ImmutableBitmaskAdapter
-import java.util.*
-import io.timelimit.android.data.customtypes.ImmutableBitmaskJson
 
 @Entity(tableName = "user")
 @TypeConverters(

@@ -39,7 +39,6 @@ import io.timelimit.android.data.model.App
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.databinding.FragmentAddCategoryAppsBinding
 import io.timelimit.android.extensions.showSafe
-import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.liveDataFromValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.switchMap

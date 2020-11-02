@@ -28,7 +28,6 @@ import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.data.model.User
 import io.timelimit.android.databinding.FragmentManageParentBinding
-import io.timelimit.android.databinding.ManageUserKeyViewBinding
 import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.livedata.liveDataFromValue
 import io.timelimit.android.livedata.map
@@ -41,7 +40,6 @@ import io.timelimit.android.ui.manage.child.advanced.timezone.UserTimezoneView
 import io.timelimit.android.ui.manage.parent.delete.DeleteParentView
 import io.timelimit.android.ui.manage.parent.key.ManageUserKeyView
 import io.timelimit.android.ui.manage.parent.limitlogin.ParentLimitLoginView
-import kotlin.concurrent.fixedRateTimer
 
 class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
     private val activity: ActivityViewModelHolder by lazy { getActivity() as ActivityViewModelHolder }

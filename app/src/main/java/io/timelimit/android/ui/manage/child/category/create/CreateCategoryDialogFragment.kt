@@ -23,7 +23,6 @@ import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.sync.actions.CreateCategoryAction
 import io.timelimit.android.ui.main.getActivityViewModel
-import io.timelimit.android.ui.manage.child.ManageChildFragmentArgs
 import io.timelimit.android.ui.util.EditTextBottomSheetDialog
 
 

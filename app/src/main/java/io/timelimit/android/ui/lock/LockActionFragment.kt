@@ -32,7 +32,8 @@ import io.timelimit.android.data.model.derived.UserRelatedData
 import io.timelimit.android.databinding.LockActionFragmentBinding
 import io.timelimit.android.databinding.LockFragmentCategoryButtonBinding
 import io.timelimit.android.date.DateInTimezone
-import io.timelimit.android.logic.*
+import io.timelimit.android.logic.BlockingLevel
+import io.timelimit.android.logic.BlockingReason
 import io.timelimit.android.sync.actions.AddCategoryAppsAction
 import io.timelimit.android.sync.actions.IncrementCategoryExtraTimeAction
 import io.timelimit.android.sync.actions.UpdateCategoryTemporarilyBlockedAction

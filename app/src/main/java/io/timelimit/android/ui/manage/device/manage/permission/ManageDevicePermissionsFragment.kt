@@ -23,11 +23,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
@@ -39,7 +39,6 @@ import io.timelimit.android.integration.platform.NewPermissionStatus
 import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
 import io.timelimit.android.integration.platform.android.AdminReceiver
-import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.liveDataFromValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic

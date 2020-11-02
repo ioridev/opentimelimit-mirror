@@ -15,7 +15,6 @@
  */
 package io.timelimit.android.ui.manage.child.category
 
-import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,8 +26,6 @@ import io.timelimit.android.databinding.AddItemViewBinding
 import io.timelimit.android.databinding.CategoryRichCardBinding
 import io.timelimit.android.ui.util.DateUtil
 import io.timelimit.android.util.TimeTextUtil
-import kotlin.math.log2
-import kotlin.math.roundToInt
 import kotlin.properties.Delegates
 
 class Adapter: RecyclerView.Adapter<ViewHolder>() {
