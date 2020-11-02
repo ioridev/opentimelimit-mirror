@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,20 +20,24 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.MutableLiveData
+import androidx.viewpager.widget.ViewPager
 import io.timelimit.android.R
 import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.login.NewLoginFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
+import io.timelimit.android.ui.main.AuthenticationFab
+import kotlinx.android.synthetic.main.lock_activity.*
 
 class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
     companion object {
-        private const val EXTRA_PACKAGE_NAME = "packageName"
-        private const val EXTRA_ACTIVITY_NAME = "activityName"
-        private const val LOGIN_DIALOG_TAG = "loginDialog"
+        private const val EXTRA_PACKAGE_NAME = "pkg"
+        private const val EXTRA_ACTIVITY_NAME = "an"
+        private const val LOGIN_DIALOG_TAG = "ldt"
 
         val currentInstances = mutableSetOf<LockActivity>()
 
@@ -53,9 +57,12 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
         }
     }
 
+    private val model: LockModel by viewModels()
+    private val activityModel: ActivityViewModel by viewModels()
+
     override var ignoreStop: Boolean = false
 
-    val blockedPackageName: String by lazy {
+    private val blockedPackageName: String by lazy {
         intent.getStringExtra(EXTRA_PACKAGE_NAME)!!
     }
 
@@ -66,19 +73,42 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
             null
     }
 
+    private val showAuth = MutableLiveData<Boolean>().apply { value = false }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.lock_activity)
 
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, LockFragment.newInstance(blockedPackageName, blockedActivityName))
-                    .commitNow()
-
             stopMediaPlayback()
         }
 
         currentInstances.add(this)
+
+        model.init(blockedPackageName, blockedActivityName)
+
+        pager.adapter = LockActivityAdapter(supportFragmentManager, this)
+
+        AuthenticationFab.manageAuthenticationFab(
+                fab = fab,
+                shouldHighlight = activityModel.shouldHighlightAuthenticationButton,
+                authenticatedUser = activityModel.authenticatedUser,
+                activity = this,
+                doesSupportAuth = showAuth
+        )
+
+        fab.setOnClickListener { showAuthenticationScreen() }
+
+        pager.addOnPageChangeListener(object: ViewPager.SimpleOnPageChangeListener() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+
+                showAuth.value = position > 0
+            }
+        })
+
+        tabs.setupWithViewPager(pager)
     }
 
     override fun onDestroy() {
@@ -87,9 +117,7 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
         currentInstances.remove(this)
     }
 
-    override fun getActivityViewModel(): ActivityViewModel {
-        return ViewModelProviders.of(this).get(ActivityViewModel::class.java)
-    }
+    override fun getActivityViewModel(): ActivityViewModel = activityModel
 
     override fun showAuthenticationScreen() {
         NewLoginFragment().showSafe(supportFragmentManager, LOGIN_DIALOG_TAG)
