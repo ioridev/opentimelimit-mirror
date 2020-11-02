@@ -15,11 +15,6 @@
  */
 package io.timelimit.android.logic
 
-import androidx.lifecycle.LiveData
-import io.timelimit.android.date.getMinuteOfWeek
-import io.timelimit.android.livedata.*
-import java.util.*
-
 enum class BlockingReason {
     None,
     NotPartOfAnCategory,
@@ -36,47 +31,4 @@ enum class BlockingReason {
 enum class BlockingLevel {
     App,
     Activity
-}
-
-
-class BlockingReasonUtil(private val appLogic: AppLogic) {
-    fun getTrustedMinuteOfWeekLive(timeZone: TimeZone): LiveData<Int> {
-        return object: LiveData<Int>() {
-            fun update() {
-                val timeInMillis = appLogic.timeApi.getCurrentTimeInMillis()
-
-                value = getMinuteOfWeek(timeInMillis, timeZone)
-            }
-
-            init {
-                update()
-            }
-
-            val scheduledUpdateRunnable = Runnable {
-                update()
-                scheduleUpdate()
-            }
-
-            fun scheduleUpdate() {
-                appLogic.timeApi.runDelayed(scheduledUpdateRunnable, 1000L /* every second */)
-            }
-
-            fun cancelScheduledUpdate() {
-                appLogic.timeApi.cancelScheduledAction(scheduledUpdateRunnable)
-            }
-
-            override fun onActive() {
-                super.onActive()
-
-                update()
-                scheduleUpdate()
-            }
-
-            override fun onInactive() {
-                super.onInactive()
-
-                cancelScheduledUpdate()
-            }
-        }.ignoreUnchanged()
-    }
 }

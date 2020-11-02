@@ -31,7 +31,6 @@ import io.timelimit.android.data.model.UserType
 import io.timelimit.android.data.model.derived.CompleteUserLoginRelatedData
 import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.BlockingReason
-import io.timelimit.android.logic.BlockingReasonUtil
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.ChildSignInAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
