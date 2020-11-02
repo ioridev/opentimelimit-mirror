@@ -28,6 +28,7 @@
     <string name="manage_disable_time_limits_btn_today">for today</string>
     <string name="manage_disable_time_limits_btn_time">until a time</string>
     <string name="manage_disable_time_limits_btn_date">until a date</string>
+    <string name="manage_disable_time_limits_btn_no_end_time">no scheduled end time</string>
 
     <string name="manage_disable_time_limits_dialog_until">Disable time limits until ...</string>
     <string name="manage_disable_time_limits_toast_time_in_past">The selected time is in the past</string>
