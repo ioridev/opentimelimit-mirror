@@ -170,4 +170,5 @@ object ExperimentalFlags {
     const val MULTI_APP_DETECTION = 128L
     const val BLOCK_SPLIT_SCREEN = 256L
     const val HIDE_MANIPULATION_WARNING = 512L
+    const val ENABLE_SOFT_BLOCKING = 1024L
 }

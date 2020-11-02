@@ -43,6 +43,8 @@
     <string name="diagnose_exf_mad">Try to detect multiple active Apps (splitscreen support)</string>
     <string name="diagnose_exf_bss">Automatically disable splitscreen using the accessibility service</string>
     <string name="diagnose_exf_hmw">Hide manipulation warning in the category list</string>
+    <string name="diagnose_exf_esb">Do not use a overlay or the home button for blocking</string>
+
     <string name="diagnose_bat_title">Battery</string>
     <string name="diagnose_bat_status">Status: %s</string>
     <string name="diagnose_bat_status_charging">Charging/ full</string>
