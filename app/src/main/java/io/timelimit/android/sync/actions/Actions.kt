@@ -278,6 +278,14 @@ data class ResetCategoryNetworkIds(val categoryId: String): ParentAction() {
     }
 }
 
+data class UpdateCategoryDisableLimitsAction(val categoryId: String, val endTime: Long): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(categoryId)
+
+        if (endTime < 0) { throw IllegalArgumentException() }
+    }
+}
+
 // DeviceDao
 
 data class UpdateDeviceStatusAction(

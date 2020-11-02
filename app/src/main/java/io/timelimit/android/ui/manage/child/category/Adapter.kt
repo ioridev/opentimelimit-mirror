@@ -25,6 +25,7 @@ import io.timelimit.android.R
 import io.timelimit.android.data.model.Category
 import io.timelimit.android.databinding.AddItemViewBinding
 import io.timelimit.android.databinding.CategoryRichCardBinding
+import io.timelimit.android.ui.util.DateUtil
 import io.timelimit.android.util.TimeTextUtil
 import kotlin.math.log2
 import kotlin.math.roundToInt
@@ -134,14 +135,10 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
                 )
                 binding.isTemporarilyBlocked = item.mode is CategorySpecialMode.TemporarilyBlocked
                 binding.temporarilyBlockedUntil = if (item.mode is CategorySpecialMode.TemporarilyBlocked)
-                    item.mode.endTime?.let {
-                        DateUtils.formatDateTime(
-                                context,
-                                it,
-                                DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or
-                                        DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_WEEKDAY
-                        )
-                    } else null
+                    item.mode.endTime?.let {  DateUtil.formatAbsoluteDate(context, it) } else null
+
+                binding.limitsDisabledUntil = if (item.mode is CategorySpecialMode.TemporarilyAllowed)
+                    DateUtil.formatAbsoluteDate(context, item.mode.endTime) else null
 
                 binding.card.setOnClickListener { handlers?.onCategoryClicked(item.category) }
 

@@ -59,7 +59,10 @@ data class Category(
         @ColumnInfo(name = "min_battery_mobile")
         val minBatteryLevelMobile: Int,
         @ColumnInfo(name = "sort")
-        val sort: Int
+        val sort: Int,
+        // 0 = time limits enabled
+        @ColumnInfo(name = "disable_limits_until")
+        val disableLimitsUntil: Long
 ): JsonSerializable {
     companion object {
         const val MINUTES_PER_DAY = 60 * 24
@@ -79,6 +82,7 @@ data class Category(
         private const val MIN_BATTERY_MOBILE = "minBatteryMobile"
         private const val SORT = "sort"
         private const val EXTRA_TIME_DAY = "extraTimeDay"
+        private const val DISABLE_LIMIITS_UNTIL = "dlu"
 
         fun parse(reader: JsonReader): Category {
             var id: String? = null
@@ -96,6 +100,7 @@ data class Category(
             var minBatteryMobile = 0
             var sort = 0
             var extraTimeDay = -1
+            var disableLimitsUntil = 0L
 
             reader.beginObject()
 
@@ -115,6 +120,7 @@ data class Category(
                     MIN_BATTERY_MOBILE -> minBatteryMobile = reader.nextInt()
                     SORT -> sort = reader.nextInt()
                     EXTRA_TIME_DAY -> extraTimeDay = reader.nextInt()
+                    DISABLE_LIMIITS_UNTIL -> disableLimitsUntil = reader.nextLong()
                     else -> reader.skipValue()
                 }
             }
@@ -135,7 +141,8 @@ data class Category(
                     minBatteryLevelWhileCharging = minBatteryCharging,
                     minBatteryLevelMobile = minBatteryMobile,
                     sort = sort,
-                    extraTimeDay = extraTimeDay
+                    extraTimeDay = extraTimeDay,
+                    disableLimitsUntil = disableLimitsUntil
             )
         }
     }
@@ -163,6 +170,10 @@ data class Category(
         if (extraTimeDay < -1) {
             throw IllegalArgumentException()
         }
+
+        if (disableLimitsUntil < 0) {
+            throw IllegalArgumentException()
+        }
     }
 
     override fun serialize(writer: JsonWriter) {
@@ -182,6 +193,7 @@ data class Category(
         writer.name(MIN_BATTERY_MOBILE).value(minBatteryLevelMobile)
         writer.name(SORT).value(sort)
         writer.name(EXTRA_TIME_DAY).value(extraTimeDay)
+        writer.name(DISABLE_LIMIITS_UNTIL).value(disableLimitsUntil)
 
         writer.endObject()
     }

@@ -84,9 +84,9 @@ data class CategoryItselfHandling (
                     categoryRelatedData.category.temporarilyBlockedEndTime != 0L && categoryRelatedData.category.temporarilyBlockedEndTime < timeInMillis )
             val dependsOnMaxTimeByTempBlocking = if (okByTempBlocking || categoryRelatedData.category.temporarilyBlockedEndTime == 0L) Long.MAX_VALUE else categoryRelatedData.category.temporarilyBlockedEndTime
 
-            val areLimitsTemporarilyDisabled = timeInMillis < user.user.disableLimitsUntil
-            val dependsOnMaxTimeByTemporarilyDisabledLimits = if (areLimitsTemporarilyDisabled) user.user.disableLimitsUntil else Long.MAX_VALUE
-            // ignore it for this case: val requiresTrustedTimeForTempLimitsDisabled = user.user.disableLimitsUntil != 0L
+            val disableLimitsUntil = user.user.disableLimitsUntil.coerceAtLeast(categoryRelatedData.category.disableLimitsUntil)
+            val areLimitsTemporarilyDisabled = timeInMillis < disableLimitsUntil
+            val dependsOnMaxTimeByTemporarilyDisabledLimits = if (areLimitsTemporarilyDisabled) disableLimitsUntil else Long.MAX_VALUE
 
             val dependsOnNetworkId = categoryRelatedData.networks.isNotEmpty()
             val okByNetworkId = if (categoryRelatedData.networks.isEmpty() || areLimitsTemporarilyDisabled)

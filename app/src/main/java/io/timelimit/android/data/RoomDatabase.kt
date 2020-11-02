@@ -47,7 +47,7 @@ import java.util.concurrent.TimeUnit
     SessionDuration::class,
     UserLimitLoginCategory::class,
     CategoryNetworkId::class
-], version = 17)
+], version = 18)
 abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database {
     companion object {
         private val lock = Object()
@@ -98,7 +98,8 @@ abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database 
                             DatabaseMigrations.MIGRATE_TO_V14,
                             DatabaseMigrations.MIGRATE_TO_V15,
                             DatabaseMigrations.MIGRATE_TO_V16,
-                            DatabaseMigrations.MIGRATE_TO_V17
+                            DatabaseMigrations.MIGRATE_TO_V17,
+                            DatabaseMigrations.MIGRATE_TO_V18
                     )
                     .setQueryExecutor(Threads.database)
                     .build()

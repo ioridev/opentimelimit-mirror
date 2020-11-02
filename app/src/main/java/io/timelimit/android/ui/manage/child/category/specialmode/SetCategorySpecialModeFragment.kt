@@ -21,7 +21,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckedTextView
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
@@ -71,6 +70,18 @@ class SetCategorySpecialModeFragment: DialogFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val childId = requireArguments().getString(CHILD_ID)!!
+        val categoryId = requireArguments().getString(CATEGORY_ID)!!
+        val selfLimitMode = requireArguments().getBoolean(SELF_LIMIT_MODE)
+
+        model.init(childId = childId, categoryId = categoryId, selfLimitAddMode = selfLimitMode)
+
+        if (selfLimitMode) {
+            auth.authenticatedUserOrChild.observe(viewLifecycleOwner) { if (it == null) dismissAllowingStateLoss() }
+        } else {
+            auth.authenticatedUser.observe(viewLifecycleOwner) { if (it == null) dismissAllowingStateLoss() }
+        }
+
         val binding = SpecialModeDialogBinding.inflate(inflater, container, false)
         val flipper = binding.flipper
 
@@ -107,6 +118,7 @@ class SetCategorySpecialModeFragment: DialogFragment() {
                     binding.title = getString(
                             when (screen.type) {
                                 SetCategorySpecialModeModel.Type.BlockTemporarily -> R.string.manage_child_special_mode_wizard_block_title
+                                SetCategorySpecialModeModel.Type.DisableLimits -> R.string.manage_child_special_mode_wizard_disable_limits_title
                             },
                             content.categoryTitle
                     )
@@ -124,20 +136,10 @@ class SetCategorySpecialModeFragment: DialogFragment() {
             }.let {/* require handling all cases */}
         }
 
-        binding.typeSelection.let { list ->
-            fun buildSingleChoiceRow(): CheckedTextView = LayoutInflater.from(requireContext()).inflate(
-                    android.R.layout.simple_list_item_single_choice,
-                    list,
-                    false
-            ) as CheckedTextView
+        binding.blockTemporarilyOption.setOnClickListener { model.selectType(SetCategorySpecialModeModel.Type.BlockTemporarily) }
+        binding.disableLimitsOption.setOnClickListener { model.selectType(SetCategorySpecialModeModel.Type.DisableLimits) }
 
-            buildSingleChoiceRow().also { row ->
-                row.setText(R.string.manage_child_block_temporarily_title)
-                row.setOnClickListener { model.selectType(SetCategorySpecialModeModel.Type.BlockTemporarily) }
-
-                list.addView(row)
-            }
-        }
+        binding.isAddLimitMode = selfLimitMode
 
         binding.suggestionList.also {
             it.adapter = specialModeOptionAdapter
@@ -225,22 +227,6 @@ class SetCategorySpecialModeFragment: DialogFragment() {
         }
 
         return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        val childId = requireArguments().getString(CHILD_ID)!!
-        val categoryId = requireArguments().getString(CATEGORY_ID)!!
-        val selfLimitMode = requireArguments().getBoolean(SELF_LIMIT_MODE)
-
-        model.init(childId = childId, categoryId = categoryId, selfLimitAddMode = selfLimitMode)
-
-        if (selfLimitMode) {
-            auth.authenticatedUserOrChild.observe(viewLifecycleOwner) { if (it == null) dismissAllowingStateLoss() }
-        } else {
-            auth.authenticatedUser.observe(viewLifecycleOwner) { if (it == null) dismissAllowingStateLoss() }
-        }
     }
 
     fun show(fragmentManager: FragmentManager) = showSafe(fragmentManager, DIALOG_TAG)
