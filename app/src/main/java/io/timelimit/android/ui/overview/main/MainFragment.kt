@@ -71,6 +71,8 @@ class MainFragment : SingleFragmentWrapper(), OverviewFragmentParentHandlers, Ab
 
                     if (isAdded && !parentFragmentManager.isStateSaved) {
                         if (hasParentKey) {
+                            logic.platformIntegration.disableDeviceAdmin()
+
                             navigation.safeNavigate(
                                     MainFragmentDirections.actionOverviewFragmentToParentModeFragment(),
                                     R.id.overviewFragment
