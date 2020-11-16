@@ -140,6 +140,10 @@ data class UpdateAppActivitiesAction(
 }
 object SignOutAtDeviceAction: AppLogicAction()
 
+data class MarkTaskPendingAction(val taskId: String): AppLogicAction() {
+    init { IdGenerator.assertIdValid(taskId) }
+}
+
 data class AddCategoryAppsAction(val categoryId: String, val packageNames: List<String>): ParentAction() {
     init {
         IdGenerator.assertIdValid(categoryId)
@@ -283,6 +287,27 @@ data class UpdateCategoryDisableLimitsAction(val categoryId: String, val endTime
         IdGenerator.assertIdValid(categoryId)
 
         if (endTime < 0) { throw IllegalArgumentException() }
+    }
+}
+
+data class UpdateChildTaskAction(val isNew: Boolean, val taskId: String, val categoryId: String, val taskTitle: String, val extraTimeDuration: Int): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(taskId)
+        IdGenerator.assertIdValid(categoryId)
+
+        if (taskTitle.isEmpty() || taskTitle.length > ChildTask.MAX_TASK_TITLE_LENGTH) throw IllegalArgumentException()
+        if (extraTimeDuration <= 0 || extraTimeDuration > ChildTask.MAX_EXTRA_TIME) throw IllegalArgumentException()
+    }
+}
+
+data class DeleteChildTaskAction(val taskId: String): ParentAction() {
+    init { IdGenerator.assertIdValid(taskId) }
+}
+
+data class ReviewChildTaskAction(val taskId: String, val ok: Boolean, val time: Long): ParentAction() {
+    init {
+        if (time <= 0) throw IllegalArgumentException()
+        IdGenerator.assertIdValid(taskId)
     }
 }
 

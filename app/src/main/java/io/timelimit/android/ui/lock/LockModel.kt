@@ -166,6 +166,18 @@ class LockModel(application: Application): AndroidViewModel(application) {
 
     val osClockInMillis = liveDataFromFunction { logic.timeApi.getCurrentTimeInMillis() }
 
+    private val categoryIdForTasks = content.map {
+        if (it is LockscreenContent.Blocked.BlockedCategory && it.blockingHandling.activityBlockingReason == BlockingReason.TimeOver)
+            it.blockedCategoryId
+        else null
+    }.ignoreUnchanged()
+
+    val blockedCategoryTasks = categoryIdForTasks.switchMap { categoryId ->
+        if (categoryId != null)
+            logic.database.childTasks().getTasksByCategoryId(categoryId)
+        else liveDataFromValue(emptyList())
+    }
+
     fun allowAppTemporarily() {
         // this accesses the database directly because it is not synced
         Threads.database.submit {

@@ -26,6 +26,9 @@
     <string name="generic_manage_card">Manage</string>
     <string name="generic_enable">Enable</string>
     <string name="generic_show_more">Show more</string>
+    <string name="generic_no">No</string>
+    <string name="generic_yes">Yes</string>
+    <string name="generic_skip">Skip</string>
 
     <string name="generic_swipe_to_dismiss">Swipe to the side to remove this message</string>
 
@@ -441,6 +444,7 @@
 
     <string name="lock_tab_reason">Reason</string>
     <string name="lock_tab_action">Actions</string>
+    <string name="lock_tab_task">Tasks</string>
     <string name="lock_header_blocked">Blocked!</string>
 
     <string name="lock_header_what">What was blocked?</string>
@@ -514,6 +518,17 @@
         You can try using the home or overview button to leave this screen.
     </string>
     <string name="lock_overlay_text">Blocking %s</string>
+
+    <string name="lock_task_introduction">Doing tasks allows getting extra time.
+        Parent users must add tasks and they must confirm that a task was done
+        before the extra time is granted.
+    </string>
+    <string name="lock_task_confirm_dialog">Have you finished this task? The time
+        will only be granted if a parent confirms it.</string>
+    <string name="lock_task_review_pending_dialog">It is noted that this task is finished.
+        The only missing part is a parent which confirms this at the start screen of TimeLimit.
+    </string>
+    <string name="lock_task_review_pending_hint">waiting for confirmation</string>
 
     <string name="login_user_selection_text">Choose an user to authenticate</string>
     <string name="login_password_hint">Password</string>
@@ -1074,4 +1089,21 @@
     <string name="admin_disable_warning">Do you want to disable the device admin?</string>
 
     <string name="admin_description" translatable="false">@string/admin_description_direct</string>
+
+    <string name="manage_child_tasks">Tasks</string>
+    <string name="manage_child_tasks_add">Add Task</string>
+    <string name="manage_child_tasks_edit">Edit Task</string>
+    <string name="manage_child_tasks_intro">Tasks are things which a child can do to get extra time.
+        A parent must confirm the completion before the extra time is granted.
+    </string>
+    <string name="manage_child_task_last_grant">Last confirmation: %s</string>
+    <string name="manage_child_tasks_select_category">Select a category</string>
+    <string name="manage_child_tasks_title_hint">Task title</string>
+    <string name="manage_child_tasks_toast_saved">Task saved</string>
+    <string name="manage_child_tasks_toast_removed">Task removed</string>
+
+    <string name="task_review_title">Task confirmation</string>
+    <string name="task_review_text">%1$s said that %2$s was finished. Is this correct?</string>
+    <string name="task_review_category">This will grant %1$s extra time for %2$s</string>
+    <string name="task_review_last_grant">This task was confirmed last time at %s</string>
 </resources>

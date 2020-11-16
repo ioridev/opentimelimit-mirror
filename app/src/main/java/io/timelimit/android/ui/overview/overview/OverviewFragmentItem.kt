@@ -15,6 +15,7 @@
  */
 package io.timelimit.android.ui.overview.overview
 
+import io.timelimit.android.data.model.ChildTask
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
@@ -34,3 +35,4 @@ object OverviewFragmentHeaderIntro: OverviewFragmentItem()
 sealed class ShowMoreOverviewFragmentItem: OverviewFragmentItem() {
     object ShowAllUsers: ShowMoreOverviewFragmentItem()
 }
+data class TaskReviewOverviewItem(val task: ChildTask, val childTitle: String, val categoryTitle: String): OverviewFragmentItem()

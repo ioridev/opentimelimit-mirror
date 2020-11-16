@@ -26,6 +26,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
 import io.timelimit.android.R
 import io.timelimit.android.extensions.showSafe
+import io.timelimit.android.logic.BlockingReason
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.login.NewLoginFragment
 import io.timelimit.android.ui.main.ActivityViewModel
@@ -78,6 +79,8 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val adapter = LockActivityAdapter(supportFragmentManager, this)
+
         setContentView(R.layout.lock_activity)
 
         if (savedInstanceState == null) {
@@ -88,7 +91,7 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
 
         model.init(blockedPackageName, blockedActivityName)
 
-        pager.adapter = LockActivityAdapter(supportFragmentManager, this)
+        pager.adapter = adapter
 
         AuthenticationFab.manageAuthenticationFab(
                 fab = fab,
@@ -104,11 +107,17 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
 
-                showAuth.value = position > 0
+                showAuth.value = position == 1
             }
         })
 
         tabs.setupWithViewPager(pager)
+
+        model.content.observe(this) {
+            val isTimeOver = it is LockscreenContent.Blocked.BlockedCategory && it.blockingHandling.activityBlockingReason == BlockingReason.TimeOver
+
+            adapter.showTasksFragment = isTimeOver
+        }
     }
 
     override fun onDestroy() {

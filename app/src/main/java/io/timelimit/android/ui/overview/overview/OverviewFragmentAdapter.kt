@@ -20,13 +20,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import io.timelimit.android.R
+import io.timelimit.android.data.model.ChildTask
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
-import io.timelimit.android.databinding.AddItemViewBinding
-import io.timelimit.android.databinding.FragmentOverviewDeviceItemBinding
-import io.timelimit.android.databinding.FragmentOverviewUserItemBinding
-import io.timelimit.android.databinding.GenericListHeaderBinding
+import io.timelimit.android.databinding.*
+import io.timelimit.android.ui.util.DateUtil
+import io.timelimit.android.util.TimeTextUtil
 import kotlin.properties.Delegates
 
 class OverviewFragmentAdapter : RecyclerView.Adapter<OverviewFragmentViewHolder>() {
@@ -47,6 +47,7 @@ class OverviewFragmentAdapter : RecyclerView.Adapter<OverviewFragmentViewHolder>
         return when (item) {
             is OverviewFragmentItemDevice -> "device ${item.device.id}".hashCode().toLong()
             is OverviewFragmentItemUser -> "user ${item.user.id}".hashCode().toLong()
+            is TaskReviewOverviewItem -> "task ${item.task.taskId}".hashCode().toLong()
             else -> item.hashCode().toLong()
         }
     }
@@ -69,6 +70,7 @@ class OverviewFragmentAdapter : RecyclerView.Adapter<OverviewFragmentViewHolder>
         is OverviewFragmentActionAddUser -> OverviewFragmentViewType.AddUserItem
         is OverviewFragmentHeaderIntro -> OverviewFragmentViewType.Introduction
         is ShowMoreOverviewFragmentItem -> OverviewFragmentViewType.ShowMoreButton
+        is TaskReviewOverviewItem -> OverviewFragmentViewType.TaskReview
     }
 
     override fun getItemViewType(position: Int) = getItemType(getItem(position)).ordinal
@@ -120,6 +122,10 @@ class OverviewFragmentAdapter : RecyclerView.Adapter<OverviewFragmentViewHolder>
         OverviewFragmentViewType.ShowMoreButton.ordinal -> ShowMoreViewHolder(
                 LayoutInflater.from(parent.context)
                         .inflate(R.layout.show_more_list_item, parent, false)
+        )
+
+        OverviewFragmentViewType.TaskReview.ordinal -> TaskReviewHolder(
+                FragmentOverviewTaskReviewBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         )
 
         else -> throw IllegalStateException()
@@ -192,6 +198,23 @@ class OverviewFragmentAdapter : RecyclerView.Adapter<OverviewFragmentViewHolder>
                     }
                 }.let {  }
             }
+            is TaskReviewOverviewItem -> {
+                holder as TaskReviewHolder
+
+                holder.binding.let {
+                    it.categoryTitle = item.categoryTitle
+                    it.childName = item.childTitle
+                    it.duration = TimeTextUtil.time(item.task.extraTimeDuration, it.root.context)
+                    it.lastGrant = if (item.task.lastGrantTimestamp == 0L) null else DateUtil.formatAbsoluteDate(it.root.context, item.task.lastGrantTimestamp)
+                    it.taskTitle = item.task.taskTitle
+
+                    it.yesButton.setOnClickListener { handlers?.onTaskConfirmed(item.task) }
+                    it.noButton.setOnClickListener { handlers?.onTaskRejected(item.task) }
+                    it.skipButton.setOnClickListener { handlers?.onSkipTaskReviewClicked(item.task) }
+                }
+
+                holder.binding.executePendingBindings()
+            }
         }.let {  }
     }
 }
@@ -202,7 +225,8 @@ enum class OverviewFragmentViewType {
     DeviceItem,
     AddUserItem,
     Introduction,
-    ShowMoreButton
+    ShowMoreButton,
+    TaskReview
 }
 
 sealed class OverviewFragmentViewHolder(view: View): RecyclerView.ViewHolder(view)
@@ -212,10 +236,14 @@ class UserViewHolder(val binding: FragmentOverviewUserItemBinding): OverviewFrag
 class DeviceViewHolder(val binding: FragmentOverviewDeviceItemBinding): OverviewFragmentViewHolder(binding.root)
 class IntroViewHolder(view: View): OverviewFragmentViewHolder(view)
 class ShowMoreViewHolder(view: View): OverviewFragmentViewHolder(view)
+class TaskReviewHolder(val binding: FragmentOverviewTaskReviewBinding): OverviewFragmentViewHolder(binding.root)
 
 interface OverviewFragmentHandlers {
     fun onAddUserClicked()
     fun onUserClicked(user: User)
     fun onDeviceClicked(device: Device)
     fun onShowAllUsersClicked()
+    fun onSkipTaskReviewClicked(task: ChildTask)
+    fun onTaskConfirmed(task: ChildTask)
+    fun onTaskRejected(task: ChildTask)
 }

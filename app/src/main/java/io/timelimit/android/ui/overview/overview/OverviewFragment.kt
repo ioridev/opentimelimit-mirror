@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,31 +20,26 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.CoroutineFragment
-import io.timelimit.android.data.model.Device
-import io.timelimit.android.data.model.HintsToShow
-import io.timelimit.android.data.model.User
-import io.timelimit.android.data.model.UserType
+import io.timelimit.android.data.model.*
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.sync.actions.ReviewChildTaskAction
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import kotlinx.android.synthetic.main.fragment_overview.*
 
 class OverviewFragment : CoroutineFragment() {
     private val handlers: OverviewFragmentParentHandlers by lazy { parentFragment as OverviewFragmentParentHandlers }
-    private val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
-    private val auth: ActivityViewModel by lazy { getActivityViewModel(activity!!) }
-    private val model: OverviewFragmentModel by lazy {
-        ViewModelProviders.of(this).get(OverviewFragmentModel::class.java)
-    }
+    private val logic: AppLogic by lazy { DefaultAppLogic.with(requireContext()) }
+    private val auth: ActivityViewModel by lazy { getActivityViewModel(requireActivity()) }
+    private val model: OverviewFragmentModel by viewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_overview, container, false)
@@ -56,7 +51,7 @@ class OverviewFragment : CoroutineFragment() {
         val adapter = OverviewFragmentAdapter()
 
         recycler.adapter = adapter
-        recycler.layoutManager = LinearLayoutManager(context!!)
+        recycler.layoutManager = LinearLayoutManager(requireContext())
 
         adapter.handlers = object: OverviewFragmentHandlers {
             override fun onAddUserClicked() {
@@ -85,9 +80,33 @@ class OverviewFragment : CoroutineFragment() {
             override fun onShowAllUsersClicked() {
                 model.showAllUsers()
             }
+
+            override fun onTaskConfirmed(task: ChildTask) {
+                auth.tryDispatchParentAction(
+                        ReviewChildTaskAction(
+                                taskId = task.taskId,
+                                ok = true,
+                                time = logic.timeApi.getCurrentTimeInMillis()
+                        )
+                )
+            }
+
+            override fun onTaskRejected(task: ChildTask) {
+                auth.tryDispatchParentAction(
+                        ReviewChildTaskAction(
+                                taskId = task.taskId,
+                                ok = false,
+                                time = logic.timeApi.getCurrentTimeInMillis()
+                        )
+                )
+            }
+
+            override fun onSkipTaskReviewClicked(task: ChildTask) {
+                if (auth.requestAuthenticationOrReturnTrue()) model.hideTask(task.taskId)
+            }
         }
 
-        model.listEntries.observe(this, Observer { adapter.data = it })
+        model.listEntries.observe(viewLifecycleOwner) { adapter.data = it }
 
         ItemTouchHelper(
                 object: ItemTouchHelper.Callback() {

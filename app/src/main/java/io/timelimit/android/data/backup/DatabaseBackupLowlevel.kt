@@ -42,6 +42,7 @@ object DatabaseBackupLowlevel {
     private const val SESSION_DURATION = "sessionDuration"
     private const val USER_LIMIT_LOGIN_CATEGORY = "userLimitLoginCategory"
     private const val CATEGORY_NETWORK_ID = "categoryNetworkId"
+    private const val CHILD_TASK = "childTask"
 
     fun outputAsBackupJson(database: Database, outputStream: OutputStream) {
         val writer = JsonWriter(OutputStreamWriter(outputStream, Charsets.UTF_8))
@@ -88,6 +89,7 @@ object DatabaseBackupLowlevel {
         handleCollection(SESSION_DURATION) { offset, pageSize -> database.sessionDuration().getSessionDurationPageSync(offset, pageSize) }
         handleCollection(USER_LIMIT_LOGIN_CATEGORY) { offset, pageSize -> database.userLimitLoginCategoryDao().getAllowedContactPageSync(offset, pageSize) }
         handleCollection(CATEGORY_NETWORK_ID) { offset, pageSize -> database.categoryNetworkId().getPageSync(offset, pageSize) }
+        handleCollection(CHILD_TASK) { offset, pageSize -> database.childTasks().getPageSync(offset, pageSize) }
 
         writer.endObject().flush()
     }
@@ -98,6 +100,7 @@ object DatabaseBackupLowlevel {
         database.runInTransaction {
             var userLoginLimitCategories = emptyList<UserLimitLoginCategory>()
             var categoryNetworkId = emptyList<CategoryNetworkId>()
+            var childTasks = emptyList<ChildTask>()
 
             database.deleteAllData()
 
@@ -245,6 +248,19 @@ object DatabaseBackupLowlevel {
 
                         reader.endArray()
                     }
+                    CHILD_TASK -> {
+                        reader.beginArray()
+
+                        mutableListOf<ChildTask>().let { list ->
+                            while (reader.hasNext()) {
+                                list.add(ChildTask.parse(reader))
+                            }
+
+                            childTasks = list
+                        }
+
+                        reader.endArray()
+                    }
                     else -> reader.skipValue()
                 }
             }
@@ -252,6 +268,7 @@ object DatabaseBackupLowlevel {
 
             if (userLoginLimitCategories.isNotEmpty()) { database.userLimitLoginCategoryDao().addItemsSync(userLoginLimitCategories) }
             if (categoryNetworkId.isNotEmpty()) { database.categoryNetworkId().insertItemsSync(categoryNetworkId) }
+            if (childTasks.isNotEmpty()) { database.childTasks().insertItemsSync(childTasks) }
         }
     }
 }

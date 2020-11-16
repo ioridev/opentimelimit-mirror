@@ -96,7 +96,20 @@ data class CategoryItselfHandling (
             else
                 categoryRelatedData.networks.find { CategoryNetworkId.anonymizeNetworkId(itemId = it.networkItemId, networkId = currentNetworkId) == it.hashedNetworkId } != null
 
-            val okByBlockedTimeAreas = areLimitsTemporarilyDisabled || !categoryRelatedData.category.blockedMinutesInWeek.read(minuteInWeek)
+            val allRelatedRules = if (areLimitsTemporarilyDisabled)
+                emptyList()
+            else
+                RemainingTime.getRulesRelatedToDay(
+                        dayOfWeek = dayOfWeek,
+                        minuteOfDay = minuteInWeek % MinuteOfDay.LENGTH,
+                        rules = categoryRelatedData.rules
+                )
+
+            val regularRelatedRules = allRelatedRules.filter { it.maximumTimeInMillis != 0 }
+            val hasBlockedTimeAreaRelatedRule = allRelatedRules.find { it.maximumTimeInMillis == 0 } != null
+
+            val okByBlockedTimeAreas = areLimitsTemporarilyDisabled || (
+                    (!categoryRelatedData.category.blockedMinutesInWeek.read(minuteInWeek)) && (!hasBlockedTimeAreaRelatedRule))
             val dependsOnMaxMinuteOfWeekByBlockedTimeAreas = categoryRelatedData.category.blockedMinutesInWeek.let { blockedTimeAreas ->
                 if (blockedTimeAreas.dataNotToModify[minuteInWeek]) {
                     blockedTimeAreas.dataNotToModify.nextClearBit(minuteInWeek)
@@ -111,35 +124,26 @@ data class CategoryItselfHandling (
             else
                 dependsOnMaxMinuteOfWeekByBlockedTimeAreas % MinuteOfDay.LENGTH
 
-            val relatedRules = if (areLimitsTemporarilyDisabled)
-                emptyList()
-            else
-                RemainingTime.getRulesRelatedToDay(
-                    dayOfWeek = dayOfWeek,
-                    minuteOfDay = minuteInWeek % MinuteOfDay.LENGTH,
-                    rules = categoryRelatedData.rules
-            )
-
             val remainingTime = RemainingTime.getRemainingTime(
                     usedTimes = categoryRelatedData.usedTimes,
                     // dependsOnMaxTimeByRules always depends on the day so that this is invalidated correctly
                     extraTime = categoryRelatedData.category.getExtraTime(dayOfEpoch = dayOfEpoch),
-                    rules = relatedRules,
+                    rules = regularRelatedRules,
                     dayOfWeek = dayOfWeek,
                     minuteOfDay = minuteInWeek % MinuteOfDay.LENGTH,
                     firstDayOfWeekAsEpochDay = firstDayOfWeekAsEpochDay
             )
 
             val remainingSessionDuration = RemainingSessionDuration.getRemainingSessionDuration(
-                    rules = relatedRules,
+                    rules = regularRelatedRules,
                     minuteOfDay = minuteInWeek % MinuteOfDay.LENGTH,
                     dayOfWeek = dayOfWeek,
                     timestamp = timeInMillis,
                     durationsOfCategory = categoryRelatedData.durations
             )
 
-            val okByTimeLimitRules = relatedRules.isEmpty() || (remainingTime != null && remainingTime.hasRemainingTime)
-            val dependsOnMaxTimeByMinuteOfDay = (relatedRules.minBy { it.endMinuteOfDay }?.endMinuteOfDay ?: Int.MAX_VALUE).coerceAtMost(
+            val okByTimeLimitRules = regularRelatedRules.isEmpty() || (remainingTime != null && remainingTime.hasRemainingTime)
+            val dependsOnMaxTimeByMinuteOfDay = (allRelatedRules.minBy { it.endMinuteOfDay }?.endMinuteOfDay ?: Int.MAX_VALUE).coerceAtMost(
                     categoryRelatedData.rules
                             .filter {
                                 // related to today
@@ -181,12 +185,12 @@ data class CategoryItselfHandling (
                     .coerceAtMost(dependsOnMaxTimeBySessionDurationLimitItems)
                     .coerceAtLeast(timeInMillis + 100)  // prevent loops in case of calculation bugs
 
-            val shouldCountTime = relatedRules.isNotEmpty()
+            val shouldCountTime = regularRelatedRules.isNotEmpty()
             val shouldCountExtraTime = remainingTime?.usingExtraTime == true
             val sessionDurationSlotsToCount = if (remainingSessionDuration != null && remainingSessionDuration <= 0)
                 emptySet()
             else
-                relatedRules.filter { it.sessionDurationLimitEnabled }.map {
+                regularRelatedRules.filter { it.sessionDurationLimitEnabled }.map {
                     AddUsedTimeActionItemSessionDurationLimitSlot(
                             startMinuteOfDay = it.startMinuteOfDay,
                             endMinuteOfDay = it.endMinuteOfDay,
@@ -205,7 +209,7 @@ data class CategoryItselfHandling (
             val maxTimeToAdd = maxTimeToAddByRegularTime.coerceAtMost(maxTimeToAddBySessionDuration)
 
             val additionalTimeCountingSlots = if (shouldCountTime)
-                relatedRules
+                regularRelatedRules
                         .filterNot { it.appliesToWholeDay }
                         .map { AddUsedTimeActionItemAdditionalCountingSlot(it.startMinuteOfDay, it.endMinuteOfDay) }
                         .toSet()
