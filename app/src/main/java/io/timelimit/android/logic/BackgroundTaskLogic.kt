@@ -75,6 +75,8 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
             if (appLogic.deviceEntryIfEnabled.waitForNullableValue() != null) {
                 appLogic.platformIntegration.setEnableSystemLockdown(true)
+            } else {
+                appLogic.platformIntegration.setEnableSystemLockdown(false)
             }
         }
 
