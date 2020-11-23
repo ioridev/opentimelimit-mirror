@@ -297,7 +297,8 @@ object LocalDatabaseParentActionDispatcher {
                             startMinuteOfDay = action.start,
                             endMinuteOfDay = action.end,
                             sessionDurationMilliseconds = action.sessionDurationMilliseconds,
-                            sessionPauseMilliseconds = action.sessionPauseMilliseconds
+                            sessionPauseMilliseconds = action.sessionPauseMilliseconds,
+                            perDay = action.perDay
                     ))
                 }
                 is SetDeviceUserAction -> {

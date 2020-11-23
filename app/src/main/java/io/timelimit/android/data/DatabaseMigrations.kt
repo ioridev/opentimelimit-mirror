@@ -163,4 +163,10 @@ object DatabaseMigrations {
             database.execSQL("CREATE TABLE IF NOT EXISTS `child_task` (`task_id` TEXT NOT NULL, `category_id` TEXT NOT NULL, `task_title` TEXT NOT NULL, `extra_time_duration` INTEGER NOT NULL, `pending_request` INTEGER NOT NULL, `last_grant_timestamp` INTEGER NOT NULL, PRIMARY KEY(`task_id`), FOREIGN KEY(`category_id`) REFERENCES `category`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )")
         }
     }
+
+    val MIGRATE_TO_V20 = object: Migration(19, 20) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE `time_limit_rule` ADD COLUMN `per_day` INTEGER NOT NULL DEFAULT 0")
+        }
+    }
 }

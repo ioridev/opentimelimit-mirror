@@ -431,7 +431,8 @@ data class CreateTimeLimitRuleAction(val rule: TimeLimitRule): ParentAction()
 
 data class UpdateTimeLimitRuleAction(
         val ruleId: String, val dayMask: Byte, val maximumTimeInMillis: Int, val applyToExtraTimeUsage: Boolean,
-        val start: Int, val end: Int, val sessionDurationMilliseconds: Int, val sessionPauseMilliseconds: Int
+        val start: Int, val end: Int, val sessionDurationMilliseconds: Int, val sessionPauseMilliseconds: Int,
+        val perDay: Boolean
 ): ParentAction() {
     init {
         IdGenerator.assertIdValid(ruleId)
