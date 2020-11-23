@@ -156,6 +156,7 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
 
     private fun getAppsWithCategories(packageNames: List<String>, data: UserRelatedData, blockingAtActivityLevel: Boolean): Map<String, Set<String>> {
         val categoryForUnassignedApps = data.categoryById[data.user.categoryForNotAssignedApps]
+        val categoryForOtherSystemApps = data.findCategoryApp(DummyApps.NOT_ASSIGNED_SYSTEM_IMAGE_APP)?.categoryId?.let { data.categoryById[it] }
 
         if (blockingAtActivityLevel) {
             val categoriesByPackageName = data.categoryApps.groupBy { it.packageNameWithoutActivityName }
@@ -168,7 +169,9 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
                 val isMainAppIncluded = categoriesItems?.find { !it.specifiesActivity } != null
 
                 if (!isMainAppIncluded) {
-                    if (categoryForUnassignedApps != null) {
+                    if (categoryForOtherSystemApps != null && appLogic.platformIntegration.isSystemImageApp(packageName)) {
+                        categories.add(categoryForOtherSystemApps.category.id)
+                    } else if (categoryForUnassignedApps != null) {
                         categories.add(categoryForUnassignedApps.category.id)
                     }
                 }
@@ -183,7 +186,10 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
             val result = mutableMapOf<String, Set<String>>()
 
             packageNames.forEach { packageName ->
-                val category = categoryByPackageName[packageName]?.categoryId ?: categoryForUnassignedApps?.category?.id
+                val category = categoryByPackageName[packageName]?.categoryId ?: run {
+                    if (categoryForOtherSystemApps != null && appLogic.platformIntegration.isSystemImageApp(packageName))
+                        categoryForOtherSystemApps.category.id else categoryForUnassignedApps?.category?.id
+                }
 
                 result[packageName] = if (category != null) setOf(category) else emptySet()
             }

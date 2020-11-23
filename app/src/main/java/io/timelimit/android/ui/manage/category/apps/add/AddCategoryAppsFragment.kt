@@ -43,6 +43,7 @@ import io.timelimit.android.livedata.liveDataFromValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.logic.DummyApps
 import io.timelimit.android.sync.actions.AddCategoryAppsAction
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
@@ -112,7 +113,9 @@ class AddCategoryAppsFragment : DialogFragment() {
         binding.recycler.layoutManager = LinearLayoutManager(context)
         binding.recycler.adapter = adapter
 
-        val installedApps = database.app().getApps()
+        val installedApps = database.app().getApps().map { list ->
+            if (list.isEmpty()) list else list + DummyApps.getApps(context = requireContext())
+        }
 
         val userRelatedDataLive = database.derivedDataDao().getUserRelatedDataLive(childId)
 

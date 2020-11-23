@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView
 import io.timelimit.android.data.model.App
 import io.timelimit.android.databinding.FragmentAddCategoryAppsItemBinding
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.logic.DummyApps
 import kotlin.properties.Delegates
 
 class AddAppAdapter: RecyclerView.Adapter<ViewHolder>() {
@@ -61,6 +62,7 @@ class AddAppAdapter: RecyclerView.Adapter<ViewHolder>() {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
+        val context = holder.itemView.context
 
         holder.apply {
             binding.item = item
@@ -70,7 +72,8 @@ class AddAppAdapter: RecyclerView.Adapter<ViewHolder>() {
             binding.executePendingBindings()
 
             binding.icon.setImageDrawable(
-                    DefaultAppLogic.with(holder.itemView.context)
+                    DummyApps.getIcon(item.packageName, context) ?:
+                    DefaultAppLogic.with(context)
                             .platformIntegration.getAppIcon(item.packageName)
             )
         }
