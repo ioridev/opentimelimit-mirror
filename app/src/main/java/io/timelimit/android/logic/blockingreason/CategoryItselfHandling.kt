@@ -56,7 +56,8 @@ data class CategoryItselfHandling (
         val createdWithCategoryRelatedData: CategoryRelatedData,
         val createdWithUserRelatedData: UserRelatedData,
         val createdWithBatteryStatus: BatteryStatus,
-        val createdWithNetworkId: String?
+        val createdWithNetworkId: String?,
+        val createdWithExtraTime: Long
 ) {
     companion object {
         fun calculate(
@@ -124,10 +125,11 @@ data class CategoryItselfHandling (
             else
                 dependsOnMaxMinuteOfWeekByBlockedTimeAreas % MinuteOfDay.LENGTH
 
+            val extraTime = categoryRelatedData.category.getExtraTime(dayOfEpoch = dayOfEpoch)
             val remainingTime = RemainingTime.getRemainingTime(
                     usedTimes = categoryRelatedData.usedTimes,
                     // dependsOnMaxTimeByRules always depends on the day so that this is invalidated correctly
-                    extraTime = categoryRelatedData.category.getExtraTime(dayOfEpoch = dayOfEpoch),
+                    extraTime = extraTime,
                     rules = regularRelatedRules,
                     dayOfWeek = dayOfWeek,
                     minuteOfDay = minuteInWeek % MinuteOfDay.LENGTH,
@@ -153,6 +155,7 @@ data class CategoryItselfHandling (
                             }
                             .minBy { it.startMinuteOfDay }?.startMinuteOfDay ?: Int.MAX_VALUE
             ).coerceAtMost(dependsOnMaxMinuteOfDayByBlockedTimeAreas)
+            // this must depend on the current day to invalidate day dependent values like the extra time
             val dependsOnMaxTimeByRules = if (dependsOnMaxTimeByMinuteOfDay <= MinuteOfDay.MAX) {
                 val calendar = CalendarCache.getCalendar()
 
@@ -243,7 +246,8 @@ data class CategoryItselfHandling (
                     createdWithCategoryRelatedData = categoryRelatedData,
                     createdWithBatteryStatus = batteryStatus,
                     createdWithUserRelatedData = user,
-                    createdWithNetworkId = currentNetworkId
+                    createdWithNetworkId = currentNetworkId,
+                    createdWithExtraTime = extraTime
             )
         }
     }
@@ -260,7 +264,7 @@ data class CategoryItselfHandling (
     else if (!okByBlockedTimeAreas)
         BlockingReason.BlockedAtThisTime
     else if (!okByTimeLimitRules)
-        if (remainingTime?.hasRemainingTime == true)
+        if (createdWithExtraTime > 0)
             BlockingReason.TimeOverExtraTimeCanBeUsedLater
         else
             BlockingReason.TimeOver
@@ -279,7 +283,7 @@ data class CategoryItselfHandling (
     else if (!okByBlockedTimeAreas)
         BlockingReason.BlockedAtThisTime
     else if (!okByTimeLimitRules)
-        if (remainingTime?.hasRemainingTime == true)
+        if (createdWithExtraTime > 0)
             BlockingReason.TimeOverExtraTimeCanBeUsedLater
         else
             BlockingReason.TimeOver
