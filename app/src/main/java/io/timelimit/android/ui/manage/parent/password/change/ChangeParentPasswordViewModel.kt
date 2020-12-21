@@ -119,7 +119,8 @@ class ChangeParentPasswordViewModel(application: Application): AndroidViewModel(
                         action = action,
                         database = logic.database,
                         platformIntegration = logic.platformIntegration,
-                        fromChildSelfLimitAddChildUserId = null
+                        fromChildSelfLimitAddChildUserId = null,
+                        parentUserId = action.parentUserId
                 )
 
                 if (BuildConfig.DEBUG) {

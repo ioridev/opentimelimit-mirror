@@ -123,7 +123,8 @@ class ActivityViewModel(application: Application): AndroidViewModel(application)
                             action = action,
                             database = database,
                             platformIntegration = logic.platformIntegration,
-                            fromChildSelfLimitAddChildUserId = if (allowAsChild && status.type == UserType.Child) status.id else null
+                            fromChildSelfLimitAddChildUserId = if (allowAsChild && status.type == UserType.Child) status.id else null,
+                            parentUserId = if (status.type == UserType.Parent) status.id else null
                     )
                 }
             } catch (ex: Exception) {

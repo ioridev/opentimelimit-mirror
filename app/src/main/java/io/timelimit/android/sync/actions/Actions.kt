@@ -560,6 +560,15 @@ data class UpdateUserLimitLoginCategory(val userId: String, val categoryId: Stri
     }
 }
 
+data class UpdateUserLimitLoginPreBlockDuration(val userId: String, val preBlockDuration: Long): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(userId)
+
+        if (preBlockDuration < 0 || preBlockDuration > UserLimitLoginCategory.MAX_PRE_BLOCK_DURATION)
+            throw IllegalArgumentException()
+    }
+}
+
 // child actions
 object ChildSignInAction: ChildAction()
 

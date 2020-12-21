@@ -337,7 +337,8 @@ object LocalDatabaseAppLogicActionDispatcher {
                                     userId = deviceEntry.defaultUser
                             ),
                             database = database,
-                            fromChildSelfLimitAddChildUserId = null
+                            fromChildSelfLimitAddChildUserId = null,
+                            parentUserId = null
                     )
 
                     null

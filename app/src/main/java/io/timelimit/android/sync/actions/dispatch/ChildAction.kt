@@ -34,7 +34,8 @@ object LocalDatabaseChildActionDispatcher {
                                     userId = childId
                             ),
                             database = database,
-                            fromChildSelfLimitAddChildUserId = null
+                            fromChildSelfLimitAddChildUserId = null,
+                            parentUserId = null
                     )
 
                     null

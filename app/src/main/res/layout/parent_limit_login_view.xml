@@ -25,6 +25,16 @@
         <variable
             name="canConfigure"
             type="boolean" />
+
+        <variable
+            name="showPreBlock"
+            type="boolean" />
+
+        <variable
+            name="preBlockStatus"
+            type="String" />
+
+        <import type="android.view.View" />
     </data>
 
     <androidx.cardview.widget.CardView
@@ -60,6 +70,22 @@
                 android:id="@+id/change_button"
                 android:text="@string/parent_limit_login_select_button"
                 style="?materialButtonOutlinedStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:textAppearance="?android:textAppearanceMedium"
+                android:visibility="@{showPreBlock ? View.VISIBLE : View.GONE}"
+                tools:text="@string/parent_limit_login_pre_block_disabled"
+                android:text="@{preBlockStatus}"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:visibility="@{showPreBlock ? View.VISIBLE : View.GONE}"
+                style="?materialButtonOutlinedStyle"
+                android:id="@+id/pre_block_button"
+                android:text="@string/parent_limit_login_pre_block_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 

@@ -34,31 +34,58 @@ sealed class AllowUserLoginStatus {
 object AllowUserLoginStatusUtil {
     private fun calculate(data: CompleteUserLoginRelatedData, timeInMillis: Long, cache: CategoryHandlingCache, batteryStatus: BatteryStatus): AllowUserLoginStatus = synchronized(cache) {
         return if (data.limitLoginCategoryUserRelatedData != null && data.loginRelatedData.limitLoginCategory != null) {
-            cache.reportStatus(
-                    user = data.limitLoginCategoryUserRelatedData,
-                    timeInMillis = timeInMillis,
-                    batteryStatus = batteryStatus,
-                    currentNetworkId = null // only checks shouldBlockAtSystemLevel which ignores the network id
-            )
-
+            var currentCheckedTime = timeInMillis
+            val preBlockDuration = data.loginRelatedData.limitLoginCategory.preBlockDuration
+            val maxCheckedTime = timeInMillis + preBlockDuration
             val categoryIds = data.limitLoginCategoryUserRelatedData.getCategoryWithParentCategories(data.loginRelatedData.limitLoginCategory.categoryId)
-            val handlings = categoryIds.map { cache.get(it) }
 
-            val blockingHandling = handlings.find { it.shouldBlockAtSystemLevel }
-
-            if (blockingHandling != null) {
-                AllowUserLoginStatus.ForbidByCategory(
-                        categoryTitle = blockingHandling.createdWithCategoryRelatedData.category.title,
-                        blockingReason = blockingHandling.systemLevelBlockingReason,
-                        maxTime = blockingHandling.dependsOnMaxTime
+            while (true) {
+                cache.reportStatus(
+                        user = data.limitLoginCategoryUserRelatedData,
+                        timeInMillis = currentCheckedTime,
+                        batteryStatus = batteryStatus,
+                        currentNetworkId = null // only checks shouldBlockAtSystemLevel which ignores the network id
                 )
-            } else {
-                val maxTimeByCategories = handlings.minBy { it.dependsOnMaxTime }?.dependsOnMaxTime ?: Long.MAX_VALUE
 
-                AllowUserLoginStatus.Allow(
-                        maxTime = maxTimeByCategories
-                )
+                val handlings = categoryIds.map { cache.get(it) }
+                val remainingTimeToCheck = maxCheckedTime - currentCheckedTime
+
+                handlings.find { it.remainingSessionDuration != null && it.remainingSessionDuration < remainingTimeToCheck }?.let { blockingHandling ->
+                    return AllowUserLoginStatus.ForbidByCategory(
+                            categoryTitle = blockingHandling.createdWithCategoryRelatedData.category.title,
+                            blockingReason = BlockingReason.SessionDurationLimit,
+                            maxTime = blockingHandling.dependsOnMaxTime
+                    )
+                }
+
+                handlings.find { it.remainingTime != null && it.remainingTime.includingExtraTime < remainingTimeToCheck }?.let { blockingHandling ->
+                    return AllowUserLoginStatus.ForbidByCategory(
+                            categoryTitle = blockingHandling.createdWithCategoryRelatedData.category.title,
+                            blockingReason = BlockingReason.TimeOver,
+                            maxTime = blockingHandling.dependsOnMaxTime
+                    )
+                }
+
+                handlings.find { it.shouldBlockAtSystemLevel }?.let { blockingHandling ->
+                    return AllowUserLoginStatus.ForbidByCategory(
+                            categoryTitle = blockingHandling.createdWithCategoryRelatedData.category.title,
+                            blockingReason = blockingHandling.systemLevelBlockingReason,
+                            maxTime = blockingHandling.dependsOnMaxTime
+                    )
+                }
+
+                if (currentCheckedTime >= maxCheckedTime) break
+
+                val maxTimeByCategories = categoryIds.map { cache.get(it) }.minByOrNull { it.dependsOnMaxTime }?.dependsOnMaxTime ?: Long.MAX_VALUE
+
+                currentCheckedTime = maxTimeByCategories.coerceAtLeast(currentCheckedTime + 100).coerceAtMost(maxCheckedTime)
             }
+
+            val maxTimeByCategories = categoryIds.map { cache.get(it) }.minByOrNull { it.dependsOnMaxTime }?.dependsOnMaxTime ?: Long.MAX_VALUE
+
+            AllowUserLoginStatus.Allow(
+                    maxTime = (maxTimeByCategories - preBlockDuration).coerceAtLeast(timeInMillis + 1000)
+            )
         } else {
             AllowUserLoginStatus.Allow(
                     maxTime = Long.MAX_VALUE
