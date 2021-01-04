@@ -1,9 +1,2 @@
-New features:
-- option to select multiple days per rule and count the time per day
-- possibility to report task completion from the task list
-
-Changes:
-- only consider rules a blocked time area if the apply to the extra time and have got a duration of zero minutes
-
-Fixes:
-- issues during detecting extra time which can be used later
+- fix wrong shown used time at the rule configuration for some configurations
+- added preblocking for limit login categories
