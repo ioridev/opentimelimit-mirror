@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -323,6 +323,36 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                         .map { categoryHandlingCache.get(it) }
                         .filter { it.shouldCountTime }
 
+                fun timeToSubtractForCategory(categoryId: String): Int {
+                    return if (usedTimeUpdateHelper.getCountedCategoryIds().contains(categoryId)) usedTimeUpdateHelper.getCountedTime() else 0
+                }
+
+                kotlin.run {
+                    categoryHandlingsToCount.forEach { handling ->
+                        val category = handling.createdWithCategoryRelatedData.category
+                        val categoryId = category.id
+                        val timeToSubtractForCategory = timeToSubtractForCategory(categoryId)
+                        val nowRemaining = handling.remainingTime ?: return@forEach // category is not limited anymore
+
+                        val oldRemainingTime = nowRemaining.includingExtraTime - timeToSubtractForCategory
+                        val newRemainingTime = oldRemainingTime - timeToSubtract
+
+                        // trigger time warnings
+                        if (oldRemainingTime / (1000 * 60) != newRemainingTime / (1000 * 60)) {
+                            // eventually show remaining time warning
+                            val roundedNewTime = ((newRemainingTime / (1000 * 60)) + 1) * (1000 * 60)
+                            val flagIndex = CategoryTimeWarnings.durationToBitIndex[roundedNewTime]
+
+                            if (flagIndex != null && category.timeWarnings and (1 shl flagIndex) != 0) {
+                                appLogic.platformIntegration.showTimeWarningNotification(
+                                        title = appLogic.context.getString(R.string.time_warning_not_title, category.title),
+                                        text = TimeTextUtil.remaining(roundedNewTime.toInt(), appLogic.context)
+                                )
+                            }
+                        }
+                    }
+                }
+
                 if (
                         usedTimeUpdateHelper.report(
                                 duration = timeToSubtract,
@@ -331,6 +361,10 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                                 handlings = categoryHandlingsToCount
                         )
                 ) {
+                    if (BuildConfig.DEBUG) {
+                        Log.d(LOG_TAG, "auto commit used times")
+                    }
+
                     val newDeviceAndUserRelatedData = Threads.database.executeAndWait {
                         appLogic.database.derivedDataDao().getUserAndDeviceRelatedDataSync()
                     }
@@ -339,40 +373,15 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                             newDeviceAndUserRelatedData?.userRelatedData?.user?.id != deviceAndUSerRelatedData.userRelatedData.user.id ||
                             newDeviceAndUserRelatedData.userRelatedData.categoryById.keys != deviceAndUSerRelatedData.userRelatedData.categoryById.keys
                     ) {
+                        if (BuildConfig.DEBUG) {
+                            Log.d(LOG_TAG, "restart the loop")
+                        }
+
                         // start the loop directly again
                         continue
                     }
 
                     reportStatusToCategoryHandlingCache(userRelatedData = newDeviceAndUserRelatedData.userRelatedData)
-                }
-
-                val categoriesToCount = categoryHandlingsToCount.map { it.createdWithCategoryRelatedData.category.id }
-
-                fun timeToSubtractForCategory(categoryId: String): Int {
-                    return if (usedTimeUpdateHelper.getCountedCategoryIds().contains(categoryId)) usedTimeUpdateHelper.getCountedTime() else 0
-                }
-
-                // trigger time warnings
-                categoriesToCount.forEach { categoryId ->
-                    val category = userRelatedData.categoryById[categoryId]!!.category
-                    val handling = categoryHandlingCache.get(categoryId)
-                    val nowRemaining = handling.remainingTime ?: return@forEach // category is not limited anymore
-
-                    val newRemainingTime = nowRemaining.includingExtraTime - timeToSubtractForCategory(categoryId)
-                    val oldRemainingTime = newRemainingTime + timeToSubtract
-
-                    if (oldRemainingTime / (1000 * 60) != newRemainingTime / (1000 * 60)) {
-                        // eventually show remaining time warning
-                        val roundedNewTime = ((newRemainingTime / (1000 * 60)) + 1) * (1000 * 60)
-                        val flagIndex = CategoryTimeWarnings.durationToBitIndex[roundedNewTime]
-
-                        if (flagIndex != null && category.timeWarnings and (1 shl flagIndex) != 0) {
-                            appLogic.platformIntegration.showTimeWarningNotification(
-                                    title = appLogic.context.getString(R.string.time_warning_not_title, category.title),
-                                    text = TimeTextUtil.remaining(roundedNewTime.toInt(), appLogic.context)
-                            )
-                        }
-                    }
                 }
 
                 // show notification

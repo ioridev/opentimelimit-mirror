@@ -84,6 +84,10 @@ class UsedTimeUpdateHelper (private val appLogic: AppLogic) {
         val makeCommit = makeCommitByDifferntHandling || makeCommitByDifferentBaseData || makeCommitByCountedTime
 
         val madeCommit = if (makeCommit) {
+            if (BuildConfig.DEBUG) {
+                Log.d(LOG_TAG, "makeCommitByDifferntHandling = $makeCommitByDifferntHandling; makeCommitByDifferentBaseData = $makeCommitByDifferentBaseData; makeCommitByCountedTime = $makeCommitByCountedTime")
+            }
+
             doCommitPrivate()
         } else {
             false
