@@ -1,2 +1,1 @@
-- falsche Darstellung von Nutzungsdauern bei den Zeitbegrenzungsregeln bei bestimmten Konfigurationen behoben
-- Sperren im voraus für Anmeldeverhinderungskategorien hinzugefügt
+- Möglichkeit hinzugefügt, Kategorien bei einer Verbindung zu bestimmten Netzwerken zu sperren

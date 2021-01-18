@@ -1,2 +1,1 @@
-- fix wrong shown used time at the rule configuration for some configurations
-- added preblocking for limit login categories
+- added option to block categories when connected to some specified networks
