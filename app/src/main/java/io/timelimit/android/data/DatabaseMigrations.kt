@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -173,6 +173,12 @@ object DatabaseMigrations {
     val MIGRATE_TO_V21 = object: Migration(20, 21) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `user_limit_login_category` ADD COLUMN pre_block_duration INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
+    val MIGRATE_TO_V22 = object: Migration(21, 22) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE `category` ADD COLUMN `flags` INTEGER NOT NULL DEFAULT 0")
         }
     }
 }

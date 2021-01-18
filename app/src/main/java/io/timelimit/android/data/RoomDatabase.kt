@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit
     UserLimitLoginCategory::class,
     CategoryNetworkId::class,
     ChildTask::class
-], version = 21)
+], version = 22)
 abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database {
     companion object {
         private val lock = Object()
@@ -103,7 +103,8 @@ abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database 
                             DatabaseMigrations.MIGRATE_TO_V18,
                             DatabaseMigrations.MIGRATE_TO_V19,
                             DatabaseMigrations.MIGRATE_TO_V20,
-                            DatabaseMigrations.MIGRATE_TO_V21
+                            DatabaseMigrations.MIGRATE_TO_V21,
+                            DatabaseMigrations.MIGRATE_TO_V22
                     )
                     .setQueryExecutor(Threads.database)
                     .build()

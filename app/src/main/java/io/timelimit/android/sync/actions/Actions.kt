@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -249,6 +249,15 @@ data class UpdateCategoryBatteryLimit(val categoryId: String, val chargingLimit:
             if (mobileLimit < 0 || mobileLimit > 100) {
                 throw IllegalArgumentException()
             }
+        }
+    }
+}
+data class UpdateCategoryFlagsAction(val categoryId: String, val modifiedBits: Long, val newValues: Long): ParentAction() {
+    init {
+        IdGenerator.assertIdValid(categoryId)
+
+        if (modifiedBits or CategoryFlags.ALL != CategoryFlags.ALL || modifiedBits or newValues != modifiedBits) {
+            throw IllegalArgumentException()
         }
     }
 }

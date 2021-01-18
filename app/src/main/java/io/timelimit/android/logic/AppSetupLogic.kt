@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -159,7 +159,8 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             minBatteryLevelWhileCharging = 0,
                             minBatteryLevelMobile = 0,
                             sort = 0,
-                            disableLimitsUntil = 0L
+                            disableLimitsUntil = 0L,
+                            flags = 0L
                     ))
 
                     appLogic.database.category().addCategory(Category(
@@ -177,7 +178,8 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             minBatteryLevelWhileCharging = 0,
                             minBatteryLevelMobile = 0,
                             sort = 1,
-                            disableLimitsUntil = 0L
+                            disableLimitsUntil = 0L,
+                            flags = 0L
                     ))
 
                     // add default allowed apps
