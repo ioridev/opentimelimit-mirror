@@ -1,5 +1,6 @@
 /*
  * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Copyright <C> 2020 Marcel Voigt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -127,6 +128,9 @@ data class User(
     val allowSelfLimitAdding: Boolean
         get() = flags and UserFlags.ALLOW_SELF_LIMIT_ADD == UserFlags.ALLOW_SELF_LIMIT_ADD
 
+    val biometricAuthEnabled
+        get() = flags and UserFlags.BIOMETRIC_AUTH_ENABLED == UserFlags.BIOMETRIC_AUTH_ENABLED
+
     override fun serialize(writer: JsonWriter) {
         writer.beginObject()
 
@@ -175,5 +179,6 @@ class UserTypeConverter {
 object UserFlags {
     const val RESTRICT_VIEWING_TO_PARENTS = 1L
     const val ALLOW_SELF_LIMIT_ADD = 2L
-    const val ALL_FLAGS = RESTRICT_VIEWING_TO_PARENTS or ALLOW_SELF_LIMIT_ADD
+    const val BIOMETRIC_AUTH_ENABLED = 4L
+    const val ALL_FLAGS = RESTRICT_VIEWING_TO_PARENTS or ALLOW_SELF_LIMIT_ADD or BIOMETRIC_AUTH_ENABLED
 }

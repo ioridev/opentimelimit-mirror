@@ -1,5 +1,6 @@
 /*
  * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Copyright <C> 2020 Marcel Voigt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +25,8 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -159,6 +162,10 @@ class NewLoginFragment: DialogFragment() {
             }
 
             password.setOnEnterListenr { go() }
+
+            biometricAuthButton.setOnClickListener {
+                tryBiometricLogin()
+            }
         }
 
         binding.childPassword.apply {
@@ -192,9 +199,13 @@ class NewLoginFragment: DialogFragment() {
                         binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
                         binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
                         binding.switcher.displayedChild = PARENT_AUTH
+                        if (status.biometricAuthEnabled && !model.biometricPromptDismissed) {
+                            tryBiometricLogin()
+                        }
                     }
 
                     binding.enterPassword.password.isEnabled = !status.isCheckingPassword
+                    binding.enterPassword.biometricAuthEnabled = status.biometricAuthEnabled
 
                     if (!binding.enterPassword.showCustomKeyboard) {
                         binding.enterPassword.password.requestFocus()
@@ -272,4 +283,46 @@ class NewLoginFragment: DialogFragment() {
     fun tryCodeLogin(code: ScannedKey) {
         model.tryCodeLogin(code, getActivityViewModel(activity!!))
     }
+
+    private fun tryBiometricLogin() {
+        model.biometricPromptDismissed = false
+        model.status.value?.let { status ->
+            if (status is ParentUserLogin) {
+                BiometricPrompt(this, object : BiometricPrompt.AuthenticationCallback() {
+                    override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                        super.onAuthenticationError(errorCode, errString)
+                        model.biometricPromptDismissed = true
+                        Toast.makeText(
+                            context,
+                            getString(R.string.biometric_auth_failed, status.userName) + "\n" +
+                                    getString(R.string.biometric_auth_failed_reason, errString),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+
+                    override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                        super.onAuthenticationSucceeded(result)
+                        model.biometricPromptDismissed = true
+                        model.performBiometricLogin(getActivityViewModel(requireActivity()))
+                    }
+
+                    override fun onAuthenticationFailed() {
+                        super.onAuthenticationFailed()
+                        model.biometricPromptDismissed = true
+                        Toast.makeText(context, getString(R.string.biometric_auth_failed, status.userName), Toast.LENGTH_LONG)
+                            .show()
+                    }
+                }).authenticate(
+                    BiometricPrompt.PromptInfo.Builder()
+                        .setTitle(getString(R.string.biometric_login_prompt_title))
+                        .setSubtitle(status.userName)
+                        .setDescription(getString(R.string.biometric_login_prompt_description, status.userName))
+                        .setNegativeButtonText(getString(R.string.generic_cancel))
+                        .setConfirmationRequired(false)
+                        .build()
+                )
+            }
+        }
+    }
+
 }

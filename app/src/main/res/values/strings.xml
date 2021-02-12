@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+    Copyright <C> 2020 Marcel Voigt
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +30,8 @@
     <string name="generic_no">No</string>
     <string name="generic_yes">Yes</string>
     <string name="generic_skip">Skip</string>
+    <string name="generic_login">Login</string>
+    <string name="generic_logout">Logout</string>
 
     <string name="generic_swipe_to_dismiss">Swipe to the side to remove this message</string>
 
@@ -1019,7 +1022,7 @@
     <string name="setup_terms_title">Welcome to TimeLimit</string>
     <string name="about_terms_title">Legal</string>
     <string name="terms_text" translatable="false">
-        Open TimeLimit Copyright &#169; 2019 - 2021 Jonas Lochmann
+        Open TimeLimit Copyright &#169; 2019 - 2021 Jonas Lochmann and the TimeLimit contributors
 
         \n\nThis program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -1126,4 +1129,33 @@
     <string name="task_review_last_grant">This task was confirmed last time at %s</string>
 
     <string name="dummy_app_unassigned_system_image_app">not assigned Apps from the system image</string>
+
+    <string name="biometric_title">Biometric Authentication</string>
+    <string name="biometric_title_enable">Enable Biometric Authentication</string>
+    <string name="biometric_title_disable">Disable Biometric Authentication</string>
+    <string name="biometric_enable_prompt_title" translatable="false">@string/biometric_title_enable</string>
+    <string name="biometric_enable_prompt_description">Authenticate using your biometric credentials to allow them to be used to login as %s.</string>
+    <string name="biometric_login_prompt_title" translatable="false">@string/generic_login</string>
+    <string name="biometric_login_prompt_description">Authenticate using your biometric credentials to login as %s.</string>
+    <string name="biometric_login_button_description">Prompt for biometric credentials</string>
+    <string name="biometric_auth_failed">Failed to authenticate as %s using biometric credentials.</string>
+    <string name="biometric_auth_failed_reason">Reason: %s</string>
+    <string name="biometric_manage_title" translatable="false">@string/biometric_title</string>
+    <string name="biometric_manage_description_enabled">%s can login using the biometric credentials registered on the device.</string>
+    <string name="biometric_manage_description_disabled">%s has no biometric authentication enabled.</string>
+    <string name="biometric_manage_switch_text" translatable="false">@string/biometric_title_enable</string>
+    <string name="biometric_manage_info">Allows a (parent) user to login using the configured biometric credentials of this device, e.g. scanning a fingerprint instead of typing the password.</string>
+    <string name="biometric_manage_enable_dialog_title" translatable="false">@string/biometric_title_enable</string>
+    <string name="biometric_manage_enable_dialog_text">This enables ALL biometric credentials enrolled on this device to be accepted. Everyone who has biometric credentials registered could login as %s, even child account users or persons not managed by TimeLimit.</string>
+    <string name="biometric_manage_disable_password_required_dialog_title" translatable="false">@string/biometric_title_disable</string>
+    <string name="biometric_manage_disable_password_required_dialog_text">To avoid locking you out of your account please login using your password to allow disabling biometric authentication for this account.</string>
+    <string name="biometric_manage_not_owner_dialog_title" translatable="false">@string/biometric_title</string>
+    <string name="biometric_manage_not_owner_dialog_text">It is not permitted to change the biometric authentication settings of other users. Please login as %s to get access.</string>
+    <string name="biometric_manage_no_credentials_dialog_title" translatable="false">@string/biometric_title</string>
+    <string name="biometric_manage_no_credentials_dialog_text">No biometric credentials enrolled. First configure any biometric credentials for this device to use this feature.</string>
+    <string name="biometric_manage_no_credentials_dialog_action" translatable="false">@string/biometric_manage_no_credentials_dialog_action_default</string>
+    <string name="biometric_manage_no_credentials_dialog_action_default">Open Settings</string>
+    <string name="biometric_manage_no_credentials_dialog_action_v28">Enroll Credentials</string>
+    <string name="biometric_manage_error_no_hw">No biometric hardware detected.</string>
+    <string name="biometric_manage_error_hw_not_available">The biometric hardware is somehow not available at the moment.</string>
 </resources>

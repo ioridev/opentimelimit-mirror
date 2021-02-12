@@ -1,5 +1,6 @@
 /*
  * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Copyright <C> 2020 Marcel Voigt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +41,7 @@ import io.timelimit.android.ui.manage.child.advanced.timezone.UserTimezoneView
 import io.timelimit.android.ui.manage.parent.delete.DeleteParentView
 import io.timelimit.android.ui.manage.parent.key.ManageUserKeyView
 import io.timelimit.android.ui.manage.parent.limitlogin.ParentLimitLoginView
+import io.timelimit.android.ui.manage.parent.password.biometric.ManageUserBiometricAuthView
 
 class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
     private val activity: ActivityViewModelHolder by lazy { getActivity() as ActivityViewModelHolder }
@@ -117,6 +119,14 @@ class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
                 userId = params.parentId,
                 auth = activity.getActivityViewModel(),
                 fragmentManager = parentFragmentManager
+        )
+
+        ManageUserBiometricAuthView.bind(
+            view = binding.biometricAuth,
+            user = parentUser,
+            auth = activity.getActivityViewModel(),
+            fragmentManager = parentFragmentManager,
+            fragment = this
         )
 
         binding.handlers = object: ManageParentFragmentHandlers {

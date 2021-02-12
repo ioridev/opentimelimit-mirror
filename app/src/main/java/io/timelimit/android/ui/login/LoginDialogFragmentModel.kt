@@ -1,5 +1,6 @@
 /*
  * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * Copyright <C> 2020 Marcel Voigt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +37,7 @@ import io.timelimit.android.sync.actions.ChildSignInAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.AuthenticatedUser
+import io.timelimit.android.ui.main.AuthenticationMethod
 import io.timelimit.android.ui.manage.parent.key.ScannedKey
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -79,6 +81,7 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
     }
     private val isCheckingPassword = MutableLiveData<Boolean>().apply { value = false }
     private val wasPasswordWrong = MutableLiveData<Boolean>().apply { value = false }
+    var biometricPromptDismissed = false
     private val isLoginDone = MutableLiveData<Boolean>().apply { value = false }
     private val loginLock = Mutex()
 
@@ -94,21 +97,21 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
                         val loginScreen = isCheckingPassword.switchMap { isCheckingPassword ->
                             wasPasswordWrong.map { wasPasswordWrong ->
                                 ParentUserLogin(
-                                        isCheckingPassword = isCheckingPassword,
-                                        wasPasswordWrong = wasPasswordWrong
+                                    isCheckingPassword = isCheckingPassword,
+                                    wasPasswordWrong = wasPasswordWrong,
+                                    biometricAuthEnabled = selectedUser.biometricAuthEnabled,
+                                    userName = selectedUser.name
                                 ) as LoginDialogStatus
                             }
                         }
 
                         AllowUserLoginStatusUtil.calculateLive(logic, selectedUser.id).switchMap { status ->
-                            if (status is AllowUserLoginStatus.Allow) {
-                                loginScreen
-                            } else if (status is AllowUserLoginStatus.ForbidByCategory) {
+                            if (status is AllowUserLoginStatus.ForbidByCategory) {
                                 liveDataFromValue(
-                                        ParentUserLoginBlockedByCategory(
-                                                categoryTitle = status.categoryTitle,
-                                                reason = status.blockingReason
-                                        ) as LoginDialogStatus
+                                    ParentUserLoginBlockedByCategory(
+                                        categoryTitle = status.categoryTitle,
+                                        reason = status.blockingReason
+                                    ) as LoginDialogStatus
                                 )
                             } else {
                                 loginScreen
@@ -146,6 +149,7 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
     }
 
     fun startSignIn(user: User) {
+        biometricPromptDismissed = false
         selectedUserId.value = user.id
     }
 
@@ -170,8 +174,10 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
 
                     if (shouldSignIn) {
                         model.setAuthenticatedUser(AuthenticatedUser(
-                                userId = user.id,
-                                passwordHash = user.password
+                            userId = user.id,
+                            passwordHash = user.password,
+                            isPasswordDisabled = emptyPasswordValid,
+                            authenticatedBy = AuthenticationMethod.Password
                         ))
 
                         isLoginDone.value = true
@@ -228,8 +234,10 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
 
                     if (shouldSignIn) {
                         model.setAuthenticatedUser(AuthenticatedUser(
-                                userId = user.id,
-                                passwordHash = user.password
+                            userId = user.id,
+                            passwordHash = user.password,
+                            isPasswordDisabled = Threads.crypto.executeAndWait { PasswordHashing.validateSync("", user.password) },
+                            authenticatedBy = AuthenticationMethod.KeyCode
                         ))
 
                         isLoginDone.value = true
@@ -268,8 +276,10 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
                     }
 
                     val authenticatedUser = AuthenticatedUser(
-                            userId = userEntry.id,
-                            passwordHash = userEntry.password
+                        userId = userEntry.id,
+                        passwordHash = userEntry.password,
+                        isPasswordDisabled = Threads.crypto.executeAndWait { PasswordHashing.validateSync("", userEntry.password) },
+                        authenticatedBy = AuthenticationMethod.Password
                     )
 
                     val allowLoginStatus = Threads.database.executeAndWait {
@@ -337,6 +347,37 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
         }
     }
 
+    fun performBiometricLogin(activityViewModel: ActivityViewModel) {
+        runAsync {
+            loginLock.withLock {
+                selectedUser.waitForNullableValue()?.loginRelatedData?.user?.let { user: User ->
+                    if (!user.biometricAuthEnabled) {
+                        return@runAsync
+                    }
+
+                    val allowLoginStatus = Threads.database.executeAndWait {
+                        AllowUserLoginStatusUtil.calculateSync(
+                            logic = logic,
+                            userId = user.id
+                        )
+                    }
+                    if (allowLoginStatus !is AllowUserLoginStatus.Allow) {
+                        Toast.makeText(getApplication(), formatAllowLoginStatusError(allowLoginStatus, getApplication()), Toast.LENGTH_SHORT).show()
+                        return@runAsync
+                    }
+
+                    activityViewModel.setAuthenticatedUser(AuthenticatedUser(
+                        userId = user.id,
+                        passwordHash = user.password,
+                        isPasswordDisabled = Threads.crypto.executeAndWait { PasswordHashing.validateSync("", user.password) },
+                        authenticatedBy = AuthenticationMethod.Biometric
+                    ))
+                    isLoginDone.value = true
+                }
+            }
+        }
+    }
+
     fun resetPasswordWrong() {
         if (wasPasswordWrong.value == true) {
             wasPasswordWrong.value = false
@@ -358,8 +399,10 @@ sealed class LoginDialogStatus
 data class UserListLoginDialogStatus(val usersToShow: List<User>): LoginDialogStatus()
 data class ParentUserLoginBlockedByCategory(val categoryTitle: String, val reason: BlockingReason): LoginDialogStatus()
 data class ParentUserLogin(
-        val isCheckingPassword: Boolean,
-        val wasPasswordWrong: Boolean
+    val isCheckingPassword: Boolean,
+    val wasPasswordWrong: Boolean,
+    val biometricAuthEnabled: Boolean,
+    val userName: String
 ): LoginDialogStatus()
 object LoginDialogDone: LoginDialogStatus()
 data class CanNotSignInChildHasNoPassword(val childName: String): LoginDialogStatus()

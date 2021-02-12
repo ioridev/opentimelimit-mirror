@@ -1,5 +1,6 @@
 /*
  * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Copyright <C> 2020 Marcel Voigt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -150,7 +151,12 @@ class ActivityViewModel(application: Application): AndroidViewModel(application)
     }
 }
 
-data class AuthenticatedUser (
-        val userId: String,
-        val passwordHash: String
+data class AuthenticatedUser(
+    val userId: String,
+    val passwordHash: String,
+    val isPasswordDisabled: Boolean,
+    val authenticatedBy: AuthenticationMethod
 )
+enum class AuthenticationMethod {
+    Password, KeyCode, Biometric
+}

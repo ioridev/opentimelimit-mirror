@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+    Copyright <C> 2020 Marcel Voigt
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +30,8 @@
     <string name="generic_no">Nein</string>
     <string name="generic_yes">Ja</string>
     <string name="generic_skip">Überspringen</string>
+    <string name="generic_login">Anmelden</string>
+    <string name="generic_logout">Abmelden</string>
 
     <string name="generic_swipe_to_dismiss">Sie können diesen Hinweis entfernen, indem Sie ihn zur Seite wischen</string>
 
@@ -1077,4 +1080,24 @@
     <string name="task_review_last_grant">Diese Aufgabe wurde zuletzt bestätigt am %s</string>
 
     <string name="dummy_app_unassigned_system_image_app">nicht zugeordnete Apps von der Systempartition</string>
+
+    <string name="biometric_title">Biometrische Authentifizierung</string>
+    <string name="biometric_title_enable">Biometrische Authentifizierung aktivieren</string>
+    <string name="biometric_title_disable">Biometrische Authentifizierung deaktivieren</string>
+    <string name="biometric_enable_prompt_description">Bestätigen Sie die Verwendung Ihrer biometrischen Anmeldemerkmale, um diese für die Anmeldung als %s zuzulassen.</string>
+    <string name="biometric_login_prompt_description">Bestätigen Sie Ihre biometrischen Anmeldemerkmale, um sich als %s anzumelden.</string>
+    <string name="biometric_login_button_description">Biometrische Anmeldemerkmale erfassen</string>
+    <string name="biometric_auth_failed">Authentifizierung als %s mit biometrischen Anmeldemerkmalen fehlgeschlagen.</string>
+    <string name="biometric_auth_failed_reason">Grund: %s</string>
+    <string name="biometric_manage_description_enabled">%s kann sich mit den im Gerät hinterlegten biometrischen Merkmalen anmelden.</string>
+    <string name="biometric_manage_description_disabled">Biometrische Authententifizierung als %s ist nicht aktiv.</string>
+    <string name="biometric_manage_info">Erlaubt es sich an ein (Eltern-)Konto mit biometrischen Anmeldemerkmalen, die auf diesem Gerät registriert sind, anzumelden, z.B. einen Fingerabdruck scannen statt das Passwort einzugeben.</string>
+    <string name="biometric_manage_enable_dialog_text">Hiermit werden ALLE auf dem Gerät hinterlegten biometrischen Merkmale akzeptiert. Jede Person mit registrierten biometrischen Merkmalen könnte sich als %s anmelden, auch Kindkontonutzer oder in TimeLimit nicht erfasste Personen.</string>
+    <string name="biometric_manage_disable_password_required_dialog_text">Um zu verhindern, dass Sie sich selbst aus diesem Konto aussperren, ist es erforderlich sich mit dem Passwort dieses Kontos anzumelden, um die biometrische Authentifizierung zu deaktivieren.</string>
+    <string name="biometric_manage_not_owner_dialog_text">Es ist nicht erlaubt die Einstellungen zur biometrischen Authentifizierung für andere Nutzer zu ändern. Bitte melden Sie sich als %s an, um Zugriff zu bekommen.</string>
+    <string name="biometric_manage_no_credentials_dialog_text">Keine biometrischen Merkmale registriert. Es müssen erst biometrische Merkmale für dieses Gerät hinterlegt werden, um diese Funktion nutzen zu können.</string>
+    <string name="biometric_manage_no_credentials_dialog_action_default">Einstellungen öffnen</string>
+    <string name="biometric_manage_no_credentials_dialog_action_v28">Anmeldemerkmale erfassen</string>
+    <string name="biometric_manage_error_no_hw">Kein biometrisches Erfassungsgerät erkannt.</string>
+    <string name="biometric_manage_error_hw_not_available">Das Gerät zur biometrischen Merkmalserfassung ist gerade nicht verfügbar.</string>
 </resources>
