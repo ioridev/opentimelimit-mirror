@@ -1,1 +1,2 @@
-- added sorting of the users
+- added the option to use the device biometric authentication to authenticate within TimeLimit (user contribution)
+- added showing the title of the blocked category at the lockscreen
