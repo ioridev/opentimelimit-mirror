@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.LivePagedListBuilder
-import io.timelimit.android.livedata.liveDataFromValue
+import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.logic.DefaultAppLogic
@@ -47,7 +47,7 @@ class UsageHistoryModel(application: Application): AndroidViewModel(application)
     val selectedCategoryName = userId.switchMap { userId ->
         categoryId.switchMap { categoryId ->
             if (categoryId == null)
-                liveDataFromValue(null as String?)
+                liveDataFromNullableValue(null as String?)
             else
                 database.category().getCategoryByChildIdAndId(childId = userId, categoryId = categoryId).map {
                     if (it == null) this.categoryId.value = null

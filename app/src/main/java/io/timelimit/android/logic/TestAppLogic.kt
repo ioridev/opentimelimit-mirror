@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ import io.timelimit.android.data.RoomDatabase
 import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.integration.platform.dummy.DummyIntegration
 import io.timelimit.android.integration.time.DummyTimeApi
-import io.timelimit.android.livedata.liveDataFromValue
+import io.timelimit.android.livedata.liveDataFromNonNullValue
 
 class TestAppLogic(maximumProtectionLevel: ProtectionLevel, context: Context) {
     val platformIntegration = DummyIntegration(maximumProtectionLevel)
@@ -32,6 +32,6 @@ class TestAppLogic(maximumProtectionLevel: ProtectionLevel, context: Context) {
             timeApi = timeApi,
             database = database,
             context = context,
-            isInitialized = liveDataFromValue(true)
+            isInitialized = liveDataFromNonNullValue(true)
     )
 }

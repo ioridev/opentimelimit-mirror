@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ import io.timelimit.android.R
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.databinding.FragmentManageDeviceBinding
 import io.timelimit.android.extensions.safeNavigate
-import io.timelimit.android.livedata.liveDataFromValue
+import io.timelimit.android.livedata.liveDataFromNonNullValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.logic.AppLogic
@@ -43,9 +43,9 @@ import io.timelimit.android.ui.manage.device.manage.permission.ManageDevicePermi
 
 class ManageDeviceFragment : Fragment(), FragmentWithCustomTitle {
     private val activity: ActivityViewModelHolder by lazy { getActivity() as ActivityViewModelHolder }
-    private val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
+    private val logic: AppLogic by lazy { DefaultAppLogic.with(requireContext()) }
     private val auth: ActivityViewModel by lazy { activity.getActivityViewModel() }
-    private val args: ManageDeviceFragmentArgs by lazy { ManageDeviceFragmentArgs.fromBundle(arguments!!) }
+    private val args: ManageDeviceFragmentArgs by lazy { ManageDeviceFragmentArgs.fromBundle(requireArguments()) }
     private val deviceEntry: LiveData<Device?> by lazy {
         logic.database.device().getDeviceById(args.deviceId)
     }
@@ -69,7 +69,7 @@ class ManageDeviceFragment : Fragment(), FragmentWithCustomTitle {
                 shouldHighlight = auth.shouldHighlightAuthenticationButton,
                 authenticatedUser = auth.authenticatedUser,
                 fragment = this,
-                doesSupportAuth = liveDataFromValue(true)
+                doesSupportAuth = liveDataFromNonNullValue(true)
         )
 
         binding.handlers = object: ManageDeviceFragmentHandlers {

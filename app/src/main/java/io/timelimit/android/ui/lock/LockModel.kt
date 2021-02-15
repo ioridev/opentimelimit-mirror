@@ -49,7 +49,7 @@ class LockModel(application: Application): AndroidViewModel(application) {
     private val realNetworkIdLive: LiveData<NetworkId> = liveDataFromFunction { logic.platformIntegration.getCurrentNetworkId() }
     private val needsNetworkIdLive = MutableLiveData<Boolean>().apply { value = false }
     private val networkIdLive: LiveData<NetworkId?> by lazy { needsNetworkIdLive.switchMap { needsNetworkId ->
-        if (needsNetworkId) realNetworkIdLive as LiveData<NetworkId?> else liveDataFromValue(null as NetworkId?)
+        if (needsNetworkId) realNetworkIdLive as LiveData<NetworkId?> else liveDataFromNullableValue(null as NetworkId?)
     }.ignoreUnchanged() }
     private val handlingCache = CategoryHandlingCache()
 
@@ -175,7 +175,7 @@ class LockModel(application: Application): AndroidViewModel(application) {
     val blockedCategoryTasks = categoryIdForTasks.switchMap { categoryId ->
         if (categoryId != null)
             logic.database.childTasks().getTasksByCategoryId(categoryId)
-        else liveDataFromValue(emptyList())
+        else liveDataFromNonNullValue(emptyList())
     }
 
     fun allowAppTemporarily() {

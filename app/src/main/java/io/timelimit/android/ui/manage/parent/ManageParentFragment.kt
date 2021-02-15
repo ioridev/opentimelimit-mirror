@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  * Copyright <C> 2020 Marcel Voigt
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@ import io.timelimit.android.R
 import io.timelimit.android.data.model.User
 import io.timelimit.android.databinding.FragmentManageParentBinding
 import io.timelimit.android.extensions.safeNavigate
-import io.timelimit.android.livedata.liveDataFromValue
+import io.timelimit.android.livedata.liveDataFromNonNullValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
@@ -45,8 +45,8 @@ import io.timelimit.android.ui.manage.parent.password.biometric.ManageUserBiomet
 
 class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
     private val activity: ActivityViewModelHolder by lazy { getActivity() as ActivityViewModelHolder }
-    private val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
-    private val params: ManageParentFragmentArgs by lazy { ManageParentFragmentArgs.fromBundle(arguments!!) }
+    private val logic: AppLogic by lazy { DefaultAppLogic.with(requireContext()) }
+    private val params: ManageParentFragmentArgs by lazy { ManageParentFragmentArgs.fromBundle(requireArguments()) }
     private val parentUser: LiveData<User?> by lazy { logic.database.user().getParentUserByIdLive(params.parentId) }
     private var wereViewsCreated = false
 
@@ -58,7 +58,7 @@ class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
         AuthenticationFab.manageAuthenticationFab(
                 fab = binding.fab,
                 fragment = this,
-                doesSupportAuth = liveDataFromValue(true),
+                doesSupportAuth = liveDataFromNonNullValue(true),
                 authenticatedUser = activity.getActivityViewModel().authenticatedUser,
                 shouldHighlight = activity.getActivityViewModel().shouldHighlightAuthenticationButton
         )
@@ -100,7 +100,7 @@ class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
                 view = binding.timezone,
                 userId = params.parentId,
                 lifecycleOwner = this,
-                fragmentManager = fragmentManager!!,
+                fragmentManager = parentFragmentManager,
                 auth = activity.getActivityViewModel(),
                 userEntry = parentUser
         )

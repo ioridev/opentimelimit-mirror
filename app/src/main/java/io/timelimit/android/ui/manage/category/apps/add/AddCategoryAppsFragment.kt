@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,8 @@ import io.timelimit.android.data.model.App
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.databinding.FragmentAddCategoryAppsBinding
 import io.timelimit.android.extensions.showSafe
-import io.timelimit.android.livedata.liveDataFromValue
+import io.timelimit.android.livedata.liveDataFromNonNullValue
+import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.logic.DefaultAppLogic
@@ -68,8 +69,8 @@ class AddCategoryAppsFragment : DialogFragment() {
         }
     }
 
-    private val database: Database by lazy { DefaultAppLogic.with(context!!).database }
-    private val auth: ActivityViewModel by lazy { getActivityViewModel(activity!!) }
+    private val database: Database by lazy { DefaultAppLogic.with(requireContext()).database }
+    private val auth: ActivityViewModel by lazy { getActivityViewModel(requireActivity()) }
     private val adapter = AddAppAdapter()
     private var didEducateAboutAddingAssignedApps = false
 
@@ -91,9 +92,9 @@ class AddCategoryAppsFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val binding = FragmentAddCategoryAppsBinding.inflate(LayoutInflater.from(context))
-        val childId = arguments!!.getString(PARAM_CHILD_ID)!!
-        val categoryId = arguments!!.getString(PARAM_CATEGORY_ID)!!
-        val childAddLimitMode = arguments!!.getBoolean(PARAM_CHILD_ADD_LIMIT_MODE)
+        val childId = requireArguments().getString(PARAM_CHILD_ID)!!
+        val categoryId = requireArguments().getString(PARAM_CATEGORY_ID)!!
+        val childAddLimitMode = requireArguments().getBoolean(PARAM_CHILD_ADD_LIMIT_MODE)
 
         auth.authenticatedUserOrChild.observe(this, Observer {
             val parentAuthValid = it?.type == UserType.Parent
@@ -161,7 +162,7 @@ class AddCategoryAppsFragment : DialogFragment() {
         }.switchMap { apps ->
             showAppsFromOtherCategories.switchMap { showOtherCategeories ->
                 if (showOtherCategeories) {
-                    liveDataFromValue(apps)
+                    liveDataFromNonNullValue(apps)
                 } else {
                     packageNamesAssignedToOtherCategories.map { packagesFromOtherCategories ->
                         apps.filterNot { packagesFromOtherCategories.contains(it.packageName) }
@@ -175,7 +176,7 @@ class AddCategoryAppsFragment : DialogFragment() {
         val emptyViewText: LiveData<String?> = listItems.switchMap { items ->
             if (items.isNotEmpty()) {
                 // list is not empty ...
-                liveDataFromValue(null as String?)
+                liveDataFromNullableValue(null as String?)
             } else /* items.isEmpty() */ {
                 shownApps.map { shownApps ->
                     if (shownApps.isNotEmpty()) {

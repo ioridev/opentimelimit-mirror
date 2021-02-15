@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import io.timelimit.android.data.model.User
 import io.timelimit.android.integration.platform.PlatformIntegration
 import io.timelimit.android.integration.time.TimeApi
 import io.timelimit.android.livedata.ignoreUnchanged
-import io.timelimit.android.livedata.liveDataFromValue
+import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.switchMap
 
@@ -43,7 +43,7 @@ class AppLogic(
 
     val deviceEntry = Transformations.switchMap<String?, Device?> (deviceId) {
         if (it == null) {
-            liveDataFromValue(null)
+            liveDataFromNullableValue(null)
         } else {
             database.device().getDeviceById(it)
         }
@@ -51,7 +51,7 @@ class AppLogic(
 
     val deviceEntryIfEnabled = enable.switchMap {
         if (it == null || it == false) {
-            liveDataFromValue(null as Device?)
+            liveDataFromNullableValue(null as Device?)
         } else {
             deviceEntry
         }
@@ -61,7 +61,7 @@ class AppLogic(
 
     val deviceUserEntry = deviceUserId.switchMap {
         if (it == "") {
-            liveDataFromValue(null as User?)
+            liveDataFromNullableValue(null as User?)
         } else {
             database.user().getUserByIdLive(it)
         }

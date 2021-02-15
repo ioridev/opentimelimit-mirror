@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,8 @@ import io.timelimit.android.R
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.User
 import io.timelimit.android.databinding.ManageDeviceAdvancedFragmentBinding
-import io.timelimit.android.livedata.liveDataFromValue
+import io.timelimit.android.livedata.liveDataFromNonNullValue
+import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.logic.AppLogic
@@ -40,9 +41,9 @@ import io.timelimit.android.ui.main.FragmentWithCustomTitle
 
 class ManageDeviceAdvancedFragment : Fragment(), FragmentWithCustomTitle {
     private val activity: ActivityViewModelHolder by lazy { getActivity() as ActivityViewModelHolder }
-    private val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
+    private val logic: AppLogic by lazy { DefaultAppLogic.with(requireContext()) }
     private val auth: ActivityViewModel by lazy { activity.getActivityViewModel() }
-    private val args: ManageDeviceAdvancedFragmentArgs by lazy { ManageDeviceAdvancedFragmentArgs.fromBundle(arguments!!) }
+    private val args: ManageDeviceAdvancedFragmentArgs by lazy { ManageDeviceAdvancedFragmentArgs.fromBundle(requireArguments()) }
     private val deviceEntry: LiveData<Device?> by lazy {
         logic.database.device().getDeviceById(args.deviceId)
     }
@@ -54,7 +55,7 @@ class ManageDeviceAdvancedFragment : Fragment(), FragmentWithCustomTitle {
         val userEntry = deviceEntry.switchMap { device ->
             device?.currentUserId?.let { userId ->
                 logic.database.user().getUserByIdLive(userId)
-            } ?: liveDataFromValue(null as User?)
+            } ?: liveDataFromNullableValue(null as User?)
         }
 
         AuthenticationFab.manageAuthenticationFab(
@@ -62,13 +63,13 @@ class ManageDeviceAdvancedFragment : Fragment(), FragmentWithCustomTitle {
                 shouldHighlight = auth.shouldHighlightAuthenticationButton,
                 authenticatedUser = auth.authenticatedUser,
                 fragment = this,
-                doesSupportAuth = liveDataFromValue(true)
+                doesSupportAuth = liveDataFromNonNullValue(true)
         )
 
         ManageDevice.bind(
                 view = binding.manageDevice,
                 activityViewModel = auth,
-                fragmentManager = fragmentManager!!,
+                fragmentManager = parentFragmentManager,
                 deviceId = args.deviceId
         )
 
