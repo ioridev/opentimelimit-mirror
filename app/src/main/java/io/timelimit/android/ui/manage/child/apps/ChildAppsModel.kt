@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.view.AppFilterView
+import java.util.*
 
 class ChildAppsModel(application: Application): AndroidViewModel(application) {
     private val logic = DefaultAppLogic.with(application)
@@ -65,7 +66,7 @@ class ChildAppsModel(application: Application): AndroidViewModel(application) {
                                     } else {
                                         val sortedApps = apps
                                                 .distinctBy { it.packageName }
-                                                .sortedBy { it.title.toLowerCase() }
+                                                .sortedBy { it.title.toLowerCase(Locale.getDefault()) }
 
                                         result.addAll(
                                                 sortedApps.map { app ->
@@ -99,6 +100,7 @@ class ChildAppsModel(application: Application): AndroidViewModel(application) {
 
                                 filteredChildApps
                                         .distinctBy { it.packageName }
+                                        .sortedBy { it.title.toLowerCase(Locale.getDefault()) }
                                         .map { app ->
                                             val categoryId = categoryAppByPackageName[app.packageName]?.categoryId
                                             val category = categoryById[categoryId]
