@@ -1,2 +1,5 @@
-- added the option to use the device biometric authentication to authenticate within TimeLimit (user contribution)
-- added showing the title of the blocked category at the lockscreen
+- bug fixes
+  - crashes in the time limit rule editor
+  - crashes in the text input dialog
+  - crashes in the widget
+- updated dependencies

@@ -1,2 +1,5 @@
-- Möglichkeit hinzugefügt, die biometrische Authentifizierung des Systems zur Authentifizierung innerhalb von TimeLimit zu verwenden (Nutzerbeitrag)
-- Anzeigen der blockierten Kategorie auf dem Sperrbildschirm hinzugefügt
+- Fehlerbehebungen
+  - Abstürze beim Bearbeiten von Zeitbegrenzungsregeln
+  - Abstürze im Texteingabedialog
+  - Abstürze durch das Widget
+- Abhängigkeiten aktualisiert
