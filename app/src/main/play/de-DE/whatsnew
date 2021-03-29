@@ -1,5 +1,4 @@
+- Änderungen
+  - Zeitwarnungen werden auch für Sperrzeiten und Sitzungsdauerbegrenzungen angezeigt
 - Fehlerbehebungen
-  - Abstürze beim Bearbeiten von Zeitbegrenzungsregeln
-  - Abstürze im Texteingabedialog
-  - Abstürze durch das Widget
-- Abhängigkeiten aktualisiert
+  - Sortierung der App-Liste nach dem Namen hat nicht funktioniert
