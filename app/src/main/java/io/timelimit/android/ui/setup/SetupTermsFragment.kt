@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@
  */
 package io.timelimit.android.ui.setup
 
-
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
@@ -24,35 +23,33 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import io.timelimit.android.R
+import io.timelimit.android.databinding.FragmentSetupTermsBinding
 import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.ui.obsolete.ObsoleteDialogFragment
-import kotlinx.android.synthetic.main.fragment_setup_terms.*
 
 class SetupTermsFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         if (savedInstanceState == null) {
-            ObsoleteDialogFragment.show(activity!!, true)
+            ObsoleteDialogFragment.show(requireActivity(), true)
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_setup_terms, container, false)
-    }
+        val binding = FragmentSetupTermsBinding.inflate(inflater, container, false)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        btn_accept.setOnClickListener {
+        binding.btnAccept.setOnClickListener {
             acceptTerms()
         }
 
-        terms_text.movementMethod = LinkMovementMethod.getInstance()
+        binding.termsText.movementMethod = LinkMovementMethod.getInstance()
+
+        return binding.root
     }
 
     private fun acceptTerms() {
-        Navigation.findNavController(view!!).safeNavigate(
+        Navigation.findNavController(requireView()).safeNavigate(
                 SetupTermsFragmentDirections.actionSetupTermsFragmentToSetupHelpInfoFragment(),
                 R.id.setupTermsFragment
         )

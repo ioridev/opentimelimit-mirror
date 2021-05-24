@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,16 +24,15 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.CoroutineFragment
 import io.timelimit.android.data.model.*
+import io.timelimit.android.databinding.FragmentOverviewBinding
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.ReviewChildTaskAction
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
-import kotlinx.android.synthetic.main.fragment_overview.*
 
 class OverviewFragment : CoroutineFragment() {
     private val handlers: OverviewFragmentParentHandlers by lazy { parentFragment as OverviewFragmentParentHandlers }
@@ -42,16 +41,12 @@ class OverviewFragment : CoroutineFragment() {
     private val model: OverviewFragmentModel by viewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_overview, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        val binding = FragmentOverviewBinding.inflate(inflater, container, false)
 
         val adapter = OverviewFragmentAdapter()
 
-        recycler.adapter = adapter
-        recycler.layoutManager = LinearLayoutManager(requireContext())
+        binding.recycler.adapter = adapter
+        binding.recycler.layoutManager = LinearLayoutManager(requireContext())
 
         adapter.handlers = object: OverviewFragmentHandlers {
             override fun onAddUserClicked() {
@@ -131,7 +126,9 @@ class OverviewFragment : CoroutineFragment() {
                         }
                     }
                 }
-        ).attachToRecyclerView(recycler)
+        ).attachToRecyclerView(binding.recycler)
+
+        return binding.root
     }
 }
 

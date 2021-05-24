@@ -24,7 +24,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
-import io.timelimit.android.R
+import io.timelimit.android.databinding.LockActivityBinding
 import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.logic.BlockingReason
 import io.timelimit.android.logic.DefaultAppLogic
@@ -32,7 +32,6 @@ import io.timelimit.android.ui.login.NewLoginFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticationFab
-import kotlinx.android.synthetic.main.lock_activity.*
 
 class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
     companion object {
@@ -81,25 +80,26 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
 
         val adapter = LockActivityAdapter(supportFragmentManager, this)
 
-        setContentView(R.layout.lock_activity)
+        val binding = LockActivityBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         currentInstances.add(this)
 
         model.init(blockedPackageName, blockedActivityName)
 
-        pager.adapter = adapter
+        binding.pager.adapter = adapter
 
         AuthenticationFab.manageAuthenticationFab(
-                fab = fab,
+                fab = binding.fab,
                 shouldHighlight = activityModel.shouldHighlightAuthenticationButton,
                 authenticatedUser = activityModel.authenticatedUser,
                 activity = this,
                 doesSupportAuth = showAuth
         )
 
-        fab.setOnClickListener { showAuthenticationScreen() }
+        binding.fab.setOnClickListener { showAuthenticationScreen() }
 
-        pager.addOnPageChangeListener(object: ViewPager.SimpleOnPageChangeListener() {
+        binding.pager.addOnPageChangeListener(object: ViewPager.SimpleOnPageChangeListener() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
 
@@ -107,7 +107,7 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
             }
         })
 
-        tabs.setupWithViewPager(pager)
+        binding.tabs.setupWithViewPager(binding.pager)
 
         model.content.observe(this) {
             val isTimeOver = it is LockscreenContent.Blocked.BlockedCategory && it.blockingHandling.activityBlockingReason == BlockingReason.TimeOver
