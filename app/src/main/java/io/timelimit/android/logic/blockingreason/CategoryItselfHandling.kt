@@ -156,7 +156,7 @@ data class CategoryItselfHandling (
             )
 
             val okByTimeLimitRules = regularRelatedRules.isEmpty() || (remainingTime != null && remainingTime.hasRemainingTime)
-            val dependsOnMaxTimeByMinuteOfDay = (allRelatedRules.minBy { it.endMinuteOfDay }?.endMinuteOfDay ?: Int.MAX_VALUE).coerceAtMost(
+            val dependsOnMaxTimeByMinuteOfDay = (allRelatedRules.minByOrNull { it.endMinuteOfDay }?.endMinuteOfDay ?: Int.MAX_VALUE).coerceAtMost(
                     categoryRelatedData.rules
                             .filter {
                                 // related to today
@@ -164,7 +164,7 @@ data class CategoryItselfHandling (
                                         // will be applied later at this day
                                         it.startMinuteOfDay > minuteInWeek % MinuteOfDay.LENGTH
                             }
-                            .minBy { it.startMinuteOfDay }?.startMinuteOfDay ?: Int.MAX_VALUE
+                            .minByOrNull { it.startMinuteOfDay }?.startMinuteOfDay ?: Int.MAX_VALUE
             ).coerceAtMost(dependsOnMaxMinuteOfDayByBlockedTimeAreas)
             // this must depend on the current day to invalidate day dependent values like the extra time
             val dependsOnMaxTimeByRules = if (dependsOnMaxTimeByMinuteOfDay <= MinuteOfDay.MAX) {
@@ -189,7 +189,7 @@ data class CategoryItselfHandling (
                             categoryRelatedData.durations.map { it.lastUsage + it.maxSessionDuration - it.lastSessionDuration }
                     )
                     .filter { it > timeInMillis }
-                    .min() ?: Long.MAX_VALUE
+                    .minOrNull() ?: Long.MAX_VALUE
 
             val okBySessionDurationLimits = remainingSessionDuration == null || remainingSessionDuration > 0
 
