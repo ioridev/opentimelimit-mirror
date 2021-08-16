@@ -32,6 +32,7 @@ import io.timelimit.android.data.model.derived.UserRelatedData
 import io.timelimit.android.date.DateInTimezone
 import io.timelimit.android.date.getMinuteOfWeek
 import io.timelimit.android.extensions.MinuteOfDay
+import io.timelimit.android.extensions.flattenToSet
 import io.timelimit.android.extensions.nextBlockedMinuteOfWeek
 import io.timelimit.android.integration.platform.AppStatusMessage
 import io.timelimit.android.integration.platform.NetworkId
@@ -116,6 +117,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
             timeApi = appLogic.timeApi,
             longDuration = 1000 * 60 * 10 /* 10 minutes */
     )
+    private val undisturbedCategoryUsageCounter = UndisturbedCategoryUsageCounter()
 
     private val appTitleCache = QueryAppTitleCache(appLogic.platformIntegration)
     private val categoryHandlingCache = CategoryHandlingCache()
@@ -180,6 +182,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
             // app must be enabled
             if (!appLogic.enable.waitForNonNullValue()) {
                 commitUsedTimeUpdaters()
+                undisturbedCategoryUsageCounter.reset()
                 appLogic.platformIntegration.setAppStatusMessage(null)
                 appLogic.platformIntegration.setShowBlockingOverlay(false)
                 setShowNotificationToRevokeTemporarilyAllowedApps(false)
@@ -200,6 +203,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
             // device must be used by a child
             if (deviceRelatedData == null || userRelatedData == null || userRelatedData.user.type != UserType.Child) {
                 commitUsedTimeUpdaters()
+                undisturbedCategoryUsageCounter.reset()
 
                 val shouldDoAutomaticSignOut = deviceRelatedData != null && DefaultUserLogic.hasAutomaticSignOut(deviceRelatedData) && deviceRelatedData.canSwitchToDefaultUser
 
@@ -231,6 +235,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                 // get the current time
                 val nowTimestamp = appLogic.timeApi.getCurrentTimeInMillis()
                 val nowTimezone = TimeZone.getTimeZone(userRelatedData.user.timeZone)
+                val nowUptime = appLogic.timeApi.getCurrentUptimeInMillis()
 
                 val nowDate = DateInTimezone.getLocalDate(nowTimestamp, nowTimezone)
                 val nowMinuteOfWeek = getMinuteOfWeek(nowTimestamp, nowTimezone)
@@ -293,6 +298,14 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                         pauseCounting = false,
                         isSystemImageApp = audioPlaybackPackageName?.let { appLogic.platformIntegration.isSystemImageApp(it) } ?: false
                 )
+
+                val allAppsBaseHandlings = foregroundAppWithBaseHandlings.map { it.second } + listOf(backgroundAppBaseHandling)
+                val currentCategoryIds = allAppsBaseHandlings.map {
+                    if (it is AppBaseHandling.UseCategories) it.categoryIds else emptySet()
+                }.flattenToSet()
+
+                undisturbedCategoryUsageCounter.report(nowUptime, currentCategoryIds)
+                val recentlyStartedCategories = undisturbedCategoryUsageCounter.getRecentlyStartedCategories(nowUptime)
 
                 val needsNetworkId = foregroundAppWithBaseHandlings.find { it.second.needsNetworkId() } != null || backgroundAppBaseHandling.needsNetworkId()
                 val networkId: NetworkId? = if (needsNetworkId) appLogic.platformIntegration.getCurrentNetworkId() else null
@@ -405,7 +418,8 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                                 duration = timeToSubtract,
                                 dayOfEpoch = dayOfEpoch,
                                 timestamp = nowTimestamp,
-                                handlings = categoryHandlingsToCount
+                                handlings = categoryHandlingsToCount,
+                                recentlyStartedCategories = recentlyStartedCategories
                         )
                 ) {
                     if (BuildConfig.DEBUG) {
