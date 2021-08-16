@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,39 +68,40 @@ class BackgroundService: Service() {
         }
 
         private fun buildNotification(appStatusMessage: AppStatusMessage, context: Context) = NotificationCompat.Builder(context, NotificationChannels.APP_STATUS)
-                .setSmallIcon(R.drawable.ic_stat_timelapse)
-                .setContentTitle(appStatusMessage.title)
-                .setContentText(appStatusMessage.text)
-                .setSubText(appStatusMessage.subtext)
-                .setContentIntent(BackgroundActionService.getOpenAppIntent(context))
-                .setWhen(0)
-                .setShowWhen(false)
-                .setSound(null)
-                .setOnlyAlertOnce(true)
-                .setLocalOnly(true)
-                .setAutoCancel(false)
-                .setOngoing(true)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setVisibility(NotificationCompat.VISIBILITY_SECRET)
-                .let { builder ->
-                    if (appStatusMessage.showSwitchToDefaultUserOption) {
-                        builder.addAction(
-                                NotificationCompat.Action.Builder(
-                                        R.drawable.ic_account_circle_black_24dp,
-                                        context.getString(R.string.manage_device_default_user_switch_btn),
-                                        PendingIntent.getService(
-                                                context,
-                                                PendingIntentIds.SWITCH_TO_DEFAULT_USER,
-                                                BackgroundActionService.prepareSwitchToDefaultUser(context),
-                                                PendingIntentIds.PENDING_INTENT_FLAGS
-                                        )
-                                ).build()
-                        )
-                    }
-
-                    builder
+            .setSmallIcon(R.drawable.ic_stat_timelapse)
+            .setContentTitle(appStatusMessage.title)
+            .setContentText(appStatusMessage.text)
+            .setSubText(appStatusMessage.subtext)
+            .setContentIntent(BackgroundActionService.getOpenAppIntent(context))
+            .setWhen(0)
+            .setShowWhen(false)
+            .setSound(null)
+            .setOnlyAlertOnce(true)
+            .setLocalOnly(true)
+            .setAutoCancel(false)
+            .setOngoing(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setVisibility(NotificationCompat.VISIBILITY_SECRET)
+            // TODO: Use setForegroundServiceBehavior() when this builder supports it
+            .let { builder ->
+                if (appStatusMessage.showSwitchToDefaultUserOption) {
+                    builder.addAction(
+                        NotificationCompat.Action.Builder(
+                            R.drawable.ic_account_circle_black_24dp,
+                            context.getString(R.string.manage_device_default_user_switch_btn),
+                            PendingIntent.getService(
+                                context,
+                                PendingIntentIds.SWITCH_TO_DEFAULT_USER,
+                                BackgroundActionService.prepareSwitchToDefaultUser(context),
+                                PendingIntentIds.PENDING_INTENT_FLAGS
+                            )
+                        ).build()
+                    )
                 }
-                .build()
+
+                builder
+            }
+            .build()
     }
 
     private val notificationManager: NotificationManager by lazy {
