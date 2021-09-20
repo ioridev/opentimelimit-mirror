@@ -1,2 +1,2 @@
-- kleine Änderungen an den Texten
-- Abhängigkeiten aktualisiert
+- Probleme bei der Auswahl von Wochentagen mit der Maus behoben
+- Verzögerung beim Anzeigen der Statusbenachrichtigung unter Android 12 deaktiviert
