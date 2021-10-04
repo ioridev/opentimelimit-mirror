@@ -424,6 +424,10 @@
     <string name="diagnose_bat_status_mobile">Not charging</string>
     <string name="diagnose_bat_level">Level: %d\%%</string>
 
+    <string name="diagnose_don_title">Device Owner Organization Name</string>
+    <string name="diagnose_don_no_owner_toast">TimeLimit is NOT set as device owner</string>
+    <string name="diagnose_don_not_supported_toast">Your system does not support setting the organization name</string>
+
     <string name="diagnose_bg_task_loop_ex">Background task loop exception</string>
 
     <string name="diagnose_copy_to_clipboard">Copy to clipboard</string>

@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,6 +47,13 @@ abstract class ConfigDao {
 
     private fun getValueOfKeySync(key: ConfigurationItemType): String? {
         return getRowByKeySync(key)?.value
+    }
+
+    @Query("SELECT * FROM config WHERE id = :key")
+    protected abstract suspend fun getRowCoroutine(key: ConfigurationItemType): ConfigurationItem?
+
+    private suspend fun getValueOfKeyCoroutine(key: ConfigurationItemType): String? {
+        return getRowCoroutine(key)?.value
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -180,4 +187,7 @@ abstract class ConfigDao {
     fun setParentModeKeySync(key: ByteArray) = updateValueSync(ConfigurationItemType.ParentModeKey, Base64.encodeToString(key, 0))
     fun getParentModeKeySync() = getValueOfKeySync(ConfigurationItemType.ParentModeKey)?.let { value -> Base64.decode(value, 0) }
     fun getParentModeKeyLive() = getValueOfKeyAsync(ConfigurationItemType.ParentModeKey).map { value -> value?.let { Base64.decode(it, 0) } }
+
+    suspend fun getCustomOrganizationName(): String = getValueOfKeyCoroutine(ConfigurationItemType.CustomOrganizationName) ?: ""
+    fun setCustomOrganizationName(value: String) = updateValueSync(ConfigurationItemType.CustomOrganizationName, value)
 }

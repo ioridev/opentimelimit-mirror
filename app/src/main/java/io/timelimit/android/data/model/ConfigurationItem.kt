@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,7 +84,8 @@ enum class ConfigurationItemType {
     ExperimentalFlags,
     DefaultHomescreen,
     HomescreenDelay,
-    ParentModeKey
+    ParentModeKey,
+    CustomOrganizationName
 }
 
 object ConfigurationItemTypeUtil {
@@ -98,6 +99,7 @@ object ConfigurationItemTypeUtil {
     private const val DEFAULT_HOMESCREEN = 8
     private const val HOMESCREEN_DELAY = 9
     private const val PARENT_MODE_KEY = 10
+    private const val CUSTOM_ORGANIZATION_NAME = 11
 
     val TYPES = listOf(
             ConfigurationItemType.OwnDeviceId,
@@ -109,7 +111,8 @@ object ConfigurationItemTypeUtil {
             ConfigurationItemType.ExperimentalFlags,
             ConfigurationItemType.DefaultHomescreen,
             ConfigurationItemType.HomescreenDelay,
-            ConfigurationItemType.ParentModeKey
+            ConfigurationItemType.ParentModeKey,
+            ConfigurationItemType.CustomOrganizationName
     )
 
     fun serialize(value: ConfigurationItemType) = when(value) {
@@ -123,6 +126,7 @@ object ConfigurationItemTypeUtil {
         ConfigurationItemType.DefaultHomescreen -> DEFAULT_HOMESCREEN
         ConfigurationItemType.HomescreenDelay -> HOMESCREEN_DELAY
         ConfigurationItemType.ParentModeKey -> PARENT_MODE_KEY
+        ConfigurationItemType.CustomOrganizationName -> CUSTOM_ORGANIZATION_NAME
     }
 
     fun parse(value: Int) = when(value) {
@@ -136,6 +140,7 @@ object ConfigurationItemTypeUtil {
         DEFAULT_HOMESCREEN -> ConfigurationItemType.DefaultHomescreen
         HOMESCREEN_DELAY -> ConfigurationItemType.HomescreenDelay
         PARENT_MODE_KEY -> ConfigurationItemType.ParentModeKey
+        CUSTOM_ORGANIZATION_NAME -> ConfigurationItemType.CustomOrganizationName
         else -> throw IllegalArgumentException()
     }
 }

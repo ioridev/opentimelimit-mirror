@@ -587,4 +587,26 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
                     session.playbackState?.state == PlaybackState.STATE_REWINDING
         } else false
     }
+
+    override fun canSetOrganizationName(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            policyManager.isDeviceOwnerApp(context.packageName)
+        } else false
+    }
+
+    override fun setOrganizationName(name: String): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (policyManager.isDeviceOwnerApp(context.packageName)) {
+                return try {
+                    policyManager.setOrganizationName(deviceAdmin, name)
+
+                    true
+                } catch (ex: SecurityException) {
+                    false
+                }
+            }
+        }
+
+        return false
+    }
 }
