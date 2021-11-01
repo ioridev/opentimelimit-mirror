@@ -33,6 +33,7 @@ import io.timelimit.android.async.Threads
 import io.timelimit.android.databinding.FragmentSetupDevicePermissionsBinding
 import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.integration.platform.ProtectionLevel
+import io.timelimit.android.integration.platform.SystemPermission
 import io.timelimit.android.integration.platform.android.AdminReceiver
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
@@ -62,96 +63,23 @@ class SetupDevicePermissionsFragment : Fragment() {
 
         binding.handlers = object: SetupDevicePermissionsHandlers {
             override fun manageDeviceAdmin() {
-                val protectionLevel = logic.platformIntegration.getCurrentProtectionLevel()
-
-                if (protectionLevel == ProtectionLevel.None) {
-                    if (InformAboutDeviceOwnerDialogFragment.shouldShow) {
-                        InformAboutDeviceOwnerDialogFragment().show(fragmentManager!!)
-                    } else {
-                        try {
-                            startActivity(
-                                    Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-                                            .putExtra(
-                                                    DevicePolicyManager.EXTRA_DEVICE_ADMIN,
-                                                    ComponentName(context!!, AdminReceiver::class.java)
-                                            )
-                            )
-                        } catch (ex: Exception) {
-                            AdbDeviceAdminDialogFragment().show(parentFragmentManager)
-                        }
-                    }
-                } else {
-                    try {
-                        startActivity(
-                                Intent(Settings.ACTION_SECURITY_SETTINGS)
-                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        )
-                    } catch (ex: Exception) {
-                        AdbDeviceAdminDialogFragment().show(parentFragmentManager)
-                    }
-                }
+                logic.platformIntegration.openSystemPermissionScren(requireActivity(), SystemPermission.DeviceAdmin)
             }
 
             override fun openUsageStatsSettings() {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    // According to user reports, some devices open the wrong screen
-                    // with the Settings.ACTION_USAGE_ACCESS_SETTINGS
-                    // but using an activity launcher to open this intent works for them.
-                    // This intent works at regular android too, so try this first
-                    // and use the "correct" one as fallback.
-
-                    try {
-                        startActivity(
-                                Intent()
-                                        .setClassName("com.android.settings", "com.android.settings.Settings\$UsageAccessSettingsActivity")
-                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        )
-                    } catch (ex: Exception) {
-                        try {
-                            startActivity(
-                                    Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-                                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            )
-                        } catch (ex: Exception) {
-                            AdbUsageStatsDialogFragment().show(parentFragmentManager)
-                        }
-                    }
-                }
+                logic.platformIntegration.openSystemPermissionScren(requireActivity(), SystemPermission.UsageStats)
             }
 
             override fun openNotificationAccessSettings() {
-                try {
-                    startActivity(
-                            Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
-                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    )
-                } catch (ex: Exception) {
-                    Toast.makeText(context, R.string.error_general, Toast.LENGTH_SHORT).show()
-                }
+                logic.platformIntegration.openSystemPermissionScren(requireActivity(), SystemPermission.Notification)
             }
 
             override fun openDrawOverOtherAppsScreen() {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    try {
-                        startActivity(
-                                Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + context!!.packageName))
-                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        )
-                    } catch (ex: Exception) {
-                        Toast.makeText(context, R.string.error_general, Toast.LENGTH_SHORT).show()
-                    }
-                }
+                logic.platformIntegration.openSystemPermissionScren(requireActivity(), SystemPermission.Overlay)
             }
 
             override fun openAccessibilitySettings() {
-                try {
-                    startActivity(
-                            Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    )
-                } catch (ex: Exception) {
-                    Toast.makeText(context, R.string.error_general, Toast.LENGTH_SHORT).show()
-                }
+                logic.platformIntegration.openSystemPermissionScren(requireActivity(), SystemPermission.AccessibilityService)
             }
 
             override fun gotoNextStep() {
