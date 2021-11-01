@@ -15,18 +15,11 @@
  */
 package io.timelimit.android.ui.manage.device.manage.permission
 
-import android.app.admin.DevicePolicyManager
-import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -39,12 +32,10 @@ import io.timelimit.android.integration.platform.NewPermissionStatus
 import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
 import io.timelimit.android.integration.platform.SystemPermission
-import io.timelimit.android.integration.platform.android.AdminReceiver
 import io.timelimit.android.livedata.liveDataFromNonNullValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
-import io.timelimit.android.ui.help.HelpDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticationFab
@@ -135,31 +126,19 @@ class ManageDevicePermissionsFragment : Fragment(), FragmentWithCustomTitle {
             }
 
             override fun helpUsageStatsAccess() {
-                HelpDialogFragment.newInstance(
-                        title = R.string.manage_device_permissions_usagestats_title,
-                        text = R.string.manage_device_permissions_usagestats_text
-                ).show(fragmentManager!!)
+                PermissionInfoHelpDialog.show(requireActivity(), SystemPermission.UsageStats)
             }
 
             override fun helpNotificationAccess() {
-                HelpDialogFragment.newInstance(
-                        title = R.string.manage_device_permission_notification_access_title,
-                        text = R.string.manage_device_permission_notification_access_text
-                ).show(fragmentManager!!)
+                PermissionInfoHelpDialog.show(requireActivity(), SystemPermission.Notification)
             }
 
             override fun helpDrawOverOtherApps() {
-                HelpDialogFragment.newInstance(
-                        title = R.string.manage_device_permissions_overlay_title,
-                        text = R.string.manage_device_permissions_overlay_text
-                ).show(fragmentManager!!)
+                PermissionInfoHelpDialog.show(requireActivity(), SystemPermission.Overlay)
             }
 
             override fun helpAccesibility() {
-                HelpDialogFragment.newInstance(
-                        title = R.string.manage_device_permission_accessibility_title,
-                        text = R.string.manage_device_permission_accessibility_text
-                ).show(fragmentManager!!)
+                PermissionInfoHelpDialog.show(requireActivity(), SystemPermission.AccessibilityService)
             }
         }
 
