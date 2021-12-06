@@ -430,9 +430,13 @@ data class UpdateCategoryBlockedTimesAction(val categoryId: String, val blockedT
     }
 }
 
-data class UpdateCategoryBlockAllNotificationsAction(val categoryId: String, val blocked: Boolean): ParentAction() {
+data class UpdateCategoryBlockAllNotificationsAction(val categoryId: String, val blocked: Boolean, val blockDelay: Long?): ParentAction() {
     init {
         IdGenerator.assertIdValid(categoryId)
+
+        if (blockDelay != null && blockDelay < 0) {
+            throw IllegalArgumentException("blockDelay must be >= 0")
+        }
     }
 }
 

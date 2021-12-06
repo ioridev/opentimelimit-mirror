@@ -112,7 +112,8 @@ class CategorySettingsFragment : Fragment() {
                 fragmentManager = parentFragmentManager,
                 auth = auth,
                 categoryLive = categoryEntry,
-                childId = childId
+                childId = childId,
+                deviceLive = appLogic.deviceEntry
         )
 
         CategoryTimeWarningView.bind(

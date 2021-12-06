@@ -64,11 +64,14 @@ data class Category(
         @ColumnInfo(name = "disable_limits_until")
         val disableLimitsUntil: Long,
         @ColumnInfo(name = "flags", defaultValue = "0")
-        val flags: Long
+        val flags: Long,
+        @ColumnInfo(name = "block_notification_delay", defaultValue = "0")
+        val blockNotificationDelay: Long
 ): JsonSerializable {
     companion object {
         const val MINUTES_PER_DAY = 60 * 24
         const val BLOCKED_MINUTES_IN_WEEK_LENGTH = MINUTES_PER_DAY * 7
+        const val MAX_NOTIFICATION_BLOCK_DELAY = 1000 * 30L
 
         private const val ID = "id"
         private const val CHILD_ID = "childId"
@@ -86,6 +89,7 @@ data class Category(
         private const val EXTRA_TIME_DAY = "extraTimeDay"
         private const val DISABLE_LIMIITS_UNTIL = "dlu"
         private const val FLAGS = "flags"
+        private const val BLOCK_NOTIFICATION_DELAY = "bnd"
 
         fun parse(reader: JsonReader): Category {
             var id: String? = null
@@ -105,6 +109,7 @@ data class Category(
             var extraTimeDay = -1
             var disableLimitsUntil = 0L
             var flags = 0L
+            var blockNotificationDelay = 0L
 
             reader.beginObject()
 
@@ -126,6 +131,7 @@ data class Category(
                     EXTRA_TIME_DAY -> extraTimeDay = reader.nextInt()
                     DISABLE_LIMIITS_UNTIL -> disableLimitsUntil = reader.nextLong()
                     FLAGS -> flags = reader.nextLong()
+                    BLOCK_NOTIFICATION_DELAY -> blockNotificationDelay = reader.nextLong()
                     else -> reader.skipValue()
                 }
             }
@@ -148,7 +154,8 @@ data class Category(
                     sort = sort,
                     extraTimeDay = extraTimeDay,
                     disableLimitsUntil = disableLimitsUntil,
-                    flags = flags
+                    flags = flags,
+                    blockNotificationDelay = blockNotificationDelay
             )
         }
     }
@@ -180,6 +187,10 @@ data class Category(
         if (disableLimitsUntil < 0) {
             throw IllegalArgumentException()
         }
+
+        if (blockNotificationDelay < 0) {
+            throw IllegalArgumentException()
+        }
     }
 
     val hasBlockedNetworkList get() = flags and CategoryFlags.HAS_BLOCKED_NETWROK_LIST == CategoryFlags.HAS_BLOCKED_NETWROK_LIST
@@ -203,6 +214,7 @@ data class Category(
         writer.name(EXTRA_TIME_DAY).value(extraTimeDay)
         writer.name(DISABLE_LIMIITS_UNTIL).value(disableLimitsUntil)
         writer.name(FLAGS).value(flags)
+        writer.name(BLOCK_NOTIFICATION_DELAY).value(blockNotificationDelay)
 
         writer.endObject()
     }

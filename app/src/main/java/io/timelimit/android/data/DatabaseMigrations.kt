@@ -181,4 +181,10 @@ object DatabaseMigrations {
             database.execSQL("ALTER TABLE `category` ADD COLUMN `flags` INTEGER NOT NULL DEFAULT 0")
         }
     }
+
+    val MIGRATE_TO_V23 = object: Migration(22, 23) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE category ADD COLUMN block_notification_delay INTEGER NOT NULL DEFAULT 0")
+        }
+    }
 }

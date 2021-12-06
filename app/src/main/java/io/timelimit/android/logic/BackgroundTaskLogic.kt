@@ -41,6 +41,7 @@ import io.timelimit.android.integration.platform.android.AccessibilityService
 import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.blockingreason.AppBaseHandling
 import io.timelimit.android.logic.blockingreason.CategoryHandlingCache
+import io.timelimit.android.logic.blockingreason.CategoryItselfHandling
 import io.timelimit.android.logic.blockingreason.needsNetworkId
 import io.timelimit.android.sync.actions.UpdateDeviceStatusAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
@@ -330,7 +331,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                 val blockAudioPlayback = backgroundAppBaseHandling is AppBaseHandling.BlockDueToNoCategory ||
                         (backgroundAppBaseHandling is AppBaseHandling.UseCategories && backgroundAppBaseHandling.categoryIds.find {
                             val handling = categoryHandlingCache.get(it)
-                            val blockAllNotifications = handling.blockAllNotifications
+                            val blockAllNotifications = handling.blockAllNotifications is CategoryItselfHandling.BlockAllNotifications.Yes
 
                             handling.shouldBlockActivities || blockAllNotifications
                         } != null)

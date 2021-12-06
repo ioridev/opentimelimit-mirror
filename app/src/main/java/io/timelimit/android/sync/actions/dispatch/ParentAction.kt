@@ -142,7 +142,8 @@ object LocalDatabaseParentActionDispatcher {
                             minBatteryLevelMobile = 0,
                             sort = sort,
                             disableLimitsUntil = 0,
-                            flags = 0L
+                            flags = 0L,
+                            blockNotificationDelay = 0
                     ))
                 }
                 is DeleteCategoryAction -> {
@@ -567,11 +568,16 @@ object LocalDatabaseParentActionDispatcher {
                         if (!action.blocked) {
                             throw RuntimeException("can not disable filter as child")
                         }
+
+                        if (categoryEntry.blockAllNotifications && action.blockDelay != null) {
+                            throw RuntimeException("can not update the block delay as child")
+                        }
                     }
 
                     database.category().updateCategorySync(
                             categoryEntry.copy(
-                                    blockAllNotifications = action.blocked
+                                    blockAllNotifications = action.blocked,
+                                    blockNotificationDelay = action.blockDelay ?: categoryEntry.blockNotificationDelay
                             )
                     )
                 }
