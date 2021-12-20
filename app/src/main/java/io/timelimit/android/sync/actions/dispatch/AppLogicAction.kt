@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -117,10 +117,11 @@ object LocalDatabaseAppLogicActionDispatcher {
                                     }
 
                                     oldItem.copy(
-                                            lastUsage = if (hasTrustedTimestamp) action.trustedTimestamp else oldItem.lastUsage,
+                                            lastUsage = action.trustedTimestamp.coerceAtLeast(oldItem.lastUsage),
                                             lastSessionDuration = if (extendSession) oldItem.lastSessionDuration + item.timeToAdd.toLong() else  item.timeToAdd.toLong()
                                     )
-                                } else SessionDuration(                                        categoryId = item.categoryId,
+                                } else SessionDuration(
+                                        categoryId = item.categoryId,
                                         maxSessionDuration = limit.maxSessionDuration,
                                         sessionPauseDuration = limit.sessionPauseDuration,
                                         startMinuteOfDay = limit.startMinuteOfDay,
