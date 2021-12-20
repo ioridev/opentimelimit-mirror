@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -106,7 +106,7 @@ class SetupDevicePermissionsFragment : Fragment() {
         binding.notificationAccessPermission = platform.getNotificationAccessPermissionStatus()
         binding.protectionLevel = platform.getCurrentProtectionLevel()
         binding.usageStatsAccess = platform.getForegroundAppPermissionStatus()
-        binding.overlayPermission = platform.getOverlayPermissionStatus()
+        binding.overlayPermission = platform.getDrawOverOtherAppsPermissionStatus()
         binding.accessibilityServiceEnabled = platform.isAccessibilityServiceEnabled()
     }
 
