@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+    Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
     Copyright <C> 2020 Marcel Voigt
 
     This program is free software: you can redistribute it and/or modify
@@ -1047,7 +1047,7 @@
     <string name="setup_terms_title">Welcome to TimeLimit</string>
     <string name="about_terms_title">Legal</string>
     <string name="terms_text" translatable="false">
-        Open TimeLimit Copyright &#169; 2019 - 2021 Jonas Lochmann and the TimeLimit contributors
+        Open TimeLimit Copyright &#169; 2019 - 2022 Jonas Lochmann and the TimeLimit contributors
 
         \n\nThis program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
