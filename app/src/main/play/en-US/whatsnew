@@ -1,2 +1,4 @@
-- add option to delay notification blocking
-- updated dependencies
+- bug fixes
+  - manipulation warnings triggered by the autofill feature
+  - wrong updates of the session duration
+  - missing extra time after completing tasks

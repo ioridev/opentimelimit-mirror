@@ -1,2 +1,4 @@
-- neue Option, um die Blockierung von Benachrichtigungen zu verzögern
-- Abhängigkeiten aktualisiert
+- Fehlerbehebungen
+  - Manipulationswarnungen durch die Autofill-Funktion
+  - falsche Aktualisierungen von Sitzungsdauern
+  - fehlende Extrazeit nach der Erledigung von Aufgaben
