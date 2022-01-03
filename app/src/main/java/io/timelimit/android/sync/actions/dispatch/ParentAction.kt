@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -769,12 +769,21 @@ object LocalDatabaseParentActionDispatcher {
 
                     if (action.ok) {
                         val category = database.category().getCategoryByIdSync(task.categoryId)!!
+                        val resetDayBoundExtraTime = category.extraTimeDay != -1 && action.day != null &&
+                                category.extraTimeDay != action.day
 
-                        if (category.extraTimeDay != 0 && category.extraTimeInMillis > 0) {
-                            // if the current time is daily, then extend the daily time only
-                            database.category().updateCategoryExtraTime(categoryId = category.id, extraTimeDay = category.extraTimeDay, newExtraTime = category.extraTimeInMillis + task.extraTimeDuration)
+                        if (resetDayBoundExtraTime) {
+                            database.category().updateCategoryExtraTime(
+                                categoryId = category.id,
+                                extraTimeDay = -1,
+                                newExtraTime = task.extraTimeDuration.toLong()
+                            )
                         } else {
-                            database.category().updateCategoryExtraTime(categoryId = category.id, extraTimeDay = -1, newExtraTime = category.extraTimeInMillis + task.extraTimeDuration)
+                            database.category().updateCategoryExtraTime(
+                                categoryId = category.id,
+                                extraTimeDay = category.extraTimeDay,
+                                newExtraTime = category.extraTimeInMillis + task.extraTimeDuration
+                            )
                         }
 
                         database.childTasks().updateItemSync(task.copy(pendingRequest = false, lastGrantTimestamp = action.time))

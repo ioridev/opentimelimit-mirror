@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import io.timelimit.android.data.model.UserType
 import io.timelimit.android.databinding.*
 import io.timelimit.android.ui.util.DateUtil
 import io.timelimit.android.util.TimeTextUtil
+import java.util.*
 import kotlin.properties.Delegates
 
 class OverviewFragmentAdapter : RecyclerView.Adapter<OverviewFragmentViewHolder>() {
@@ -208,7 +209,7 @@ class OverviewFragmentAdapter : RecyclerView.Adapter<OverviewFragmentViewHolder>
                     it.lastGrant = if (item.task.lastGrantTimestamp == 0L) null else DateUtil.formatAbsoluteDate(it.root.context, item.task.lastGrantTimestamp)
                     it.taskTitle = item.task.taskTitle
 
-                    it.yesButton.setOnClickListener { handlers?.onTaskConfirmed(item.task) }
+                    it.yesButton.setOnClickListener { handlers?.onTaskConfirmed(item.task, item.childTimezone) }
                     it.noButton.setOnClickListener { handlers?.onTaskRejected(item.task) }
                     it.skipButton.setOnClickListener { handlers?.onSkipTaskReviewClicked(item.task) }
                 }
@@ -244,6 +245,6 @@ interface OverviewFragmentHandlers {
     fun onDeviceClicked(device: Device)
     fun onShowAllUsersClicked()
     fun onSkipTaskReviewClicked(task: ChildTask)
-    fun onTaskConfirmed(task: ChildTask)
+    fun onTaskConfirmed(task: ChildTask, timezone: TimeZone)
     fun onTaskRejected(task: ChildTask)
 }

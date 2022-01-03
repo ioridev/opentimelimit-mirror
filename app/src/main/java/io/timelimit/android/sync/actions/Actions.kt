@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -313,9 +313,10 @@ data class DeleteChildTaskAction(val taskId: String): ParentAction() {
     init { IdGenerator.assertIdValid(taskId) }
 }
 
-data class ReviewChildTaskAction(val taskId: String, val ok: Boolean, val time: Long): ParentAction() {
+data class ReviewChildTaskAction(val taskId: String, val ok: Boolean, val time: Long, val day: Int?): ParentAction() {
     init {
         if (time <= 0) throw IllegalArgumentException()
+        if (day != null && day < 0) throw IllegalArgumentException()
         IdGenerator.assertIdValid(taskId)
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
+import java.util.*
 
 sealed class OverviewFragmentItem
 object OverviewFragmentHeaderUsers: OverviewFragmentItem()
@@ -35,4 +36,4 @@ object OverviewFragmentHeaderIntro: OverviewFragmentItem()
 sealed class ShowMoreOverviewFragmentItem: OverviewFragmentItem() {
     object ShowAllUsers: ShowMoreOverviewFragmentItem()
 }
-data class TaskReviewOverviewItem(val task: ChildTask, val childTitle: String, val categoryTitle: String): OverviewFragmentItem()
+data class TaskReviewOverviewItem(val task: ChildTask, val childTitle: String, val categoryTitle: String, val childTimezone: TimeZone): OverviewFragmentItem()
