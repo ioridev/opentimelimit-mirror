@@ -661,7 +661,12 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
                         runAsync {
                             if (appLogic.platformIntegration.muteAudioIfPossible(audioPlaybackPackageName)) {
-                                appLogic.platformIntegration.showOverlayMessage(appLogic.context.getString(R.string.background_logic_toast_block_audio))
+                                appLogic.platformIntegration.showOverlayMessage(
+                                    appLogic.context.getString(
+                                        R.string.background_logic_toast_block_audio,
+                                        appTitleCache.query(audioPlaybackPackageName)
+                                    )
+                                )
 
                                 // allow blocking again
                                 // no locking needed because everything happens on the main thread
