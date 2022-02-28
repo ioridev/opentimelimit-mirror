@@ -181,4 +181,6 @@ class DummyIntegration(
         permission: SystemPermission,
         confirmationLevel: SystemPermissionConfirmationLevel
     ): Boolean = false
+
+    override fun getExitLog(): List<ExitLogItem> = emptyList()
 }

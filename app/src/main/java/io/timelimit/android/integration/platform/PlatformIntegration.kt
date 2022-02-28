@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -85,6 +85,8 @@ abstract class PlatformIntegration(
         permission: SystemPermission,
         confirmationLevel: SystemPermissionConfirmationLevel = SystemPermissionConfirmationLevel.None
     ): Boolean
+
+    abstract fun getExitLog(): List<ExitLogItem>
 
     var installedAppsChangeListener: Runnable? = null
     var systemClockChangeListener: Runnable? = null

@@ -446,6 +446,9 @@
     <string name="diagnose_copy_to_clipboard">Copy to clipboard</string>
     <string name="diagnose_copied_to_clipboard">Copied to clipboard</string>
 
+    <string name="diagnose_er_title">Exit Reasons</string>
+    <string name="diagnose_er_empty">there is no data; this data is only available at Android 11 and newer</string>
+
     <string name="error_general">The operation failed</string>
 
     <string name="homescreen_selection_title">Homescreen selection</string>

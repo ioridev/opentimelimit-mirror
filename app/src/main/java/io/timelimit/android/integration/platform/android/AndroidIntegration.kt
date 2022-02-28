@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -768,5 +768,12 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
                 false
             }
         }
+    }
+
+    override fun getExitLog(): List<ExitLogItem> {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            activityManager.getHistoricalProcessExitReasons(context.packageName, 0, 0)
+                .map { ExitLogItem.fromApplicationExitInfo(it) }
+        } else emptyList()
     }
 }

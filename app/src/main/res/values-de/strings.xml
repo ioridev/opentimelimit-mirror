@@ -402,6 +402,9 @@
     <string name="diagnose_copy_to_clipboard">In die Zwischenablage kopieren</string>
     <string name="diagnose_copied_to_clipboard">In die Zwischenablage kopiert</string>
 
+    <string name="diagnose_er_title">Gründe für die Beendung</string>
+    <string name="diagnose_er_empty">es liegen keine Daten vor; diese Daten sind nur bei Android 11 und neuer verfügbar</string>
+
     <string name="error_general">Der Vorgang ist fehlgeschlagen</string>
 
     <string name="homescreen_selection_title">Startbildschirmauswahl</string>
