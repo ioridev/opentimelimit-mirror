@@ -1,4 +1,4 @@
-- bug fixes
-  - manipulation warnings triggered by the autofill feature
-  - wrong updates of the session duration
-  - missing extra time after completing tasks
+- Anzeigen von mehr Details beim Blockieren von Hintergrundwiedergaben
+- Option zum Anzeigen der vom System gemeldeten Exit-Reasons hinzugefügt
+- Textänderungen
+- neues Verhalten bei Manipulationen, wenn die Geräte-Besitzer-Berechtigung vorliegt
