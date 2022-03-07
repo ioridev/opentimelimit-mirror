@@ -97,6 +97,11 @@
     <string name="authentication_required_overlay_text">Die Einstellungen werden wieder gesperrt, wenn Sie TimeLimit verlassen</string>
 
     <string name="backdoor_start_btn">TimeLimit ohne Passwort mit Hilfe des Supports entfernen</string>
+    <string name="backdoor_intro_text">Diese Funktion ist für den Fall, dass ein bestätigter Fehler in TimeLimit Sie aussperrt.
+        Sie eignet sich nicht für vergessene oder falsch notierte Passwörter. Richtige Passwörter, die nicht akzeptiert werden,
+        sind nur dann ein Fall für diese Funktion, wenn ein derartiger Fehler bestätigt/nachgewiesen wurde.
+    </string>
+    <string name="backdoor_intro_confirm">verstanden</string>
     <string name="backdoor_instruction_1">Senden Sie folgende Nonce (mit dem Grund für das Entsperren) an den Support, um einen Entsperrcode zu bekommen:</string>
     <string name="backdoor_instruction_2">Geben Sie den empfangenen Code ein:</string>
     <string name="backdoor_toast_invalid_code">Dieser Code ist ungültig</string>

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -34,16 +35,23 @@ class BackdoorDialogFragment: DialogFragment() {
         private const val DIALOG_TAG = "BackdoorDialogFragment"
         private const val CODE_LENGTH = 256
         private const val STATUS_INPUT = "input"
+        private const val STATUS_INTRO_CONFIRMATION = "introConfirmation"
     }
 
-    val input = MutableLiveData<String>().apply { value = "" }
+    private val model: BackdoorModel by viewModels()
+    private val input = MutableLiveData<String>().apply { value = "" }
+    private var didConfirmIntro = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = BackdoorDialogBinding.inflate(inflater, container, false)
-        val model = ViewModelProviders.of(this).get(BackdoorModel::class.java)
 
         if (savedInstanceState != null) {
             input.value = savedInstanceState.getString(STATUS_INPUT)
+            didConfirmIntro = savedInstanceState.getBoolean(STATUS_INTRO_CONFIRMATION)
+
+            if (didConfirmIntro) {
+                binding.flipper.displayedChild = 1
+            }
         }
 
         binding.handlers = object: BackdoorDialogListener {
@@ -91,12 +99,17 @@ class BackdoorDialogFragment: DialogFragment() {
                 }
                 RecoveryStatus.Invalid -> {
                     input.value = ""
-                    Toast.makeText(context!!, R.string.backdoor_toast_invalid_code, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.backdoor_toast_invalid_code, Toast.LENGTH_SHORT).show()
 
                     model.confirmInvalidCode()
                 }
             }
         })
+
+        binding.introConfirmButton.setOnClickListener {
+            didConfirmIntro = true
+            binding.flipper.displayedChild = 1
+        }
 
         return binding.root
     }
@@ -105,6 +118,7 @@ class BackdoorDialogFragment: DialogFragment() {
         super.onSaveInstanceState(outState)
 
         outState.putString(STATUS_INPUT, input.value!!)
+        outState.putBoolean(STATUS_INTRO_CONFIRMATION, didConfirmIntro)
     }
 
     fun show(fragmentManager: FragmentManager) = show(fragmentManager, DIALOG_TAG)
