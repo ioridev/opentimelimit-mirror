@@ -1,5 +1,5 @@
 <!--
-  TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+  TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation version 3 of the License.
@@ -125,7 +125,6 @@
                             android:text="@string/manage_device_permission_btn_modify"
                             android:layout_gravity="end"
                             android:onClick="@{() -> handlers.manageDeviceAdmin()}"
-                            android:enabled="@{usageStatsAccess != RuntimePermissionStatus.NotRequired}"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content">
                             <requestFocus />
