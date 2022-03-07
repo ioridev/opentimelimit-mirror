@@ -115,11 +115,13 @@
     <string name="add_user_authentication_required_btn">Authenticate</string>
 
     <string name="annoy_info">
-        There was a manipulation of TimeLimit. Due to that, this device is locked for a moment.
+        There was a manipulation of TimeLimit. Due to that, this device is locked now.
     </string>
     <string name="annoy_timer">
-        The device will be unlocked in %s.
+        The device can be unlocked in %s.
     </string>
+    <string name="annoy_unlock_temp_button">Unlock for a moment</string>
+    <string name="annoy_unlock_parent_button">Unlock a bit longer</string>
     <string name="annoy_reason">
         This was manipulated: %s
     </string>

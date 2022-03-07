@@ -82,11 +82,13 @@
     <string name="add_user_authentication_required_btn">Anmelden</string>
 
     <string name="annoy_info">
-        TimeLimit wurde manipuliert. Deshalb wird das Gerät für einen Moment gesperrt.
+        TimeLimit wurde manipuliert. Deshalb wurde das Gerät gesperrt.
     </string>
     <string name="annoy_timer">
-        Das Gerät wird in %s entsperrt.
+        Das Gerät kann in %s entsperrt werden.
     </string>
+    <string name="annoy_unlock_temp_button">kurz entsperren</string>
+    <string name="annoy_unlock_parent_button">länger entsperren</string>
     <string name="annoy_reason">
         Folgendes wurde manipuliert: %s
     </string>

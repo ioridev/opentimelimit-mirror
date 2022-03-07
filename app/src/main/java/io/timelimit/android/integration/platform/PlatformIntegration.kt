@@ -45,7 +45,7 @@ abstract class PlatformIntegration(
     abstract fun showOverlayMessage(text: String)
 
     abstract fun showAppLockScreen(currentPackageName: String, currentActivityName: String?)
-    abstract fun showAnnoyScreen(annoyDuration: Long)
+    abstract fun showAnnoyScreen()
     // true = success
     abstract suspend fun muteAudioIfPossible(packageName: String): Boolean
     abstract fun setShowBlockingOverlay(show: Boolean, blockedElement: String? = null)

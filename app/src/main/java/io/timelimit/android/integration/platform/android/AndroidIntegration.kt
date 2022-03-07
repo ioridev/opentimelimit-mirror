@@ -255,8 +255,8 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
         LockActivity.start(context, currentPackageName, currentActivityName)
     }
 
-    override fun showAnnoyScreen(annoyDuration: Long) {
-        AnnoyActivity.start(context, annoyDuration)
+    override fun showAnnoyScreen() {
+        AnnoyActivity.start(context)
     }
 
     override suspend fun muteAudioIfPossible(packageName: String): Boolean {

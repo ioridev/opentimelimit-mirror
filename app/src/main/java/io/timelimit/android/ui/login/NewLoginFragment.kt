@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  * Copyright <C> 2020 Marcel Voigt
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,6 +44,12 @@ import io.timelimit.android.ui.view.KeyboardViewListener
 class NewLoginFragment: DialogFragment() {
     companion object {
         const val SHOW_ON_LOCKSCREEN = "showOnLockscreen"
+
+        fun newInstance(showOnLockscreen: Boolean) = NewLoginFragment().apply {
+            arguments = Bundle().apply {
+                putBoolean(SHOW_ON_LOCKSCREEN, showOnLockscreen)
+            }
+        }
 
         private const val SELECTED_USER_ID = "selectedUserId"
         private const val USER_LIST = 0

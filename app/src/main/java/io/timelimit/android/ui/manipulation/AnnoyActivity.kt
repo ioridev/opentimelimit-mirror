@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,38 +19,43 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.view.View
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import io.timelimit.android.R
+import io.timelimit.android.data.model.UserType
 import io.timelimit.android.databinding.AnnoyActivityBinding
+import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.ui.backdoor.BackdoorDialogFragment
+import io.timelimit.android.ui.login.NewLoginFragment
+import io.timelimit.android.ui.main.ActivityViewModel
+import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.manage.device.manage.ManipulationWarningTypeLabel
 import io.timelimit.android.ui.manage.device.manage.ManipulationWarnings
 import io.timelimit.android.util.TimeTextUtil
 
-class AnnoyActivity : AppCompatActivity() {
+class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder {
     companion object {
-        private const val EXTRA_DURATION = "duration"
-
-        fun start(context: Context, duration: Long) {
+        fun start(context: Context) {
             context.startActivity(
                     Intent(context, AnnoyActivity::class.java)
-                            .putExtra(EXTRA_DURATION, duration)
-                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             .addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                            .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
             )
         }
     }
 
+    private val model: ActivityViewModel by viewModels()
+    override var ignoreStop: Boolean = false
+    override fun getActivityViewModel() = model
+    override fun showAuthenticationScreen() { NewLoginFragment.newInstance(showOnLockscreen = true).showSafe(supportFragmentManager, "nlf") }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val duration = intent!!.getLongExtra(EXTRA_DURATION, 10)
-        val model = ViewModelProviders.of(this).get(AnnoyModel::class.java)
         val logic = DefaultAppLogic.with(this)
 
         val binding = AnnoyActivityBinding.inflate(layoutInflater)
@@ -62,37 +67,36 @@ class AnnoyActivity : AppCompatActivity() {
             }
         }
 
-        model.init(duration = duration)
-        model.countdown.observe(this, Observer {
-            if (it == 0L) {
-                shutdown()
-            }
+        logic.annoyLogic.shouldAnnoyRightNow.observe(this) { shouldRun ->
+            if (!shouldRun) shutdown()
+        }
 
-            binding.annoyTimer.setText(
-                    getString(R.string.annoy_timer, TimeTextUtil.seconds(it.toInt(), this@AnnoyActivity))
-            )
-        })
+        logic.annoyLogic.nextManualUnblockCountdown.observe(this) { countdown ->
+            binding.canRequestUnlock = countdown == 0L
+            binding.countdownText = getString(R.string.annoy_timer, TimeTextUtil.seconds((countdown / 1000).toInt(), this@AnnoyActivity))
+        }
 
         logic.deviceEntry.map {
             val reasonItems = (it?.let { ManipulationWarnings.getFromDevice(it) } ?: ManipulationWarnings.empty)
                     .current
-                    .map {
-                        getString(ManipulationWarningTypeLabel.getLabel(it))
-                    }
+                    .map { getString(ManipulationWarningTypeLabel.getLabel(it)) }
 
             if (reasonItems.isEmpty()) {
                 null
             } else {
                 getString(R.string.annoy_reason, reasonItems.joinToString(separator = ", "))
             }
-        }.observe(this, Observer {
-            if (it.isNullOrEmpty()) {
-                binding.annoyReason.visibility = View.GONE
-            } else {
-                binding.annoyReason.visibility = View.VISIBLE
-                binding.annoyReason.setText(it)
+        }.observe(this) { binding.reasonText = it }
+
+        binding.unlockTemporarilyButton.setOnClickListener { logic.annoyLogic.doManualTempUnlock() }
+        binding.parentUnlockButton.setOnClickListener { showAuthenticationScreen() }
+        binding.useBackdoorButton.setOnClickListener { BackdoorDialogFragment().show(supportFragmentManager) }
+
+        model.authenticatedUser.observe(this) { user ->
+            if (user?.type == UserType.Parent) {
+                logic.annoyLogic.doParentTempUnlock()
             }
-        })
+        }
     }
 
     private fun shutdown() {
