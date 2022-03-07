@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ class ManipulationLogic(val appLogic: AppLogic) {
     }
 
     fun lockDeviceSync() {
-        if (!appLogic.database.config().isExperimentalFlagsSetSync(ExperimentalFlags.DISABLE_BLOCK_ON_MANIPULATION)) {
+        if (!AnnoyLogic.ENABLE) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 if (appLogic.platformIntegration.setLockTaskPackages(listOf(appLogic.context.packageName))) {
                     appLogic.database.config().setWasDeviceLockedSync(true)

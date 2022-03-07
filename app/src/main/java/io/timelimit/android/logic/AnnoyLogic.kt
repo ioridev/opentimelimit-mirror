@@ -15,24 +15,23 @@
  */
 package io.timelimit.android.logic
 
+import android.os.Build
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import io.timelimit.android.async.Threads
-import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.integration.platform.ProtectionLevel
-import io.timelimit.android.livedata.and
-import io.timelimit.android.livedata.invert
-import io.timelimit.android.livedata.liveDataFromFunction
-import io.timelimit.android.livedata.map
+import io.timelimit.android.livedata.*
 
 class AnnoyLogic (val appLogic: AppLogic) {
     // config
     companion object {
+        val ENABLE = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+
         private const val TEMP_UNBLOCK_DURATION = 1000 * 45L
         private const val TEMP_UNBLOCK_PARENT_DURATION = 1000 * 60 * 10L
         private const val MAX_BLOCK_DURATION = 15
 
-        fun manualUnblockDelay(counter: Int): Long {
+        private fun manualUnblockDelay(counter: Int): Long {
             return if (counter <= 0) 0
             else (counter + 4).coerceAtMost(MAX_BLOCK_DURATION).toLong() * 1000 * 60
         }
@@ -44,8 +43,7 @@ class AnnoyLogic (val appLogic: AppLogic) {
     // input: is manipulated (bool)
     private val isManipulated = appLogic.deviceEntryIfEnabled.map { it?.hasActiveManipulationWarning ?: false }
     private val isDeviceOwner = appLogic.deviceEntryIfEnabled.map { it?.currentProtectionLevel == ProtectionLevel.DeviceOwner }
-    private val enableAnnoy = appLogic.database.config().isExperimentalFlagsSetAsync(ExperimentalFlags.MANIPULATION_ANNOY_USER)
-    private val enableAnnoyNow = isManipulated.and(isDeviceOwner).and(enableAnnoy)
+    private val enableAnnoyNow = if (ENABLE) isManipulated.and(isDeviceOwner) else liveDataFromNonNullValue(false)
 
     private val annoyTempDisabled = MutableLiveData<Boolean>().apply { value = false }
     private val annoyTempDisabledSetFalse: Runnable = Runnable {

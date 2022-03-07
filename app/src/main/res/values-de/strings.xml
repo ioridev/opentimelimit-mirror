@@ -377,9 +377,7 @@
     <string name="diagnose_fga_query_range_min">Minimal (Standard)</string>
 
     <string name="diagnose_exf_title">Experimentelle Parameter</string>
-    <string name="diagnose_exf_lom">Sperrung nach Manipulationen deaktivieren</string>
     <string name="diagnose_exf_slb">Apps auf Systemebene sperren</string>
-    <string name="diagnose_exf_mau">Nutzer nach Manipulation nerven</string>
     <string name="diagnose_exf_chs">TimeLimit als Startbildschirm</string>
     <string name="diagnose_exf_chd">Startbildschirmweiterleitung verzögern</string>
     <string name="diagnose_exf_nas">Netzwerkzeitnutzung auf Systemebene erzwingen</string>

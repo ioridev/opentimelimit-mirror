@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -165,10 +165,9 @@ object HintsToShow {
 }
 
 object ExperimentalFlags {
-    const val DISABLE_BLOCK_ON_MANIPULATION = 1L
+    private const val OBSOLETE_DISABLE_BLOCK_ON_MANIPULATION = 1L
     const val SYSTEM_LEVEL_BLOCKING = 2L
-    const val MANIPULATION_ANNOY_USER_ONLY = 4L
-    const val MANIPULATION_ANNOY_USER = MANIPULATION_ANNOY_USER_ONLY or DISABLE_BLOCK_ON_MANIPULATION // otherwise there would be a conflict between both features
+    private const val OBSOLETE_MANIPULATION_ANNOY_USER_ONLY = 4L
     const val CUSTOM_HOME_SCREEN = 8L
     const val CUSTOM_HOMESCREEN_DELAY = 16L
     const val NETWORKTIME_AT_SYSTEMLEVEL = 32L
