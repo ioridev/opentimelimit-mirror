@@ -880,8 +880,8 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
             shouldAnnoyNow.waitUntilValueMatches { it == true }
             appLogic.platformIntegration.showAnnoyScreen()
 
-            // bring into foreground all five seconds
-            withTimeoutOrNull(5000L) { shouldAnnoyNow.waitUntilValueMatches { it == false } }
+            // bring into foreground after some time
+            withTimeoutOrNull(300 * 1000L) { shouldAnnoyNow.waitUntilValueMatches { it == false } }
         }
     }
 }

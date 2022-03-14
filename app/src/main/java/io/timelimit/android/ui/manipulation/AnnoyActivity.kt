@@ -26,6 +26,7 @@ import io.timelimit.android.R
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.databinding.AnnoyActivityBinding
 import io.timelimit.android.extensions.showSafe
+import io.timelimit.android.integration.platform.android.AndroidIntegrationApps
 import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.backdoor.BackdoorDialogFragment
@@ -62,7 +63,9 @@ class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder {
         setContentView(binding.root)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (logic.platformIntegration.setLockTaskPackages(listOf(packageName))) {
+            val lockTaskPackages = AndroidIntegrationApps.appsToIncludeInLockTasks + setOf(packageName)
+
+            if (logic.platformIntegration.setLockTaskPackages(lockTaskPackages.toList())) {
                 startLockTask()
             }
         }
