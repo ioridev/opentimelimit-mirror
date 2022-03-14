@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ import io.timelimit.android.sync.actions.RemoveCategoryAppsAction
 import io.timelimit.android.sync.actions.UpdateTimeLimitRuleAction
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
+import io.timelimit.android.ui.manage.category.apps.add.AddAppsParams
 import io.timelimit.android.ui.manage.category.apps.add.AddCategoryAppsFragment
 import io.timelimit.android.ui.manage.category.timelimit_rules.edit.EditTimeLimitRuleDialogFragment
 import io.timelimit.android.ui.manage.category.timelimit_rules.edit.EditTimeLimitRuleDialogFragmentListener
@@ -135,7 +136,7 @@ abstract class CategoryAppsAndRulesFragment: Fragment(), Handlers, EditTimeLimit
         if (auth.tryDispatchParentAction(
                         RemoveCategoryAppsAction(
                                 categoryId = categoryId,
-                                packageNames = listOf(app.packageName)
+                                packageNames = listOf(app.specifier.encode())
                         )
                 )) {
             Snackbar.make(requireView(), getString(R.string.category_apps_item_removed_toast, app.title), Snackbar.LENGTH_SHORT)
@@ -143,7 +144,7 @@ abstract class CategoryAppsAndRulesFragment: Fragment(), Handlers, EditTimeLimit
                         auth.tryDispatchParentAction(
                                 AddCategoryAppsAction(
                                         categoryId = categoryId,
-                                        packageNames = listOf(app.packageName)
+                                        packageNames = listOf(app.specifier.encode())
                                 )
                         )
                     }
@@ -155,7 +156,7 @@ abstract class CategoryAppsAndRulesFragment: Fragment(), Handlers, EditTimeLimit
         return if (auth.requestAuthenticationOrReturnTrue()) {
             AssignAppCategoryDialogFragment.newInstance(
                     childId = childId,
-                    appPackageName = app.packageName
+                    appPackageName = app.specifier.encode()
             ).show(parentFragmentManager)
 
             true
@@ -164,11 +165,11 @@ abstract class CategoryAppsAndRulesFragment: Fragment(), Handlers, EditTimeLimit
 
     override fun onAddAppsClicked() {
         if (auth.requestAuthenticationOrReturnTrueAllowChild(childId = childId)) {
-            AddCategoryAppsFragment.newInstance(
+            AddCategoryAppsFragment.newInstance(AddAppsParams(
                     childId = childId,
                     categoryId = categoryId,
-                    childAddLimitMode = !auth.isParentAuthenticated()
-            ).show(parentFragmentManager)
+                    isSelfLimitAddingMode = !auth.isParentAuthenticated()
+            )).show(parentFragmentManager)
         }
     }
 

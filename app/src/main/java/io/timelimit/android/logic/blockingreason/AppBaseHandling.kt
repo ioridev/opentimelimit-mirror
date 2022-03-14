@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,12 +67,12 @@ sealed class AppBaseHandling {
             } else if (foregroundAppPackageName != null) {
                 val appCategory = run {
                     val tryActivityLevelBlocking = deviceRelatedData.deviceEntry.enableActivityLevelBlocking && foregroundAppActivityName != null
-                    val appLevelCategory = userRelatedData.findCategoryApp(foregroundAppPackageName) ?: run {
-                        if (isSystemImageApp) userRelatedData.findCategoryApp(DummyApps.NOT_ASSIGNED_SYSTEM_IMAGE_APP) else null
+                    val appLevelCategory = userRelatedData.findCategoryAppByPackageAndActivityName(foregroundAppPackageName, null) ?: run {
+                        if (isSystemImageApp) userRelatedData.findCategoryAppByPackageAndActivityName(DummyApps.NOT_ASSIGNED_SYSTEM_IMAGE_APP, null) else null
                     }
 
                     (if (tryActivityLevelBlocking) {
-                        userRelatedData.findCategoryApp("$foregroundAppPackageName:$foregroundAppActivityName")
+                        userRelatedData.findCategoryAppByPackageAndActivityName(foregroundAppPackageName, foregroundAppActivityName)
                     } else {
                         null
                     }) ?: appLevelCategory
@@ -89,8 +89,7 @@ sealed class AppBaseHandling {
                     return UseCategories(
                             categoryIds = categoryIds,
                             shouldCount = !pauseCounting,
-                            level = when (appCategory?.specifiesActivity) {
-                                null -> BlockingLevel.Activity // occurs when using a default category
+                            level = when (appCategory == null || appCategory.appSpecifier.activityName != null) {
                                 true -> BlockingLevel.Activity
                                 false -> BlockingLevel.App
                             },

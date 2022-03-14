@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import io.timelimit.android.data.extensions.getDateLive
 import io.timelimit.android.data.model.HintsToShow
 import io.timelimit.android.extensions.takeDistributedElements
 import io.timelimit.android.livedata.map
+import io.timelimit.android.livedata.mergeLiveDataWaitForValues
 import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.logic.DummyApps
@@ -108,26 +109,25 @@ class AppsAndRulesModel(application: Application): AndroidViewModel(application)
 
     private val installedApps = database.app().getApps()
 
+    private val installedAppsIndexed = installedApps.map { apps -> apps.associateBy { it.packageName } }
+
     private val appsOfThisCategory = categoryIdLive.switchMap { categoryId -> database.categoryApp().getCategoryApps(categoryId) }
 
-    private val appsOfCategoryWithNames = installedApps.switchMap { allApps ->
-        appsOfThisCategory.map { apps ->
-            apps.map { categoryApp ->
-                val title = DummyApps.getTitle(categoryApp.packageNameWithoutActivityName, getApplication()) ?:
-                allApps.find { app -> app.packageName == categoryApp.packageNameWithoutActivityName }?.title
+    private val appsOfCategoryWithNames = mergeLiveDataWaitForValues(installedAppsIndexed, appsOfThisCategory)
+        .map { (allAppsIndexed, appsOfThisCategory) ->
+            appsOfThisCategory.map { categoryApp ->
+                val title = DummyApps.getTitle(categoryApp.appSpecifier.packageName, getApplication()) ?:
+                allAppsIndexed[categoryApp.appSpecifier.packageName]?.title
 
-                categoryApp to title            }
+                AppAndRuleItem.AppEntry(
+                    title = title ?: "app not found",
+                    specifier = categoryApp.appSpecifier
+                )
+            }
         }
-    }
 
     private val appEntries = appsOfCategoryWithNames.map { apps ->
-        apps.map { (app, title) ->
-            if (title != null) {
-                AppAndRuleItem.AppEntry(title, app.packageName, app.packageNameWithoutActivityName)
-            } else {
-                AppAndRuleItem.AppEntry("app not found", app.packageName, app.packageNameWithoutActivityName)
-            }
-        }.sortedBy { it.title.toLowerCase(Locale.US) }
+        apps.sortedBy { it.title.lowercase() }
     }
 
     private val fullAppScreenContent = showAllAppsLive.switchMap { showAllApps ->
@@ -139,7 +139,7 @@ class AppsAndRulesModel(application: Application): AndroidViewModel(application)
 
                 if (entries.size > maxSize)
                     entries.takeDistributedElements(maxSize) + listOf(
-                            AppAndRuleItem.ExpandAppsItem, AppAndRuleItem.AddAppItem
+                        AppAndRuleItem.ExpandAppsItem, AppAndRuleItem.AddAppItem
                     )
                 else
                     entries + listOf(AppAndRuleItem.AddAppItem)

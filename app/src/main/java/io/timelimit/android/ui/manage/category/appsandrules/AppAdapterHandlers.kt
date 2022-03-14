@@ -13,19 +13,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package io.timelimit.android.ui.manage.category.appsandrules
 
-import io.timelimit.android.data.model.TimeLimitRule
-import io.timelimit.android.data.model.derived.AppSpecifier
-
-sealed class AppAndRuleItem {
-    data class AppEntry(val title: String, val specifier: AppSpecifier): AppAndRuleItem()
-    object AddAppItem: AppAndRuleItem()
-    object ExpandAppsItem: AppAndRuleItem()
-    data class RuleEntry(val rule: TimeLimitRule): AppAndRuleItem()
-    object ExpandRulesItem: AppAndRuleItem()
-    object RulesIntro: AppAndRuleItem()
-    object AddRuleItem: AppAndRuleItem()
-    data class Headline(val stringRessource: Int): AppAndRuleItem()
+interface AppAdapterHandlers {
+    fun onAppClicked(app: AppAndRuleItem.AppEntry)
+    fun onAppLongClicked(app: AppAndRuleItem.AppEntry): Boolean
+    fun onAddAppsClicked()
 }

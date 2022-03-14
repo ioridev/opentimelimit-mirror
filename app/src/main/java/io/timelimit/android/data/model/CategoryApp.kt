@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +21,14 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.JsonSerializable
+import io.timelimit.android.data.model.derived.AppSpecifier
 
 @Entity(primaryKeys = ["category_id", "package_name"], tableName = "category_app")
 data class CategoryApp(
         @ColumnInfo(index = true, name = "category_id")
         val categoryId: String,
         @ColumnInfo(index = true, name = "package_name")
-        val packageName: String
+        val appSpecifierString: String  // originally a packageName, but can contain more than that
 ): JsonSerializable {
     companion object {
         private const val CATEGORY_ID = "categoryId"
@@ -51,26 +52,18 @@ data class CategoryApp(
 
             return CategoryApp(
                     categoryId = categoryId!!,
-                    packageName = packageName!!
+                    appSpecifierString = packageName!!
             )
         }
     }
 
     @delegate:Transient
-    val packageNameWithoutActivityName: String by lazy {
-        if (specifiesActivity)
-            packageName.substring(0, packageName.indexOf(":"))
-        else
-            packageName
-    }
-
-    @Transient
-    val specifiesActivity = packageName.contains(":")
+    val appSpecifier: AppSpecifier by lazy { AppSpecifier.decode(appSpecifierString) }
 
     init {
         IdGenerator.assertIdValid(categoryId)
 
-        if (packageName.isEmpty()) {
+        if (appSpecifierString.isEmpty()) {
             throw IllegalArgumentException()
         }
     }
@@ -79,7 +72,7 @@ data class CategoryApp(
         writer.beginObject()
 
         writer.name(CATEGORY_ID).value(categoryId)
-        writer.name(PACKAGE_NAME).value(packageName)
+        writer.name(PACKAGE_NAME).value(appSpecifierString)
 
         writer.endObject()
     }

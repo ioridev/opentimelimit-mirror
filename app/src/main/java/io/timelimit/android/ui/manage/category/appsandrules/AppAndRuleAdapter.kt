@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@ import io.timelimit.android.date.DateInTimezone
 import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.logic.DummyApps
-import io.timelimit.android.ui.manage.category.apps.AppAdapterHandlers
 import io.timelimit.android.ui.manage.category.timelimit_rules.TimeLimitRulesHandlers
 import io.timelimit.android.util.DayNameUtil
 import io.timelimit.android.util.TimeTextUtil
@@ -58,7 +57,7 @@ class AppAndRuleAdapter: RecyclerView.Adapter<AppAndRuleAdapter.Holder>() {
 
     override fun getItemId(position: Int): Long = items[position].let { item ->
         when (item) {
-            is AppAndRuleItem.AppEntry -> item.packageName.hashCode()
+            is AppAndRuleItem.AppEntry -> item.specifier.hashCode()
             is AppAndRuleItem.RuleEntry -> item.rule.id.hashCode()
             else -> item.hashCode()
         }
@@ -137,16 +136,16 @@ class AppAndRuleAdapter: RecyclerView.Adapter<AppAndRuleAdapter.Holder>() {
                 val binding = holder.itemView.tag as FragmentCategoryAppsItemBinding
                 val context = binding.root.context
 
-                binding.item = item
-                binding.handlers = handlers
+                binding.title = item.title
+                binding.subtitle = item.specifier.encode()
+                binding.card.setOnClickListener { handlers?.onAppClicked(item) }
+                binding.card.setOnLongClickListener { handlers?.onAppLongClicked(item) ?: false }
                 binding.executePendingBindings()
 
-                binding.root.setOnLongClickListener { handlers?.onAppLongClicked(item) ?: false }
-
                 binding.icon.setImageDrawable(
-                        DummyApps.getIcon(item.packageNameWithoutActivityName, context) ?:
+                        DummyApps.getIcon(item.specifier.packageName, context) ?:
                         DefaultAppLogic.with(context)
-                                .platformIntegration.getAppIcon(item.packageNameWithoutActivityName)
+                                .platformIntegration.getAppIcon(item.specifier.packageName)
                 )
             }
             AppAndRuleItem.AddAppItem -> {/* nothing to do */}

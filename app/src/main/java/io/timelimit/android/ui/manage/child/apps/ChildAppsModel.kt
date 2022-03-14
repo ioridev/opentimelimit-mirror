@@ -45,11 +45,13 @@ class ChildAppsModel(application: Application): AndroidViewModel(application) {
             childCategoryAppsLive.switchMap { categoryApps ->
                 appFilterLive.ignoreUnchanged().switchMap { appFilter ->
                     val filteredChildApps = childApps.filter { appFilter.matches(it) }
+                    val categoryAppByPackageName = categoryApps
+                        .filter { it.appSpecifier.activityName == null }
+                        .associateBy { it.appSpecifier.packageName }
 
                     modeLive.ignoreUnchanged().map { mode ->
                         when (mode!!) {
                             ChildAppsMode.SortByCategory -> {
-                                val categoryAppByPackageName = categoryApps.associateBy { it.packageName }
                                 val appsByCategoryId = filteredChildApps.groupBy { app ->
                                     categoryAppByPackageName[app.packageName]?.categoryId
                                 }
@@ -96,7 +98,6 @@ class ChildAppsModel(application: Application): AndroidViewModel(application) {
                             }
                             ChildAppsMode.SortByTitle -> {
                                 val categoryById = categories.associateBy { it.id }
-                                val categoryAppByPackageName = categoryApps.associateBy { it.packageName }
 
                                 filteredChildApps
                                         .distinctBy { it.packageName }

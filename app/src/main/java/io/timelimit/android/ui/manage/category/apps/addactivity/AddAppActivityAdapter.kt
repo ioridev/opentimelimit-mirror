@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,58 +18,54 @@ package io.timelimit.android.ui.manage.category.apps.addactivity
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import io.timelimit.android.data.model.AppActivity
-import io.timelimit.android.databinding.FragmentAddCategoryActivitiesItemBinding
+import io.timelimit.android.databinding.FragmentAddCategoryAppsItemBinding
 import io.timelimit.android.extensions.toggle
 import kotlin.properties.Delegates
 
 class AddAppActivityAdapter: RecyclerView.Adapter<ViewHolder>() {
-    var data: List<AppActivity>? by Delegates.observable(null as List<AppActivity>?) { _, _, _ -> notifyDataSetChanged() }
-    val selectedActiviities = mutableSetOf<String>()
+    var data: List<AddActivityListItem>? by Delegates.observable(emptyList()) { _, _, _ -> notifyDataSetChanged() }
 
-    private val itemHandlers = object: ItemHandlers {
-        override fun onActivityClicked(activity: AppActivity) {
-            selectedActiviities.toggle(activity.activityClassName)
-
-            notifyDataSetChanged()
-        }
-    }
+    val selectedActivities = mutableSetOf<String>()
 
     init {
         setHasStableIds(true)
     }
 
-    private fun getItem(position: Int): AppActivity {
+    private fun getItem(position: Int): AddActivityListItem {
         return data!![position]
     }
 
     override fun getItemId(position: Int): Long {
-        return getItem(position).activityClassName.hashCode().toLong()
+        return getItem(position).className.hashCode().toLong()
     }
 
     override fun getItemCount(): Int = this.data?.size ?: 0
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
-            FragmentAddCategoryActivitiesItemBinding.inflate(
-                    LayoutInflater.from(parent.context),
-                    parent,
-                    false
-            ).apply { handlers = itemHandlers }
+        FragmentAddCategoryAppsItemBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
     )
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
 
         holder.apply {
-            binding.item = item
-            binding.checked = selectedActiviities.contains(item.activityClassName)
+            binding.title = item.title
+            binding.currentCategoryTitle = item.currentCategoryTitle
+            binding.subtitle = item.className
+            binding.showIcon = false
+            binding.checked = selectedActivities.contains(item.className)
             binding.executePendingBindings()
+
+            binding.card.setOnClickListener {
+                selectedActivities.toggle(item.className)
+                binding.checked = selectedActivities.contains(item.className)
+            }
         }
     }
 }
 
-class ViewHolder(val binding: FragmentAddCategoryActivitiesItemBinding): RecyclerView.ViewHolder(binding.root)
-
-interface ItemHandlers {
-    fun onActivityClicked(activity: AppActivity)
-}
+class ViewHolder(val binding: FragmentAddCategoryAppsItemBinding): RecyclerView.ViewHolder(binding.root)

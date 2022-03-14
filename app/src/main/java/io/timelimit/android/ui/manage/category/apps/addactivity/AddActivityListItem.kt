@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,12 +13,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.ui.manage.category.apps
+package io.timelimit.android.ui.manage.category.apps.addactivity
 
-import io.timelimit.android.ui.manage.category.appsandrules.AppAndRuleItem
-
-interface AppAdapterHandlers {
-    fun onAppClicked(app: AppAndRuleItem.AppEntry)
-    fun onAppLongClicked(app: AppAndRuleItem.AppEntry): Boolean
-    fun onAddAppsClicked()
-}
+data class AddActivityListItem (
+    val title: String,
+    val className: String,
+    val currentCategoryTitle: String?
+)

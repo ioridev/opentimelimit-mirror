@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,46 +18,30 @@ package io.timelimit.android.ui.manage.category.apps.add
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import io.timelimit.android.data.model.App
 import io.timelimit.android.databinding.FragmentAddCategoryAppsItemBinding
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.logic.DummyApps
 import kotlin.properties.Delegates
 
 class AddAppAdapter: RecyclerView.Adapter<ViewHolder>() {
-    var data: List<App>? by Delegates.observable(null as List<App>?) { _, _, _ -> notifyDataSetChanged() }
+    var data: List<AddAppListItem> by Delegates.observable(emptyList()) { _, _, _ -> notifyDataSetChanged() }
     var listener: AddAppAdapterListener? = null
-    var categoryTitleByPackageName: Map<String, String> by Delegates.observable(emptyMap()) { _, _, _ -> notifyDataSetChanged() }
     var selectedApps: Set<String> by Delegates.observable(emptySet()) { _, _, _ -> notifyDataSetChanged() }
 
     init {
         setHasStableIds(true)
     }
 
-    private fun getItem(position: Int): App {
-        return data!![position]
-    }
-
-    override fun getItemId(position: Int): Long {
-        return getItem(position).hashCode().toLong()
-    }
-
-    override fun getItemCount(): Int {
-        val data = this.data
-
-        if (data == null) {
-            return 0
-        } else {
-            return data.size
-        }
-    }
+    private fun getItem(position: Int): AddAppListItem = data[position]
+    override fun getItemId(position: Int): Long = getItem(position).hashCode().toLong()
+    override fun getItemCount(): Int = data.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
-            FragmentAddCategoryAppsItemBinding.inflate(
-                    LayoutInflater.from(parent.context),
-                    parent,
-                    false
-            )
+        FragmentAddCategoryAppsItemBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
     )
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -65,16 +49,19 @@ class AddAppAdapter: RecyclerView.Adapter<ViewHolder>() {
         val context = holder.itemView.context
 
         holder.apply {
-            binding.item = item
+            binding.title = item.title
+            binding.subtitle = item.packageName
+            binding.currentCategoryTitle = item.currentCategoryName
             binding.checked = selectedApps.contains(item.packageName)
-            binding.currentCategoryTitle = categoryTitleByPackageName[item.packageName]
-            binding.handlers = listener
+            binding.card.setOnClickListener { listener?.onAppClicked(item) }
+            binding.card.setOnLongClickListener { listener?.onAppLongClicked(item) ?: false }
+            binding.showIcon = true
             binding.executePendingBindings()
 
             binding.icon.setImageDrawable(
-                    DummyApps.getIcon(item.packageName, context) ?:
-                    DefaultAppLogic.with(context)
-                            .platformIntegration.getAppIcon(item.packageName)
+                DummyApps.getIcon(item.packageName, context) ?:
+                DefaultAppLogic.with(context)
+                    .platformIntegration.getAppIcon(item.packageName)
             )
         }
     }
@@ -83,6 +70,6 @@ class AddAppAdapter: RecyclerView.Adapter<ViewHolder>() {
 class ViewHolder(val binding: FragmentAddCategoryAppsItemBinding): RecyclerView.ViewHolder(binding.root)
 
 interface AddAppAdapterListener {
-    fun onAppClicked(app: App)
-    fun onAppLongClicked(app: App): Boolean
+    fun onAppClicked(app: AddAppListItem)
+    fun onAppLongClicked(app: AddAppListItem): Boolean
 }

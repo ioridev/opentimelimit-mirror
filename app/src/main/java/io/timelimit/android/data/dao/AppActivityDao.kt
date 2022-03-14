@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,7 +13,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package io.timelimit.android.data.dao
 
 import androidx.lifecycle.LiveData
@@ -22,6 +21,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import io.timelimit.android.data.model.AppActivity
+import io.timelimit.android.data.model.AppActivityTitleAndClassNameItem
 
 @Dao
 interface AppActivityDao {
@@ -31,8 +31,8 @@ interface AppActivityDao {
     @Query("SELECT * FROM app_activity WHERE device_id IN (:deviceIds)")
     fun getAppActivitiesByDeviceIds(deviceIds: List<String>): LiveData<List<AppActivity>>
 
-    @Query("SELECT * FROM app_activity WHERE app_package_name = :packageName")
-    fun getAppActivitiesByPackageName(packageName: String): LiveData<List<AppActivity>>
+    @Query("SELECT DISTINCT activity_class_name, activity_title FROM app_activity WHERE app_package_name = :packageName")
+    fun getAppActivitiesByPackageName(packageName: String): LiveData<List<AppActivityTitleAndClassNameItem>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addAppActivitySync(item: AppActivity)

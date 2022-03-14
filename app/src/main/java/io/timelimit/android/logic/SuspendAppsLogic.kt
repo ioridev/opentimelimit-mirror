@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -156,17 +156,17 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
 
     private fun getAppsWithCategories(packageNames: List<String>, data: UserRelatedData, blockingAtActivityLevel: Boolean): Map<String, Set<String>> {
         val categoryForUnassignedApps = data.categoryById[data.user.categoryForNotAssignedApps]
-        val categoryForOtherSystemApps = data.findCategoryApp(DummyApps.NOT_ASSIGNED_SYSTEM_IMAGE_APP)?.categoryId?.let { data.categoryById[it] }
+        val categoryForOtherSystemApps = data.findCategoryAppByPackageAndActivityName(DummyApps.NOT_ASSIGNED_SYSTEM_IMAGE_APP, null)?.categoryId?.let { data.categoryById[it] }
 
         if (blockingAtActivityLevel) {
-            val categoriesByPackageName = data.categoryApps.groupBy { it.packageNameWithoutActivityName }
+            val categoriesByPackageName = data.categoryApps.groupBy { it.appSpecifier.packageName }
 
             val result = mutableMapOf<String, Set<String>>()
 
             packageNames.forEach { packageName ->
                 val categoriesItems = categoriesByPackageName[packageName]
                 val categories = (categoriesItems?.map { it.categoryId }?.toSet() ?: emptySet()).toMutableSet()
-                val isMainAppIncluded = categoriesItems?.find { !it.specifiesActivity } != null
+                val isMainAppIncluded = categoriesItems?.find { it.appSpecifier.activityName == null } != null
 
                 if (!isMainAppIncluded) {
                     if (categoryForOtherSystemApps != null && appLogic.platformIntegration.isSystemImageApp(packageName)) {
@@ -181,7 +181,7 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
 
             return result
         } else {
-            val categoryByPackageName = data.categoryApps.associateBy { it.packageName }
+            val categoryByPackageName = data.categoryApps.associateBy { it.appSpecifier.packageName }
 
             val result = mutableMapOf<String, Set<String>>()
 

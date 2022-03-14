@@ -124,7 +124,7 @@ object DuplicateChildActions {
 
                 result.add(AddCategoryAppsAction(
                         categoryId = newCategoryId,
-                        packageNames = oldApps.map { it.packageName }
+                        packageNames = oldApps.map { it.appSpecifierString }
                 ))
             }
 

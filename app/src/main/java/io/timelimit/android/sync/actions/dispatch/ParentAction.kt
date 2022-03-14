@@ -99,7 +99,7 @@ object LocalDatabaseParentActionDispatcher {
                             action.packageNames.map {
                                 CategoryApp(
                                         categoryId = action.categoryId,
-                                        packageName = it
+                                        appSpecifierString = it
                                 )
                             }
                     )

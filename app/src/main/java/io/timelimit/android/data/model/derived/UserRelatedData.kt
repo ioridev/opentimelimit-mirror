@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ data class UserRelatedData(
         val categoryApps: List<CategoryApp>
 ): Observer {
     companion object {
-        private val notFoundCategoryApp = CategoryApp(categoryId = IdGenerator.generateId(), packageName = BuildConfig.APPLICATION_ID)
+        private val notFoundCategoryApp = CategoryApp(categoryId = IdGenerator.generateId(), appSpecifierString = BuildConfig.APPLICATION_ID)
 
         private val relatedTables = arrayOf(
                 Table.User, Table.Category, Table.TimeLimitRule,
@@ -63,11 +63,11 @@ data class UserRelatedData(
     // notFoundCategoryApp is a workaround because the lru cache does not support null
     private val categoryAppLruCache = object: LruCache<String, CategoryApp>(8) {
         override fun create(key: String): CategoryApp {
-            return categoryApps.find { it.packageName == key } ?: notFoundCategoryApp
+            return categoryApps.find { it.appSpecifierString == key } ?: notFoundCategoryApp
         }
     }
-    fun findCategoryApp(packageName: String): CategoryApp? {
-        val item = categoryAppLruCache[packageName]
+    private fun findCategoryApp(appSpecifier: String): CategoryApp? {
+        val item = categoryAppLruCache[appSpecifier]
 
         // important: strict equality/ same object instance
         if (item === notFoundCategoryApp) {
@@ -76,6 +76,13 @@ data class UserRelatedData(
             return item
         }
     }
+    fun findCategoryAppByPackageAndActivityName(packageName: String, activityName: String?): CategoryApp? = if (activityName == null)
+        findCategoryApp(packageName)
+    else
+        findCategoryApp(AppSpecifier(
+            packageName = packageName,
+            activityName = activityName
+        ).encode())
 
     private var userInvalidated = false
     private var categoriesInvalidated = false
