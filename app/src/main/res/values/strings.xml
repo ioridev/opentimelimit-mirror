@@ -125,6 +125,10 @@
     <string name="annoy_reason">
         This was manipulated: %s
     </string>
+    <string name="annoy_unlock_dialog_text">After unlocking, you should fix the cause for the blocking.
+        Otherwise, the device will be locked again.
+    </string>
+    <string name="annoy_unlock_dialog_action">Unlock</string>
 
     <string name="authentication_required_overlay_title">Sign in to change settings</string>
     <string name="authentication_required_overlay_text">The settings will be locked again when you leave TimeLimit</string>

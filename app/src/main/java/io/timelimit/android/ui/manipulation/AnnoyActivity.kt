@@ -88,8 +88,16 @@ class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder {
             }
         }.observe(this) { binding.reasonText = it }
 
-        binding.unlockTemporarilyButton.setOnClickListener { logic.annoyLogic.doManualTempUnlock() }
-        binding.parentUnlockButton.setOnClickListener { showAuthenticationScreen() }
+        binding.unlockTemporarilyButton.setOnClickListener {
+            AnnoyUnlockDialogFragment.newInstance(AnnoyUnlockDialogFragment.UnlockDuration.Short)
+                .show(supportFragmentManager)
+        }
+
+        binding.parentUnlockButton.setOnClickListener {
+            AnnoyUnlockDialogFragment.newInstance(AnnoyUnlockDialogFragment.UnlockDuration.Long)
+                .show(supportFragmentManager)
+        }
+
         binding.useBackdoorButton.setOnClickListener { BackdoorDialogFragment().show(supportFragmentManager) }
 
         model.authenticatedUser.observe(this) { user ->

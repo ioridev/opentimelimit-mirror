@@ -92,6 +92,10 @@
     <string name="annoy_reason">
         Folgendes wurde manipuliert: %s
     </string>
+    <string name="annoy_unlock_dialog_text">Nach dem Entsperren sollte die Ursache
+        für das Sperren behoben werden. Ansonsten wird das Gerät bald wieder gesperrt.
+    </string>
+    <string name="annoy_unlock_dialog_action">Entsperren</string>
 
     <string name="authentication_required_overlay_title">Melden Sie sich an, um Einstellungen zu ändern</string>
     <string name="authentication_required_overlay_text">Die Einstellungen werden wieder gesperrt, wenn Sie TimeLimit verlassen</string>
