@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,7 @@
 package io.timelimit.android.integration.platform.android.foregroundapp
 
 import android.annotation.TargetApi
-import android.app.AppOpsManager
 import android.app.usage.UsageEvents
-import android.app.usage.UsageStatsManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
@@ -27,13 +25,14 @@ import android.util.Log
 import android.util.SparseIntArray
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.coroutines.executeAndWait
+import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.integration.platform.ForegroundApp
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-class LollipopForegroundAppHelper(private val context: Context) : ForegroundAppHelper() {
+class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHelper(context) {
     companion object {
         private const val LOG_TAG = "LollipopForegroundApp"
 
@@ -51,10 +50,6 @@ class LollipopForegroundAppHelper(private val context: Context) : ForegroundAppH
         }
     }
 
-    private val usageStatsManager = context.getSystemService(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) Context.USAGE_STATS_SERVICE else "usagestats") as UsageStatsManager
-    private val appOpsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-    private val packageManager = context.packageManager
-
     private var lastQueryTime: Long = 0
     private val currentForegroundApps = mutableMapOf<ForegroundApp, Int>()
     private val expectedStopEvents = mutableSetOf<ForegroundApp>()
@@ -66,11 +61,12 @@ class LollipopForegroundAppHelper(private val context: Context) : ForegroundAppH
     private var lastEnableMultiAppDetection = false
 
     @Throws(SecurityException::class)
-    override suspend fun getForegroundApps(queryInterval: Long, enableMultiAppDetection: Boolean): Set<ForegroundApp> {
+    override suspend fun getForegroundApps(queryInterval: Long, experimentalFlags: Long): Set<ForegroundApp> {
         if (getPermissionStatus() == RuntimePermissionStatus.NotGranted) {
             throw SecurityException()
         }
 
+        val enableMultiAppDetection = experimentalFlags and ExperimentalFlags.MULTI_APP_DETECTION == ExperimentalFlags.MULTI_APP_DETECTION
         val effectiveEnableMultiAppDetection = enableMultiAppDetection && enableMultiAppDetectionGeneral
 
         foregroundAppThread.executeAndWait {
@@ -247,20 +243,6 @@ class LollipopForegroundAppHelper(private val context: Context) : ForegroundAppH
         }
 
         return currentForegroundAppsSnapshot
-    }
-
-    override fun getPermissionStatus(): RuntimePermissionStatus {
-        val appOpsStatus = appOpsManager.checkOpNoThrow("android:get_usage_stats", android.os.Process.myUid(), context.packageName)
-        val packageManagerStatus = packageManager.checkPermission("android.permission.PACKAGE_USAGE_STATS", BuildConfig.APPLICATION_ID)
-
-        val allowedUsingSystemSettings = appOpsStatus == AppOpsManager.MODE_ALLOWED
-        val allowedUsingAdb = appOpsStatus == AppOpsManager.MODE_DEFAULT && packageManagerStatus == PackageManager.PERMISSION_GRANTED
-
-        if(allowedUsingSystemSettings || allowedUsingAdb) {
-            return RuntimePermissionStatus.Granted
-        } else {
-            return RuntimePermissionStatus.NotGranted
-        }
     }
 
     // Android 9 (and maybe older versions too) do not report pausing Apps if they are disabled while running

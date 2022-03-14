@@ -149,8 +149,6 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
             if (blockedAppPackageName != appLogic.platformIntegration.getLauncherAppPackageName()) {
                 AccessibilityService.instance?.showHomescreen()
                 delay(100)
-                AccessibilityService.instance?.showHomescreen()
-                delay(100)
             }
         }
 
@@ -274,8 +272,8 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                 }
 
                 val foregroundApps = appLogic.platformIntegration.getForegroundApps(
-                        appLogic.getForegroundAppQueryInterval(),
-                        appLogic.getEnableMultiAppDetection()
+                    appLogic.getForegroundAppQueryInterval(),
+                    deviceRelatedData.experimentalFlags
                 )
                 val audioPlaybackPackageName = appLogic.platformIntegration.getMusicPlaybackPackage()
                 val activityLevelBlocking = appLogic.deviceEntry.value?.enableActivityLevelBlocking ?: false

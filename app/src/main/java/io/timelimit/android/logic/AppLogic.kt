@@ -68,12 +68,8 @@ class AppLogic(
     }.ignoreUnchanged()
 
     private val foregroundAppQueryInterval = database.config().getForegroundAppQueryIntervalAsync().apply { observeForever {  } }
-    private val enableMultiAppDetection = database.config().experimentalFlags
-            .map { it and ExperimentalFlags.MULTI_APP_DETECTION == ExperimentalFlags.MULTI_APP_DETECTION }.ignoreUnchanged()
-            .apply {observeForever {  } }
 
     fun getForegroundAppQueryInterval() = foregroundAppQueryInterval.value ?: 0L
-    fun getEnableMultiAppDetection() = enableMultiAppDetection.value ?: false
 
     val defaultUserLogic = DefaultUserLogic(this)
     val realTimeLogic = RealTimeLogic(this)

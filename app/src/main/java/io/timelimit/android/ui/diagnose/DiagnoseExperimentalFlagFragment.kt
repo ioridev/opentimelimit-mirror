@@ -170,7 +170,19 @@ data class DiagnoseExperimentalFlagItem(
                         enableFlags = ExperimentalFlags.ENABLE_SOFT_BLOCKING,
                         disableFlags = ExperimentalFlags.ENABLE_SOFT_BLOCKING,
                         enable = { true }
-                )
+                ),
+            DiagnoseExperimentalFlagItem(
+                label = R.string.diagnose_exf_ifd,
+                enableFlags = ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION,
+                disableFlags = ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION,
+                enable = { true }
+            ),
+            DiagnoseExperimentalFlagItem(
+                label = R.string.diagnose_exf_fda,
+                enableFlags = ExperimentalFlags.DISABLE_FG_APP_DETECTION_FALLBACK,
+                disableFlags = ExperimentalFlags.DISABLE_FG_APP_DETECTION_FALLBACK,
+                enable = { true }
+            )
         )
     }
 }

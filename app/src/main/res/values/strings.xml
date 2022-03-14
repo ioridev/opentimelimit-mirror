@@ -439,6 +439,8 @@
     <string name="diagnose_exf_bss">Automatically disable splitscreen using the accessibility service</string>
     <string name="diagnose_exf_hmw">Hide manipulation warning in the category list</string>
     <string name="diagnose_exf_esb">Do not use a overlay or the home button for blocking</string>
+    <string name="diagnose_exf_ifd">Use new App detection method</string>
+    <string name="diagnose_exf_fda">Disable fallback at the App detection</string>
 
     <string name="diagnose_bat_title">Battery</string>
     <string name="diagnose_bat_status">Status: %s</string>

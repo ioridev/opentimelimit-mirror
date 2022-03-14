@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ import io.timelimit.android.integration.platform.ForegroundApp
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
 
 abstract class ForegroundAppHelper {
-    abstract suspend fun getForegroundApps(queryInterval: Long, enableMultiAppDetection: Boolean): Set<ForegroundApp>
+    abstract suspend fun getForegroundApps(queryInterval: Long, experimentalFlags: Long): Set<ForegroundApp>
     abstract fun getPermissionStatus(): RuntimePermissionStatus
 
     companion object {
@@ -32,7 +32,9 @@ abstract class ForegroundAppHelper {
             if (instance == null) {
                 synchronized(lock) {
                     if (instance == null) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            instance = QForegroundAppHelper(context.applicationContext)
+                        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                             instance = LollipopForegroundAppHelper(context.applicationContext)
                         } else {
                             instance = CompatForegroundAppHelper(context.applicationContext)

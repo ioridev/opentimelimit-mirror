@@ -395,6 +395,8 @@
     <string name="diagnose_exf_bss">Splitscreen automatisch beenden per Bedienhilfe</string>
     <string name="diagnose_exf_hmw">Manipulationswarnung in der Kategorienliste ausblenden</string>
     <string name="diagnose_exf_esb">Overlay und Home-Button nicht zum Sperren verwenden</string>
+    <string name="diagnose_exf_ifd">neue App-Erkennungs-Methode verwenden</string>
+    <string name="diagnose_exf_fda">Fallback bei der App-Erkennung deaktivieren</string>
 
     <string name="diagnose_bat_title">Akku</string>
     <string name="diagnose_bat_status">Status: %s</string>
