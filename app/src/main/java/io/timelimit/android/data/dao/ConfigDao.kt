@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -190,4 +190,7 @@ abstract class ConfigDao {
 
     suspend fun getCustomOrganizationName(): String = getValueOfKeyCoroutine(ConfigurationItemType.CustomOrganizationName) ?: ""
     fun setCustomOrganizationName(value: String) = updateValueSync(ConfigurationItemType.CustomOrganizationName, value)
+
+    fun getAnnoyManualUnblockCounter() = getValueOfKeySync(ConfigurationItemType.AnnoyManualUnblockCounter).let { it?.toInt() ?: 0 }
+    fun setAnoyManualUnblockCounterSync(counter: Int) { updateValueSync(ConfigurationItemType.AnnoyManualUnblockCounter, counter.toString()) }
 }

@@ -85,7 +85,8 @@ enum class ConfigurationItemType {
     DefaultHomescreen,
     HomescreenDelay,
     ParentModeKey,
-    CustomOrganizationName
+    CustomOrganizationName,
+    AnnoyManualUnblockCounter,
 }
 
 object ConfigurationItemTypeUtil {
@@ -100,6 +101,7 @@ object ConfigurationItemTypeUtil {
     private const val HOMESCREEN_DELAY = 9
     private const val PARENT_MODE_KEY = 10
     private const val CUSTOM_ORGANIZATION_NAME = 11
+    private const val ANNOY_MANUAL_UNBLOCK_COUNTER = 12
 
     val TYPES = listOf(
             ConfigurationItemType.OwnDeviceId,
@@ -112,7 +114,8 @@ object ConfigurationItemTypeUtil {
             ConfigurationItemType.DefaultHomescreen,
             ConfigurationItemType.HomescreenDelay,
             ConfigurationItemType.ParentModeKey,
-            ConfigurationItemType.CustomOrganizationName
+            ConfigurationItemType.CustomOrganizationName,
+            ConfigurationItemType.AnnoyManualUnblockCounter
     )
 
     fun serialize(value: ConfigurationItemType) = when(value) {
@@ -127,6 +130,7 @@ object ConfigurationItemTypeUtil {
         ConfigurationItemType.HomescreenDelay -> HOMESCREEN_DELAY
         ConfigurationItemType.ParentModeKey -> PARENT_MODE_KEY
         ConfigurationItemType.CustomOrganizationName -> CUSTOM_ORGANIZATION_NAME
+        ConfigurationItemType.AnnoyManualUnblockCounter -> ANNOY_MANUAL_UNBLOCK_COUNTER
     }
 
     fun parse(value: Int) = when(value) {
@@ -141,6 +145,7 @@ object ConfigurationItemTypeUtil {
         HOMESCREEN_DELAY -> ConfigurationItemType.HomescreenDelay
         PARENT_MODE_KEY -> ConfigurationItemType.ParentModeKey
         CUSTOM_ORGANIZATION_NAME -> ConfigurationItemType.CustomOrganizationName
+        ANNOY_MANUAL_UNBLOCK_COUNTER -> ConfigurationItemType.AnnoyManualUnblockCounter
         else -> throw IllegalArgumentException()
     }
 }
