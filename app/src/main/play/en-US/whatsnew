@@ -1,4 +1,1 @@
-- Anzeigen von mehr Details beim Blockieren von Hintergrundwiedergaben
-- Option zum Anzeigen der vom System gemeldeten Exit-Reasons hinzugefügt
-- Textänderungen
-- neues Verhalten bei Manipulationen, wenn die Geräte-Besitzer-Berechtigung vorliegt
+- new optional method for detecting the running App
