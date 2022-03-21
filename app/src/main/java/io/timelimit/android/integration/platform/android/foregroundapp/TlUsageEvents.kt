@@ -60,7 +60,7 @@ class TlUsageEvents (private val content: Parcel) {
         const val MAX_EVENT_TYPE = 31
         const val DUMMY_STRING = "null"
 
-        fun fromUsageEvents(input: UsageEvents): TlUsageEvents {
+        fun getParcel(input: UsageEvents): Parcel {
             val outerParcel = Parcel.obtain()
 
             val blob = try {
@@ -78,13 +78,15 @@ class TlUsageEvents (private val content: Parcel) {
                 innerParcel.unmarshall(blob, 0, blob.size)
                 innerParcel.setDataPosition(0)
 
-                return TlUsageEvents(innerParcel)
+                return innerParcel
             } catch (ex: Exception) {
                 innerParcel.recycle()
 
                 throw ex
             }
         }
+
+        fun fromUsageEvents(input: UsageEvents): TlUsageEvents = TlUsageEvents(getParcel(input))
     }
 
     private var free = false

@@ -384,6 +384,9 @@
     <string name="diagnose_fga_title">Erkennung der aktiven App</string>
     <string name="diagnose_fga_query_range">Abfragezeitraum</string>
     <string name="diagnose_fga_query_range_min">Minimal (Standard)</string>
+    <string name="diagnose_fga_bin_export_btn">binäre Nutzungsstatistik vom System exportieren</string>
+    <string name="diagnose_fga_txt_export_btn">Nutzungsstatistik vom System als Text exportieren</string>
+    <string name="diagnose_fga_export_toast_done">Export abgeschlossen</string>
 
     <string name="diagnose_exf_title">Experimentelle Parameter</string>
     <string name="diagnose_exf_slb">Apps auf Systemebene sperren</string>

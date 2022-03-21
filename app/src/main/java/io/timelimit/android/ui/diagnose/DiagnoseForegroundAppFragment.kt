@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,17 +15,28 @@
  */
 package io.timelimit.android.ui.diagnose
 
+import android.app.Activity
+import android.app.usage.UsageEvents
+import android.app.usage.UsageStatsManager
+import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.util.JsonWriter
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioButton
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
+import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.databinding.DiagnoseForegroundAppFragmentBinding
+import io.timelimit.android.integration.platform.android.foregroundapp.InstanceIdForegroundAppHelper
+import io.timelimit.android.integration.platform.android.foregroundapp.TlUsageEvents
 import io.timelimit.android.livedata.liveDataFromNonNullValue
 import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.livedata.map
@@ -34,9 +45,15 @@ import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticationFab
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.util.TimeTextUtil
+import java.io.BufferedWriter
+import java.io.OutputStreamWriter
 
 class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
     companion object {
+        private const val LOG_TAG = "DiagnoseForegroundApp"
+        private const val REQ_EXPORT_BINARY = 1
+        private const val REQ_EXPORT_TEXT = 2
+
         private val buttonIntervals = listOf(
                 0,
                 5 * 1000,
@@ -75,7 +92,7 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
         binding.fab.setOnClickListener { activity.showAuthenticationScreen() }
 
         val allButtons = buttonIntervals.mapIndexed { index, interval ->
-            RadioButton(context!!).apply {
+            RadioButton(requireContext()).apply {
                 id = index
 
                 if (interval == 0) {
@@ -90,9 +107,7 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
 
         allButtons.forEach { binding.radioGroup.addView(it) }
 
-        currentId.observe(this, Observer {
-            binding.radioGroup.check(it)
-        })
+        currentId.observe(viewLifecycleOwner) { binding.radioGroup.check(it) }
 
         binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
             val oldId = currentId.value
@@ -110,8 +125,129 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
             }
         }
 
+        binding.osUsageStatsTextExportButton.isEnabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+        binding.osUsageStatsTextExportButton.setOnClickListener {
+            if (auth.requestAuthenticationOrReturnTrue()) {
+                try {
+                    startActivityForResult(
+                        Intent(Intent.ACTION_CREATE_DOCUMENT)
+                            .addCategory(Intent.CATEGORY_OPENABLE)
+                            .setType("text/json")
+                            .putExtra(Intent.EXTRA_TITLE, "timelimit-usage-stats-export.json"),
+                        REQ_EXPORT_TEXT
+                    )
+                } catch (ex: Exception) {
+                    Toast.makeText(context, R.string.error_general, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        binding.osUsageStatsBinaryExportButton.isEnabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+        binding.osUsageStatsBinaryExportButton.setOnClickListener {
+            if (auth.requestAuthenticationOrReturnTrue()) {
+                try {
+                    startActivityForResult(
+                        Intent(Intent.ACTION_CREATE_DOCUMENT)
+                            .addCategory(Intent.CATEGORY_OPENABLE)
+                            .setType("application/octet-stream")
+                            .putExtra(Intent.EXTRA_TITLE, "timelimit-usage-stats-export.bin"),
+                        REQ_EXPORT_BINARY
+                    )
+                } catch (ex: Exception) {
+                    Toast.makeText(context, R.string.error_general, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
         return binding.root
     }
 
     override fun getCustomTitle(): LiveData<String?> = liveDataFromNullableValue("${getString(R.string.diagnose_fga_title)} < ${getString(R.string.about_diagnose_title)} < ${getString(R.string.main_tab_overview)}")
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQ_EXPORT_BINARY) {
+            if (resultCode == Activity.RESULT_OK) {
+                val context = requireContext().applicationContext
+
+                Thread {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                        throw RuntimeException("unsupported os version")
+                    }
+
+                    try {
+                        val now = System.currentTimeMillis()
+                        val service = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                        val currentData = service.queryEvents(now - InstanceIdForegroundAppHelper.START_QUERY_INTERVAL, now)
+                        val parcel = TlUsageEvents.getParcel(currentData)
+                        val bytes = try { parcel.marshall() } finally { parcel.recycle() }
+
+                        context.contentResolver.openOutputStream(data!!.data!!)!!.use { stream ->
+                            stream.write(bytes)
+                        }
+
+                        Threads.mainThreadHandler.post {
+                            Toast.makeText(context, R.string.diagnose_fga_export_toast_done, Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (ex: Exception) {
+                        if (BuildConfig.DEBUG) {
+                            Log.w(LOG_TAG, "could not do export", ex)
+                        }
+
+                        Threads.mainThreadHandler.post {
+                            Toast.makeText(context, R.string.error_general, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }.start()
+            }
+        } else if (requestCode == REQ_EXPORT_TEXT) {
+            if (resultCode == Activity.RESULT_OK) {
+                val context = requireContext().applicationContext
+
+                Thread {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                        throw RuntimeException("unsupported os version")
+                    }
+
+                    try {
+                        val now = System.currentTimeMillis()
+                        val service = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                        val currentData = service.queryEvents(now - InstanceIdForegroundAppHelper.START_QUERY_INTERVAL, now)
+
+                        JsonWriter(BufferedWriter(OutputStreamWriter(context.contentResolver.openOutputStream(data!!.data!!)!!))).use { writer ->
+                            writer.setIndent("  ")
+
+                            writer.beginArray()
+
+                            val event = UsageEvents.Event()
+
+                            while (currentData.getNextEvent(event)) {
+                                writer.beginObject()
+
+                                writer.name("timestamp").value(event.timeStamp)
+                                writer.name("type").value(event.eventType)
+                                writer.name("packageName").value(event.packageName)
+                                writer.name("className").value(event.className)
+
+                                writer.endObject()
+                            }
+
+                            writer.endArray()
+                        }
+
+                        Threads.mainThreadHandler.post {
+                            Toast.makeText(context, R.string.diagnose_fga_export_toast_done, Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (ex: Exception) {
+                        if (BuildConfig.DEBUG) {
+                            Log.w(LOG_TAG, "could not do export", ex)
+                        }
+
+                        Threads.mainThreadHandler.post {
+                            Toast.makeText(context, R.string.error_general, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }.start()
+            }
+        } else super.onActivityResult(requestCode, resultCode, data)
+    }
 }

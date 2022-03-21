@@ -1,5 +1,5 @@
 <!--
-  TimeLimit Copyright <C> 2019 Jonas Lochmann
+  TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation version 3 of the License.
@@ -48,6 +48,33 @@
 
                         <RadioGroup
                             android:id="@+id/radio_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    app:cardUseCompatPadding="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:padding="8dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <Button
+                            android:id="@+id/os_usage_stats_text_export_button"
+                            style="?materialButtonOutlinedStyle"
+                            android:text="@string/diagnose_fga_txt_export_btn"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                        <Button
+                            android:id="@+id/os_usage_stats_binary_export_button"
+                            style="?materialButtonOutlinedStyle"
+                            android:text="@string/diagnose_fga_bin_export_btn"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
 

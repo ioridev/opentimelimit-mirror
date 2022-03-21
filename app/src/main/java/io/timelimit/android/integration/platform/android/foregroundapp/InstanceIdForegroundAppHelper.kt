@@ -27,7 +27,7 @@ import io.timelimit.android.integration.platform.RuntimePermissionStatus
 @TargetApi(Build.VERSION_CODES.Q)
 class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHelper(context) {
     companion object {
-        private const val START_QUERY_INTERVAL = 1000 * 60 * 60 * 24 * 3 // 3 days
+        const val START_QUERY_INTERVAL = 1000 * 60 * 60 * 24 * 3 // 3 days
         private const val TOLERANCE = 3000L
     }
 

@@ -421,6 +421,9 @@
     <string name="diagnose_clock_day_of_week">Day of week (0 = monday, ...): %d</string>
     <string name="diagnose_clock_day_of_epoch">Day of epoch: %d</string>
     <string name="diagnose_clock_minute_of_week">Minute of week: %d</string>
+    <string name="diagnose_fga_bin_export_btn">Export binary OS usage stats</string>
+    <string name="diagnose_fga_txt_export_btn">Export text OS usage stats</string>
+    <string name="diagnose_fga_export_toast_done">Export finished</string>
 
     <string name="diagnose_connection_title">Connection status</string>
     <string name="diagnose_connection_network_id">Network ID</string>
