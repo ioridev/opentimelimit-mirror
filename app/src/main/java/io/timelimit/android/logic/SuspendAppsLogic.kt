@@ -37,7 +37,9 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
     private var batteryStatus = appLogic.platformIntegration.getBatteryStatus()
     private val pendingSync = AtomicBoolean(true)
     private val executor = Executors.newSingleThreadExecutor()
+    private var lastEnableBlockingAtSystemLevel = false
     private var lastSuspendedApps: List<String>? = null
+    private var lastBlockedFeatures: Set<String>? = null
     private val userAndDeviceRelatedDataLive = appLogic.database.derivedDataDao().getUserAndDeviceRelatedDataLive()
     private var didLoadUserAndDeviceRelatedData = false
 
@@ -76,19 +78,36 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
     private fun updateBlockingSync() {
         if (!didLoadUserAndDeviceRelatedData) return
 
+        val hasPermission = appLogic.platformIntegration.getCurrentProtectionLevel() == ProtectionLevel.DeviceOwner
+
+        if (!hasPermission) {
+            lastDefaultCategory = null
+            lastAllowedCategoryList = emptySet()
+            lastCategoryApps = emptyList()
+            lastSuspendedApps = emptyList()
+            lastBlockedFeatures = emptySet()
+
+            return
+        }
+
         val userAndDeviceRelatedData = userAndDeviceRelatedDataLive.value
+        val featureCategoryApps = userAndDeviceRelatedData?.userRelatedData?.categoryApps.orEmpty()
+            .filter {
+                it.appSpecifier.packageName.startsWith(DummyApps.FEATURE_APP_PREFIX) && it.appSpecifier.activityName == null
+            }
 
         val isRestrictedUser = userAndDeviceRelatedData?.userRelatedData?.user?.type == UserType.Child
         val enableBlockingAtSystemLevel = userAndDeviceRelatedData?.deviceRelatedData?.isExperimentalFlagSetSync(ExperimentalFlags.SYSTEM_LEVEL_BLOCKING) ?: false
-        val hasPermission = appLogic.platformIntegration.getCurrentProtectionLevel() == ProtectionLevel.DeviceOwner
-        val enableBlocking = isRestrictedUser && enableBlockingAtSystemLevel && hasPermission
+        val hasManagedFeatures = featureCategoryApps.isNotEmpty()
+        val enableBlocking = isRestrictedUser && (enableBlockingAtSystemLevel || hasManagedFeatures)
 
         if (!enableBlocking) {
-            appLogic.platformIntegration.stopSuspendingForAllApps()
-            lastSuspendedApps = emptyList()
-
+            lastDefaultCategory = null
             lastAllowedCategoryList = emptySet()
             lastCategoryApps = emptyList()
+            applySuspendedApps(emptyList())
+            applyBlockedFeatures(emptySet())
+
             return
         }
 
@@ -130,31 +149,42 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
 
         if (
                 categoryIdsToAllow != lastAllowedCategoryList || categoryApps != lastCategoryApps ||
-                installedAppsModified.getAndSet(false) || defaultCategory != lastDefaultCategory
+                installedAppsModified.getAndSet(false) || defaultCategory != lastDefaultCategory ||
+                enableBlockingAtSystemLevel != lastEnableBlockingAtSystemLevel
         ) {
+            val appsToBlock = if (enableBlockingAtSystemLevel) {
+                val installedApps = appLogic.platformIntegration.getLocalAppPackageNames()
+                val prepared = getAppsWithCategories(installedApps, userRelatedData, blockingAtActivityLevel, userAndDeviceRelatedData.deviceRelatedData.deviceEntry.id)
+                val appsToBlock = mutableListOf<String>()
+
+                installedApps.forEach { packageName ->
+                    val appCategories = prepared[packageName] ?: emptySet()
+
+                    if (appCategories.find { categoryId -> categoryIdsToAllow.contains(categoryId) } == null) {
+                        if (!AndroidIntegrationApps.appsToNotSuspend.contains(packageName)) {
+                            appsToBlock.add(packageName)
+                        }
+                    }
+                }
+
+                appsToBlock
+            } else emptyList()
+
+            val featuresToBlock = featureCategoryApps.filter { !categoryIdsToAllow.contains(it.categoryId) }
+                .map { it.appSpecifierString.substring(DummyApps.FEATURE_APP_PREFIX.length) }
+                .toSet()
+
+            applySuspendedApps(appsToBlock)
+            applyBlockedFeatures(featuresToBlock)
+
             lastAllowedCategoryList = categoryIdsToAllow
             lastCategoryApps = categoryApps
             lastDefaultCategory = defaultCategory
-
-            val installedApps = appLogic.platformIntegration.getLocalAppPackageNames()
-            val prepared = getAppsWithCategories(installedApps, userRelatedData, blockingAtActivityLevel)
-            val appsToBlock = mutableListOf<String>()
-
-            installedApps.forEach { packageName ->
-                val appCategories = prepared[packageName] ?: emptySet()
-
-                if (appCategories.find { categoryId -> categoryIdsToAllow.contains(categoryId) } == null) {
-                    if (!AndroidIntegrationApps.appsToNotSuspend.contains(packageName)) {
-                        appsToBlock.add(packageName)
-                    }
-                }
-            }
-
-            applySuspendedApps(appsToBlock)
+            lastEnableBlockingAtSystemLevel = enableBlockingAtSystemLevel
         }
     }
 
-    private fun getAppsWithCategories(packageNames: List<String>, data: UserRelatedData, blockingAtActivityLevel: Boolean): Map<String, Set<String>> {
+    private fun getAppsWithCategories(packageNames: List<String>, data: UserRelatedData, blockingAtActivityLevel: Boolean, deviceId: String): Map<String, Set<String>> {
         val categoryForUnassignedApps = data.categoryById[data.user.categoryForNotAssignedApps]
         val categoryForOtherSystemApps = data.findCategoryAppByPackageAndActivityName(DummyApps.NOT_ASSIGNED_SYSTEM_IMAGE_APP, null)?.categoryId?.let { data.categoryById[it] }
 
@@ -181,7 +211,9 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
 
             return result
         } else {
-            val categoryByPackageName = data.categoryApps.associateBy { it.appSpecifier.packageName }
+            val categoryByPackageName = data.categoryApps
+                .filter { it.appSpecifier.activityName == null }
+                .associateBy { it.appSpecifier.packageName }
 
             val result = mutableMapOf<String, Set<String>>()
 
@@ -212,5 +244,13 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
             appLogic.platformIntegration.setSuspendedApps(packageNames, true)
             lastSuspendedApps = packageNames
         }
+    }
+
+    private fun applyBlockedFeatures(featureNames: Set<String>) {
+        if (featureNames == lastBlockedFeatures) return // nothing to do
+
+        appLogic.platformIntegration.setBlockedFeatures(featureNames)
+
+        lastBlockedFeatures = featureNames
     }
 }

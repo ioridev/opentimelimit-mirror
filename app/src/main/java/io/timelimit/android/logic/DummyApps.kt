@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,23 +24,33 @@ import io.timelimit.android.data.model.AppRecommendation
 
 object DummyApps {
     const val NOT_ASSIGNED_SYSTEM_IMAGE_APP = ".dummy.system_image"
+    const val FEATURE_APP_PREFIX = ".feature."
 
     fun getTitle(packageName: String, context: Context): String? = when (packageName) {
         NOT_ASSIGNED_SYSTEM_IMAGE_APP -> context.getString(R.string.dummy_app_unassigned_system_image_app)
         else -> null
     }
 
-    fun getIcon(packageName: String, context: Context): Drawable? = when (packageName) {
-        NOT_ASSIGNED_SYSTEM_IMAGE_APP -> ContextCompat.getDrawable(context, R.mipmap.ic_system_app)
-        else -> null
+    fun getIcon(packageName: String, context: Context): Drawable? {
+        val usePlaceholder = packageName == NOT_ASSIGNED_SYSTEM_IMAGE_APP || packageName.startsWith(FEATURE_APP_PREFIX)
+
+        return if (usePlaceholder) ContextCompat.getDrawable(context, R.mipmap.ic_system_app)
+        else null
     }
 
     fun getApps(context: Context): List<App> = listOf(
-            App(
-                    packageName = NOT_ASSIGNED_SYSTEM_IMAGE_APP,
-                    title = getTitle(NOT_ASSIGNED_SYSTEM_IMAGE_APP, context)!!,
-                    isLaunchable = false,
-                    recommendation = AppRecommendation.None
-            )
+        App(
+            packageName = NOT_ASSIGNED_SYSTEM_IMAGE_APP,
+            title = getTitle(NOT_ASSIGNED_SYSTEM_IMAGE_APP, context)!!,
+            isLaunchable = false,
+            recommendation = AppRecommendation.None
+        )
+    )
+
+    fun forFeature(id: String, title: String) = App(
+        packageName = FEATURE_APP_PREFIX + id,
+        title = title,
+        isLaunchable = false,
+        recommendation = AppRecommendation.None
     )
 }

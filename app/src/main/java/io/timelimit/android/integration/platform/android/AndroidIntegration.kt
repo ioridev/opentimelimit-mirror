@@ -469,12 +469,29 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
 
                 enableSystemApps()
                 stopSuspendingForAllApps()
+                setBlockedFeatures(emptySet())
             }
 
             true
         } else {
             false
         }
+    }
+
+    override fun setBlockedFeatures(features: Set<String>): Boolean {
+        return if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
+            policyManager.isDeviceOwnerApp(context.packageName)
+        ) AndroidFeatures.applyBlockedFeatures(features, policyManager, deviceAdmin)
+        else false
+    }
+
+    override fun getFeatures(): List<PlatformFeature> {
+        return if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
+            policyManager.isDeviceOwnerApp(context.packageName)
+        ) AndroidFeatures.getFeaturesAssumingDeviceOwnerGranted()
+        else emptyList()
     }
 
     private fun enableSystemApps() {

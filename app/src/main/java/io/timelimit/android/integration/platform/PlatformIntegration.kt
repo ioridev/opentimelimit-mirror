@@ -63,6 +63,9 @@ abstract class PlatformIntegration(
     // returns true on success
     abstract fun setEnableSystemLockdown(enableLockdown: Boolean): Boolean
     // returns true on success
+    abstract fun setBlockedFeatures(features: Set<String>): Boolean
+    abstract fun getFeatures(): List<PlatformFeature>
+    // returns true on success
     abstract fun setLockTaskPackages(packageNames: List<String>): Boolean
 
     abstract fun getBatteryStatus(): BatteryStatus
@@ -251,3 +254,5 @@ enum class SystemPermissionConfirmationLevel {
     PermissionInfo,
     Suggestion
 }
+
+data class PlatformFeature (val id: String, val title: String)
