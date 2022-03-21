@@ -71,13 +71,6 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
 
-                        <Button
-                            android:id="@+id/os_usage_stats_binary_export_button"
-                            style="?materialButtonOutlinedStyle"
-                            android:text="@string/diagnose_fga_bin_export_btn"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 

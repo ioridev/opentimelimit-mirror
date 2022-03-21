@@ -16,7 +16,6 @@
 package io.timelimit.android.ui.diagnose
 
 import android.app.Activity
-import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
@@ -36,7 +35,7 @@ import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.databinding.DiagnoseForegroundAppFragmentBinding
 import io.timelimit.android.integration.platform.android.foregroundapp.InstanceIdForegroundAppHelper
-import io.timelimit.android.integration.platform.android.foregroundapp.TlUsageEvents
+import io.timelimit.android.integration.platform.android.foregroundapp.usagestats.DirectUsageStatsReader
 import io.timelimit.android.livedata.liveDataFromNonNullValue
 import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.livedata.map
@@ -51,7 +50,6 @@ import java.io.OutputStreamWriter
 class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
     companion object {
         private const val LOG_TAG = "DiagnoseForegroundApp"
-        private const val REQ_EXPORT_BINARY = 1
         private const val REQ_EXPORT_TEXT = 2
 
         private val buttonIntervals = listOf(
@@ -142,64 +140,13 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
             }
         }
 
-        binding.osUsageStatsBinaryExportButton.isEnabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-        binding.osUsageStatsBinaryExportButton.setOnClickListener {
-            if (auth.requestAuthenticationOrReturnTrue()) {
-                try {
-                    startActivityForResult(
-                        Intent(Intent.ACTION_CREATE_DOCUMENT)
-                            .addCategory(Intent.CATEGORY_OPENABLE)
-                            .setType("application/octet-stream")
-                            .putExtra(Intent.EXTRA_TITLE, "timelimit-usage-stats-export.bin"),
-                        REQ_EXPORT_BINARY
-                    )
-                } catch (ex: Exception) {
-                    Toast.makeText(context, R.string.error_general, Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-
         return binding.root
     }
 
     override fun getCustomTitle(): LiveData<String?> = liveDataFromNullableValue("${getString(R.string.diagnose_fga_title)} < ${getString(R.string.about_diagnose_title)} < ${getString(R.string.main_tab_overview)}")
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQ_EXPORT_BINARY) {
-            if (resultCode == Activity.RESULT_OK) {
-                val context = requireContext().applicationContext
-
-                Thread {
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                        throw RuntimeException("unsupported os version")
-                    }
-
-                    try {
-                        val now = System.currentTimeMillis()
-                        val service = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-                        val currentData = service.queryEvents(now - InstanceIdForegroundAppHelper.START_QUERY_INTERVAL, now)
-                        val parcel = TlUsageEvents.getParcel(currentData)
-                        val bytes = try { parcel.marshall() } finally { parcel.recycle() }
-
-                        context.contentResolver.openOutputStream(data!!.data!!)!!.use { stream ->
-                            stream.write(bytes)
-                        }
-
-                        Threads.mainThreadHandler.post {
-                            Toast.makeText(context, R.string.diagnose_fga_export_toast_done, Toast.LENGTH_SHORT).show()
-                        }
-                    } catch (ex: Exception) {
-                        if (BuildConfig.DEBUG) {
-                            Log.w(LOG_TAG, "could not do export", ex)
-                        }
-
-                        Threads.mainThreadHandler.post {
-                            Toast.makeText(context, R.string.error_general, Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }.start()
-            }
-        } else if (requestCode == REQ_EXPORT_TEXT) {
+        if (requestCode == REQ_EXPORT_TEXT) {
             if (resultCode == Activity.RESULT_OK) {
                 val context = requireContext().applicationContext
 
@@ -212,26 +159,41 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
                         val now = System.currentTimeMillis()
                         val service = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
                         val currentData = service.queryEvents(now - InstanceIdForegroundAppHelper.START_QUERY_INTERVAL, now)
+                        val reader = DirectUsageStatsReader(currentData)
 
-                        JsonWriter(BufferedWriter(OutputStreamWriter(context.contentResolver.openOutputStream(data!!.data!!)!!))).use { writer ->
-                            writer.setIndent("  ")
+                        try {
+                            JsonWriter(
+                                BufferedWriter(
+                                    OutputStreamWriter(
+                                        context.contentResolver.openOutputStream(
+                                            data!!.data!!
+                                        )!!
+                                    )
+                                )
+                            ).use { writer ->
+                                writer.setIndent("  ")
 
-                            writer.beginArray()
+                                writer.beginArray()
 
-                            val event = UsageEvents.Event()
+                                while (reader.loadNextEvent()) {
+                                    writer.beginObject()
 
-                            while (currentData.getNextEvent(event)) {
-                                writer.beginObject()
+                                    writer.name("timestamp").value(reader.timestamp)
+                                    writer.name("type").value(reader.eventType)
+                                    writer.name("packageName").value(reader.packageName)
+                                    writer.name("className").value(reader.className)
 
-                                writer.name("timestamp").value(event.timeStamp)
-                                writer.name("type").value(event.eventType)
-                                writer.name("packageName").value(event.packageName)
-                                writer.name("className").value(event.className)
+                                    val instanceId = try { reader.instanceId } catch (ex: Exception) { null }
 
-                                writer.endObject()
+                                    if (instanceId != null) writer.name("instanceId").value(instanceId)
+
+                                    writer.endObject()
+                                }
+
+                                writer.endArray()
                             }
-
-                            writer.endArray()
+                        } finally {
+                            reader.free()
                         }
 
                         Threads.mainThreadHandler.post {

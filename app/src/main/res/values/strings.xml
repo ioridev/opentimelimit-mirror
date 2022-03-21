@@ -421,7 +421,6 @@
     <string name="diagnose_clock_day_of_week">Day of week (0 = monday, ...): %d</string>
     <string name="diagnose_clock_day_of_epoch">Day of epoch: %d</string>
     <string name="diagnose_clock_minute_of_week">Minute of week: %d</string>
-    <string name="diagnose_fga_bin_export_btn">Export binary OS usage stats</string>
     <string name="diagnose_fga_txt_export_btn">Export text OS usage stats</string>
     <string name="diagnose_fga_export_toast_done">Export finished</string>
 
@@ -443,7 +442,6 @@
     <string name="diagnose_exf_hmw">Hide manipulation warning in the category list</string>
     <string name="diagnose_exf_esb">Do not use a overlay or the home button for blocking</string>
     <string name="diagnose_exf_ifd">Use new App detection method</string>
-    <string name="diagnose_exf_fda">Disable fallback at the App detection</string>
     <string name="diagnose_exf_soc">Enable strict overlay permission check</string>
 
     <string name="diagnose_bat_title">Battery</string>

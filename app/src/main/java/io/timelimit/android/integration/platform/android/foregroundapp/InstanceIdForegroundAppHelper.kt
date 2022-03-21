@@ -23,6 +23,8 @@ import androidx.core.util.size
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.integration.platform.ForegroundApp
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
+import io.timelimit.android.integration.platform.android.foregroundapp.usagestats.DirectUsageStatsReader
+import io.timelimit.android.integration.platform.android.foregroundapp.usagestats.UsageStatsConstants
 
 @TargetApi(Build.VERSION_CODES.Q)
 class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHelper(context) {
@@ -39,10 +41,6 @@ class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHe
         queryInterval: Long,
         experimentalFlags: Long
     ): Set<ForegroundApp> {
-        if (Build.VERSION.SDK_INT > 32) {
-            throw UntestedSystemVersionException()
-        }
-
         if (getPermissionStatus() != RuntimePermissionStatus.Granted) {
             throw SecurityException()
         }
@@ -72,23 +70,37 @@ class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHe
             val queryEndTime = now + TOLERANCE
 
             usageStatsManager.queryEvents(queryStartTime, queryEndTime)?.let { nativeEvents ->
-                val events = TlUsageEvents.fromUsageEvents(nativeEvents)
+                val events = DirectUsageStatsReader(nativeEvents)
 
-                while (events.readNextItem()) {
-                    lastEventTimestamp = events.timestamp
+                try {
+                    var isFirstEvent = true
 
-                    if (events.eventType == TlUsageEvents.DEVICE_STARTUP) {
-                        apps.clear()
-                    } else if (events.eventType == TlUsageEvents.MOVE_TO_FOREGROUND) {
-                        val app = ForegroundApp(events.packageName, events.className)
+                    while (events.loadNextEvent()) {
+                        // check the consistency
+                        if (events.timestamp < lastEventTimestamp && !isFirstEvent) {
+                            throw InstanceIdException.EventsNotSortedByTimestamp()
+                        }
 
-                        apps.put(events.instanceId, app)
-                    } else if (
-                        events.eventType == TlUsageEvents.MOVE_TO_BACKGROUND ||
-                        events.eventType == TlUsageEvents.ACTIVITY_STOPPED
-                    ) {
-                        apps.remove(events.instanceId)
+                        // process the event
+                        if (events.eventType == UsageStatsConstants.DEVICE_STARTUP) {
+                            apps.clear()
+                        } else if (events.eventType == UsageStatsConstants.MOVE_TO_FOREGROUND) {
+                            val app = ForegroundApp(events.packageName, events.className)
+
+                            apps.put(events.instanceId, app)
+                        } else if (
+                            events.eventType == UsageStatsConstants.MOVE_TO_BACKGROUND ||
+                            events.eventType == UsageStatsConstants.ACTIVITY_STOPPED
+                        ) {
+                            apps.remove(events.instanceId)
+                        }
+
+                        // save values for the next iteration and the next query
+                        isFirstEvent = false
+                        lastEventTimestamp = events.timestamp
                     }
+                } finally {
+                    events.free()
                 }
             }
 
@@ -106,5 +118,7 @@ class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHe
         return result
     }
 
-    class UntestedSystemVersionException: RuntimeException()
+    sealed class InstanceIdException(message: String): RuntimeException(message) {
+        class EventsNotSortedByTimestamp: InstanceIdException("events not sorted by timestamp")
+    }
 }

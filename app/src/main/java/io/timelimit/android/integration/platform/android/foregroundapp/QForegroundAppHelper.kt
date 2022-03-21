@@ -16,49 +16,25 @@
 package io.timelimit.android.integration.platform.android.foregroundapp
 
 import android.content.Context
-import android.util.Log
-import io.timelimit.android.BuildConfig
 import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.integration.platform.ForegroundApp
+import io.timelimit.android.integration.platform.android.foregroundapp.usagestats.DirectUsageStatsReader
+import java.security.SecureRandom
 
 class QForegroundAppHelper(context: Context): UsageStatsForegroundAppHelper(context) {
-    companion object {
-        private const val LOG_TAG = "QForegroundAppHelper"
-    }
-
     private val legacy = LollipopForegroundAppHelper(context)
     private val modern = InstanceIdForegroundAppHelper(context)
-    private var fallbackCounter = 0
+    private val forceNewMethod = SecureRandom().nextBoolean()
 
     override suspend fun getForegroundApps(
         queryInterval: Long,
         experimentalFlags: Long
     ): Set<ForegroundApp> {
-        val useInstanceIdForegroundAppDetection = experimentalFlags and ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION == ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION
-        val disableFallback = experimentalFlags and ExperimentalFlags.DISABLE_FG_APP_DETECTION_FALLBACK == ExperimentalFlags.DISABLE_FG_APP_DETECTION_FALLBACK
+        val canUseModern = DirectUsageStatsReader.instanceIdSupported
+        val didUserRequestModern = experimentalFlags and ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION == ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION
+        val useModern = forceNewMethod || didUserRequestModern
 
-        val result = if (useInstanceIdForegroundAppDetection && disableFallback) {
-            modern.getForegroundApps(queryInterval, experimentalFlags)
-        } else if (useInstanceIdForegroundAppDetection && fallbackCounter == 0) {
-            try {
-                modern.getForegroundApps(queryInterval, experimentalFlags)
-            } catch (ex: Exception) {
-                if (BuildConfig.DEBUG) {
-                    Log.d(LOG_TAG, "falling back to the legacy implementation", ex)
-                }
-
-                fallbackCounter = 100
-
-                legacy.getForegroundApps(queryInterval, experimentalFlags)
-            }
-        } else {
-            legacy.getForegroundApps(queryInterval, experimentalFlags)
-        }
-
-        if (fallbackCounter > 0) {
-            fallbackCounter -= 1
-        }
-
-        return result
+        return if (canUseModern && useModern) modern.getForegroundApps(queryInterval, experimentalFlags)
+        else legacy.getForegroundApps(queryInterval, experimentalFlags)
     }
 }
