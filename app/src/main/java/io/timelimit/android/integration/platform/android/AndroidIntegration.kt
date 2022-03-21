@@ -490,7 +490,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
         return if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
             policyManager.isDeviceOwnerApp(context.packageName)
-        ) AndroidFeatures.getFeaturesAssumingDeviceOwnerGranted()
+        ) AndroidFeatures.getFeaturesAssumingDeviceOwnerGranted(context)
         else emptyList()
     }
 

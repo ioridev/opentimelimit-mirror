@@ -1171,6 +1171,7 @@
     <string name="task_review_last_grant">This task was confirmed last time at %s</string>
 
     <string name="dummy_app_unassigned_system_image_app">not assigned Apps from the system image</string>
+    <string name="dummy_app_feature_adb">Developer Options</string>
 
     <string name="biometric_title">Biometric Authentication</string>
     <string name="biometric_title_enable">Enable Biometric Authentication</string>

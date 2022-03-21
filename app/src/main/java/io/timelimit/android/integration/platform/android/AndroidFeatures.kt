@@ -17,7 +17,9 @@ package io.timelimit.android.integration.platform.android
 
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
+import android.content.Context
 import android.os.UserManager
+import io.timelimit.android.R
 import io.timelimit.android.integration.platform.PlatformFeature
 
 object AndroidFeatures {
@@ -30,12 +32,12 @@ object AndroidFeatures {
         return true
     }
 
-    fun getFeaturesAssumingDeviceOwnerGranted(): List<PlatformFeature> {
+    fun getFeaturesAssumingDeviceOwnerGranted(context: Context): List<PlatformFeature> {
         val result = mutableListOf<PlatformFeature>()
 
         result.add(PlatformFeature(
             id = FEATURE_ADB,
-            title = "ADB"
+            title = context.getString(R.string.dummy_app_feature_adb)
         ))
 
         return result
