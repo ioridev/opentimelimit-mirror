@@ -29,6 +29,7 @@ import io.timelimit.android.data.model.*
 import io.timelimit.android.integration.platform.NewPermissionStatus
 import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
+import io.timelimit.android.ui.setup.SetupUnprovisionedCheck
 import io.timelimit.android.ui.user.create.DefaultCategories
 import io.timelimit.android.util.AndroidVersion
 import java.util.*
@@ -52,6 +53,8 @@ class AppSetupLogic(private val appLogic: AppLogic) {
             val allowedGamesCategoryId = IdGenerator.generateId()
 
             appLogic.database.runInTransaction {
+                SetupUnprovisionedCheck.checkSync(appLogic.database)
+
                 run {
                     // just for safety: delete everything
                     appLogic.database.deleteAllData()

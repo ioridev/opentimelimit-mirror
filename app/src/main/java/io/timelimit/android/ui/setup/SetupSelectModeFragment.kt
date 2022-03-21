@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +21,19 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
+import io.timelimit.android.async.Threads
+import io.timelimit.android.coroutines.executeAndWait
+import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.databinding.FragmentSetupSelectModeBinding
 import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.logic.DefaultAppLogic
@@ -35,6 +41,7 @@ import io.timelimit.android.ui.setup.parentmode.SetupParentmodeDialogFragment
 
 class SetupSelectModeFragment : Fragment() {
     companion object {
+        private const val LOG_TAG = "SetupSelectModeFragment"
         private const val REQUEST_SETUP_PARENT_MODE = 1
     }
 
@@ -66,18 +73,39 @@ class SetupSelectModeFragment : Fragment() {
         }
 
         binding.btnUninstall.setOnClickListener {
-            DefaultAppLogic.with(requireContext()).platformIntegration.disableDeviceAdmin()
+            val context = requireContext().applicationContext
+            val logic = DefaultAppLogic.with(requireContext())
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                startActivity(
-                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${requireContext().packageName}"))
+            runAsync {
+                try {
+                    Threads.database.executeAndWait { SetupUnprovisionedCheck.checkSync(logic.database) }
+
+                    logic.platformIntegration.disableDeviceAdmin()
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        context.startActivity(
+                            Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.parse("package:${requireContext().packageName}")
+                            )
                                 .addCategory(Intent.CATEGORY_DEFAULT)
                                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                )
-            } else {
-                startActivity(
-                        Intent(Intent.ACTION_UNINSTALL_PACKAGE, Uri.parse("package:${requireContext().packageName}"))
-                )
+                        )
+                    } else {
+                        context.startActivity(
+                            Intent(
+                                Intent.ACTION_UNINSTALL_PACKAGE,
+                                Uri.parse("package:${requireContext().packageName}")
+                            )
+                        )
+                    }
+                } catch (ex: Exception) {
+                    if (BuildConfig.DEBUG) {
+                        Log.w(LOG_TAG, "reset failed", ex)
+                    }
+
+                    Toast.makeText(context, R.string.error_general, Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
