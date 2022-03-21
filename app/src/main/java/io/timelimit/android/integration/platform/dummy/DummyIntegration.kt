@@ -72,7 +72,7 @@ class DummyIntegration(
         return foregroundAppPermission
     }
 
-    override fun getDrawOverOtherAppsPermissionStatus(): RuntimePermissionStatus {
+    override fun getDrawOverOtherAppsPermissionStatus(strictChecking: Boolean): RuntimePermissionStatus {
         return drawOverOtherApps
     }
 

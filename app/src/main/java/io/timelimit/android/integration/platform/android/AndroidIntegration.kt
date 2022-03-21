@@ -169,7 +169,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
     }
 
-    override fun getDrawOverOtherAppsPermissionStatus(): RuntimePermissionStatus = overlay.getOverlayPermissionStatus()
+    override fun getDrawOverOtherAppsPermissionStatus(strictChecking: Boolean): RuntimePermissionStatus = overlay.getOverlayPermissionStatus(strictChecking)
 
     override fun getNotificationAccessPermissionStatus(): NewPermissionStatus {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -735,7 +735,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
         }
         SystemPermission.Overlay -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (
-                overlay.getOverlayPermissionStatus() == RuntimePermissionStatus.NotGranted &&
+                overlay.getOverlayPermissionStatus(true) == RuntimePermissionStatus.NotGranted &&
                 confirmationLevel == SystemPermissionConfirmationLevel.None
             ) {
                 PermissionInfoConfirmDialog.newInstance(SystemPermission.Overlay)

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ class OverlayUtil(private var application: Application) {
             return
         }
 
-        if (getOverlayPermissionStatus() == RuntimePermissionStatus.NotGranted) {
+        if (getOverlayPermissionStatus(false) == RuntimePermissionStatus.NotGranted) {
             return
         }
 
@@ -89,19 +89,26 @@ class OverlayUtil(private var application: Application) {
 
     fun isOverlayShown() = currentView?.root?.isShown ?: false
 
-    fun getOverlayPermissionStatus() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-        if (checkAppOp() || Settings.canDrawOverlays(application))
+    fun getOverlayPermissionStatus(strictChecking: Boolean) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        if (checkAppOp(strictChecking) || Settings.canDrawOverlays(application))
             RuntimePermissionStatus.Granted
         else
             RuntimePermissionStatus.NotGranted
     else
         RuntimePermissionStatus.NotRequired
 
-    private fun checkAppOp(): Boolean {
+    private fun checkAppOp(strictChecking: Boolean): Boolean {
         if (systemOverlayOp == null) return false
 
-        val status = appsOpsManager.checkOpNoThrow(systemOverlayOp, Process.myUid(), application.packageName)
+        val mode1 = AppOps.getOpMode(systemOverlayOp, appsOpsManager, application)
 
-        return status == AppOpsManager.MODE_ALLOWED || status == AppOpsManager.MODE_IGNORED
+        if (mode1 != AppOps.Mode.Unknown) {
+            return mode1 == AppOps.Mode.Allowed
+        }
+
+        val mode2 = appsOpsManager.checkOpNoThrow(systemOverlayOp, Process.myUid(), application.packageName)
+
+        return if (strictChecking) mode2 == AppOpsManager.MODE_ALLOWED
+        else mode2 == AppOpsManager.MODE_ALLOWED || mode2 == AppOpsManager.MODE_IGNORED
     }
 }

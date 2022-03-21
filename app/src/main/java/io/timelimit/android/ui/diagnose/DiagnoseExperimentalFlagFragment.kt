@@ -182,6 +182,12 @@ data class DiagnoseExperimentalFlagItem(
                 enableFlags = ExperimentalFlags.DISABLE_FG_APP_DETECTION_FALLBACK,
                 disableFlags = ExperimentalFlags.DISABLE_FG_APP_DETECTION_FALLBACK,
                 enable = { true }
+            ),
+            DiagnoseExperimentalFlagItem(
+                label = R.string.diagnose_exf_soc,
+                enableFlags = ExperimentalFlags.STRICT_OVERLAY_CHECKING,
+                disableFlags = ExperimentalFlags.STRICT_OVERLAY_CHECKING,
+                enable = { true }
             )
         )
     }

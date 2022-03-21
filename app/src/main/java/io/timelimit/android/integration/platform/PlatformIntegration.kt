@@ -36,7 +36,7 @@ abstract class PlatformIntegration(
     abstract fun getLauncherAppPackageName(): String?
     abstract fun getCurrentProtectionLevel(): ProtectionLevel
     abstract fun getForegroundAppPermissionStatus(): RuntimePermissionStatus
-    abstract fun getDrawOverOtherAppsPermissionStatus(): RuntimePermissionStatus
+    abstract fun getDrawOverOtherAppsPermissionStatus(strictChecking: Boolean): RuntimePermissionStatus
     abstract fun getNotificationAccessPermissionStatus(): NewPermissionStatus
     abstract fun isAccessibilityServiceEnabled(): Boolean
     abstract fun disableDeviceAdmin()

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -767,6 +767,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
     private suspend fun getUpdateDeviceStatusAction(): UpdateDeviceStatusAction {
         val deviceEntry = appLogic.deviceEntry.waitForNullableValue()
+        val useStrictChecking = appLogic.database.config().isExperimentalFlagsSetAsync(ExperimentalFlags.STRICT_OVERLAY_CHECKING).waitForNonNullValue()
 
         var changes = UpdateDeviceStatusAction.empty
 
@@ -774,7 +775,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
             val protectionLevel = appLogic.platformIntegration.getCurrentProtectionLevel()
             val usageStatsPermission = appLogic.platformIntegration.getForegroundAppPermissionStatus()
             val notificationAccess = appLogic.platformIntegration.getNotificationAccessPermissionStatus()
-            val overlayPermission = appLogic.platformIntegration.getDrawOverOtherAppsPermissionStatus()
+            val overlayPermission = appLogic.platformIntegration.getDrawOverOtherAppsPermissionStatus(useStrictChecking)
             val accessibilityService = appLogic.platformIntegration.isAccessibilityServiceEnabled()
             val qOrLater = AndroidVersion.qOrLater
 

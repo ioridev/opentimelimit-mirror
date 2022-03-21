@@ -183,4 +183,5 @@ object ExperimentalFlags {
     const val ENABLE_SOFT_BLOCKING = 1024L
     const val INSTANCE_ID_FG_APP_DETECTION = 2048L
     const val DISABLE_FG_APP_DETECTION_FALLBACK = 4096L
+    const val STRICT_OVERLAY_CHECKING = 0x2000L
 }

@@ -444,6 +444,7 @@
     <string name="diagnose_exf_esb">Do not use a overlay or the home button for blocking</string>
     <string name="diagnose_exf_ifd">Use new App detection method</string>
     <string name="diagnose_exf_fda">Disable fallback at the App detection</string>
+    <string name="diagnose_exf_soc">Enable strict overlay permission check</string>
 
     <string name="diagnose_bat_title">Battery</string>
     <string name="diagnose_bat_status">Status: %s</string>
