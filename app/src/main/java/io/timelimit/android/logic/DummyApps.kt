@@ -21,10 +21,14 @@ import androidx.core.content.ContextCompat
 import io.timelimit.android.R
 import io.timelimit.android.data.model.App
 import io.timelimit.android.data.model.AppRecommendation
+import io.timelimit.android.integration.platform.ForegroundApp
 
 object DummyApps {
     const val NOT_ASSIGNED_SYSTEM_IMAGE_APP = ".dummy.system_image"
+    private const val MISSING_PERMISSION_APP = ".dummy.missing_usage_stats_permission"
     const val FEATURE_APP_PREFIX = ".feature."
+    private const val DUMMY_ACTIVITY = ".activity.dummy"
+    val MISSING_PERMISSION_FG_APP = ForegroundApp(MISSING_PERMISSION_APP, DUMMY_ACTIVITY)
 
     fun getTitle(packageName: String, context: Context): String? = when (packageName) {
         NOT_ASSIGNED_SYSTEM_IMAGE_APP -> context.getString(R.string.dummy_app_unassigned_system_image_app)

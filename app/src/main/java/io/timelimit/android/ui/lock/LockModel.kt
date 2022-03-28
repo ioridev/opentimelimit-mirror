@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,6 @@ import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.logic.blockingreason.AppBaseHandling
 import io.timelimit.android.logic.blockingreason.CategoryHandlingCache
 import io.timelimit.android.logic.blockingreason.CategoryItselfHandling
-import io.timelimit.android.logic.blockingreason.needsNetworkId
 
 class LockModel(application: Application): AndroidViewModel(application) {
     private val packageAndActivityNameLiveInternal = MutableLiveData<Pair<String, String?>>()
@@ -97,7 +96,7 @@ class LockModel(application: Application): AndroidViewModel(application) {
                     isSystemImageApp = logic.platformIntegration.isSystemImageApp(packageName)
             )
 
-            val needsNetworkId = appBaseHandling.needsNetworkId()
+            val needsNetworkId = appBaseHandling.needsNetworkId
 
             if (needsNetworkId != needsNetworkIdLive.value) {
                 needsNetworkIdLive.value = needsNetworkId
@@ -112,8 +111,10 @@ class LockModel(application: Application): AndroidViewModel(application) {
                     currentNetworkId = networkId
             )
 
-            if (appBaseHandling is AppBaseHandling.UseCategories) {
-                val categoryHandlings = appBaseHandling.categoryIds.map { handlingCache.get(it) }
+            val blockingCategories = appBaseHandling.getCategories(AppBaseHandling.GetCategoriesPurpose.Blocking)
+
+            if (blockingCategories.iterator().hasNext()) {
+                val categoryHandlings = blockingCategories.map { handlingCache.get(it) }
                 val blockingHandling = categoryHandlings.find { it.shouldBlockActivities }
 
                 value = if (blockingHandling == null) LockscreenContent.Close else LockscreenContent.Blocked.BlockedCategory(

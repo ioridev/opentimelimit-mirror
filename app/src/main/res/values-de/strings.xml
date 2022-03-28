@@ -121,6 +121,8 @@
     <string name="background_logic_error_internal">internes Problem</string>
     <string name="background_logic_using_extra_time">Extrazeit (%s)</string>
     <string name="background_logic_opening_lockscreen">Sperrbildschirm wird geöffnet</string>
+    <string name="background_logic_permission_sanction_title">Berechtigung fehlt</string>
+    <string name="background_logic_permission_sanction_text">nehme an, dass alles verwendet wird</string>
 
     <string name="background_logic_temporarily_allowed_title">Apps wurden vorübergehend erlaubt</string>
     <string name="background_logic_temporarily_allowed_text">Zum Rückgängig machen hier tippen oder Bildschirm ausschalten</string>

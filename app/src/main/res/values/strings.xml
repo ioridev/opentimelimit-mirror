@@ -154,6 +154,8 @@
     <string name="background_logic_error_internal">internal issue</string>
     <string name="background_logic_using_extra_time">Extra time (%s)</string>
     <string name="background_logic_opening_lockscreen">Opening lock screen</string>
+    <string name="background_logic_permission_sanction_title">Missing permission</string>
+    <string name="background_logic_permission_sanction_text">assuming that everything is used</string>
 
     <string name="background_logic_temporarily_allowed_title">Apps are temporarily allowed</string>
     <string name="background_logic_temporarily_allowed_text">Tap here or turn screen off to undo</string>

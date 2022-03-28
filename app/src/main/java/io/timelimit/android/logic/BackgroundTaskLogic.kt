@@ -31,7 +31,6 @@ import io.timelimit.android.data.model.derived.UserRelatedData
 import io.timelimit.android.date.DateInTimezone
 import io.timelimit.android.date.getMinuteOfWeek
 import io.timelimit.android.extensions.MinuteOfDay
-import io.timelimit.android.extensions.flattenToSet
 import io.timelimit.android.extensions.nextBlockedMinuteOfWeek
 import io.timelimit.android.integration.platform.AppStatusMessage
 import io.timelimit.android.integration.platform.NetworkId
@@ -41,7 +40,6 @@ import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.blockingreason.AppBaseHandling
 import io.timelimit.android.logic.blockingreason.CategoryHandlingCache
 import io.timelimit.android.logic.blockingreason.CategoryItselfHandling
-import io.timelimit.android.logic.blockingreason.needsNetworkId
 import io.timelimit.android.sync.actions.UpdateDeviceStatusAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 import io.timelimit.android.ui.lock.LockActivity
@@ -269,15 +267,22 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                     }
                 }
 
-                val foregroundApps = appLogic.platformIntegration.getForegroundApps(
-                    appLogic.getForegroundAppQueryInterval(),
-                    deviceRelatedData.experimentalFlags
-                )
+                val foregroundAppsOrNullOnMissingPermission = try {
+                    appLogic.platformIntegration.getForegroundApps(
+                        appLogic.getForegroundAppQueryInterval(),
+                        deviceRelatedData.experimentalFlags
+                    )
+                } catch (ex: SecurityException) {
+                    lastLoopException.postValue(ex)
+
+                    null
+                }
                 val audioPlaybackPackageName = appLogic.platformIntegration.getMusicPlaybackPackage()
                 val activityLevelBlocking = appLogic.deviceEntry.value?.enableActivityLevelBlocking ?: false
 
-                val foregroundAppWithBaseHandlings = foregroundApps.map { app ->
-                    app to AppBaseHandling.calculate(
+                val foregroundAppWithBaseHandlings = if (foregroundAppsOrNullOnMissingPermission != null) {
+                    foregroundAppsOrNullOnMissingPermission.map { app ->
+                        app to AppBaseHandling.calculate(
                             foregroundAppPackageName = app.packageName,
                             foregroundAppActivityName = app.activityName,
                             pauseForegroundAppBackgroundLoop = pauseForegroundAppBackgroundLoop,
@@ -285,8 +290,13 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                             deviceRelatedData = deviceRelatedData,
                             pauseCounting = !isScreenOn,
                             isSystemImageApp = appLogic.platformIntegration.isSystemImageApp(app.packageName)
+                        )
+                    }
+                } else listOf(
+                    DummyApps.MISSING_PERMISSION_FG_APP to AppBaseHandling.SanctionCountEverything(
+                        categoryIds = userRelatedData.categoryById.keys
                     )
-                }
+                )
 
                 val backgroundAppBaseHandling = AppBaseHandling.calculate(
                         foregroundAppPackageName = audioPlaybackPackageName,
@@ -299,14 +309,17 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                 )
 
                 val allAppsBaseHandlings = foregroundAppWithBaseHandlings.map { it.second } + listOf(backgroundAppBaseHandling)
-                val currentCategoryIds = allAppsBaseHandlings.map {
-                    if (it is AppBaseHandling.UseCategories) it.categoryIds else emptySet()
-                }.flattenToSet()
 
-                undisturbedCategoryUsageCounter.report(nowUptime, currentCategoryIds)
+                undisturbedCategoryUsageCounter.report(
+                    nowUptime,
+                    AppBaseHandling.getCategories(
+                        allAppsBaseHandlings,
+                        AppBaseHandling.GetCategoriesPurpose.DelayedSessionDurationCounting
+                    )
+                )
                 val recentlyStartedCategories = undisturbedCategoryUsageCounter.getRecentlyStartedCategories(nowUptime)
 
-                val needsNetworkId = foregroundAppWithBaseHandlings.find { it.second.needsNetworkId() } != null || backgroundAppBaseHandling.needsNetworkId()
+                val needsNetworkId = allAppsBaseHandlings.find { it.needsNetworkId } != null
                 val networkId: NetworkId? = if (needsNetworkId) appLogic.platformIntegration.getCurrentNetworkId() else null
 
                 fun reportStatusToCategoryHandlingCache(userRelatedData: UserRelatedData) {
@@ -320,26 +333,41 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
                 // check if should be blocked
                 val blockedForegroundApp = foregroundAppWithBaseHandlings.find { (_, foregroundAppBaseHandling) ->
-                    foregroundAppBaseHandling is AppBaseHandling.BlockDueToNoCategory ||
-                            (foregroundAppBaseHandling is AppBaseHandling.UseCategories && foregroundAppBaseHandling.categoryIds.find {
-                                categoryHandlingCache.get(it).shouldBlockActivities
-                            } != null)
+                    val noCategoryBlocking = foregroundAppBaseHandling is AppBaseHandling.BlockDueToNoCategory
+
+                    val byCategoryBlocking = foregroundAppBaseHandling
+                        .getCategories(AppBaseHandling.GetCategoriesPurpose.Blocking)
+                        .find {
+                            categoryHandlingCache.get(it).shouldBlockActivities
+                        } != null
+
+                    noCategoryBlocking || byCategoryBlocking
                 }?.first
 
-                val blockAudioPlayback = backgroundAppBaseHandling is AppBaseHandling.BlockDueToNoCategory ||
-                        (backgroundAppBaseHandling is AppBaseHandling.UseCategories && backgroundAppBaseHandling.categoryIds.find {
+                val blockAudioPlayback = kotlin.run {
+                    val noCategoryBlocking = backgroundAppBaseHandling is AppBaseHandling.BlockDueToNoCategory
+
+                    val byCategoryBlocking = backgroundAppBaseHandling
+                        .getCategories(AppBaseHandling.GetCategoriesPurpose.Blocking)
+                        .find {
                             val handling = categoryHandlingCache.get(it)
                             val blockAllNotifications = handling.blockAllNotifications is CategoryItselfHandling.BlockAllNotifications.Yes
 
                             handling.shouldBlockActivities || blockAllNotifications
-                        } != null)
+                        } != null
+
+                    noCategoryBlocking || byCategoryBlocking
+                }
 
                 // update times
                 val timeToSubtract = Math.min(previousMainLogicExecutionTime, maxUsedTimeToAdd)
 
-                val categoryHandlingsToCount = AppBaseHandling.getCategoriesForCounting(
-                        foregroundAppWithBaseHandlings.map { it.second } + listOf(backgroundAppBaseHandling)
+                val categoryIdsToCount = AppBaseHandling.getCategories(
+                    allAppsBaseHandlings,
+                    AppBaseHandling.GetCategoriesPurpose.UsageCounting
                 )
+
+                val categoryHandlingsToCount = categoryIdsToCount
                         .map { categoryHandlingCache.get(it) }
                         .filter { it.shouldCountTime }
 
@@ -536,7 +564,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                             text = appLogic.context.getString(R.string.background_logic_paused_text),
                             showSwitchToDefaultUserOption = deviceRelatedData.canSwitchToDefaultUser
                     )
-                    AppBaseHandling.Whitelist -> buildStatusMessageWithCurrentAppTitle(
+                    is AppBaseHandling.Whitelist -> buildStatusMessageWithCurrentAppTitle(
                             text = appLogic.context.getString(R.string.background_logic_whitelisted),
                             titleSuffix = suffix,
                             appPackageName = appPackageName,
@@ -553,11 +581,16 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                             appLogic.context.getString(R.string.background_logic_idle_text),
                             showSwitchToDefaultUserOption = deviceRelatedData.canSwitchToDefaultUser
                     )
+                    is AppBaseHandling.SanctionCountEverything -> AppStatusMessage(
+                        title = appLogic.context.getString(R.string.background_logic_permission_sanction_title) + suffix,
+                        text = appLogic.context.getString(R.string.background_logic_permission_sanction_text),
+                        showSwitchToDefaultUserOption = deviceRelatedData.canSwitchToDefaultUser
+                    )
                 }
 
                 val showBackgroundStatus = !(backgroundAppBaseHandling is AppBaseHandling.Idle) &&
                         !blockAudioPlayback &&
-                        foregroundApps.find { it.packageName == audioPlaybackPackageName } == null
+                        foregroundAppsOrNullOnMissingPermission?.find { it.packageName == audioPlaybackPackageName } == null
 
                 val statusMessage = if (blockedForegroundApp != null) {
                     buildStatusMessageWithCurrentAppTitle(
@@ -566,11 +599,19 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                             appActivityToShow = if (activityLevelBlocking) blockedForegroundApp.activityName else null
                     )
                 } else {
-                    val pagesForTheForegroundApps = foregroundAppWithBaseHandlings.sumBy { (_, foregroundAppBaseHandling) ->
-                        // category ids are never empty/ this would trigger an exception
-                        if (foregroundAppBaseHandling is AppBaseHandling.UseCategories) foregroundAppBaseHandling.categoryIds.size else 1
+                    val pagesForTheForegroundApps = foregroundAppWithBaseHandlings.sumOf { (_, foregroundAppBaseHandling) ->
+                        foregroundAppBaseHandling
+                            .getCategories(AppBaseHandling.GetCategoriesPurpose.ShowingInStatusNotification)
+                            .count()
+                            .coerceAtLeast(1)
                     }
-                    val pagesForTheBackgroundApp = if (!showBackgroundStatus) 0 else if (backgroundAppBaseHandling is AppBaseHandling.UseCategories) backgroundAppBaseHandling.categoryIds.size else 1
+
+                    val pagesForTheBackgroundApp = if (showBackgroundStatus) {
+                        backgroundAppBaseHandling.getCategories(AppBaseHandling.GetCategoriesPurpose.ShowingInStatusNotification)
+                            .count()
+                            .coerceAtLeast(1)
+                    } else 0
+
                     val totalPages = pagesForTheForegroundApps.coerceAtLeast(1) + pagesForTheBackgroundApp
                     val currentPage = (nowTimestamp / 3000 % totalPages).toInt()
 
@@ -594,7 +635,10 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                             while (listItemIndex < foregroundAppWithBaseHandlings.size) {
                                 val item = foregroundAppWithBaseHandlings[listItemIndex]
                                 val handling = item.second
-                                val itemLength = if (handling is AppBaseHandling.UseCategories) handling.categoryIds.size else 1
+                                val itemLength = handling
+                                    .getCategories(AppBaseHandling.GetCategoriesPurpose.ShowingInStatusNotification)
+                                    .count()
+                                    .coerceAtLeast(1)
 
                                 if (pageWithin < totalIndex + itemLength) {
                                     indexWithinListItem = pageWithin - totalIndex
@@ -607,9 +651,11 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
                             val (app, handling) = foregroundAppWithBaseHandlings[listItemIndex]
 
-                            if (handling is AppBaseHandling.UseCategories) {
-                                val categoryId = handling.categoryIds.toList()[indexWithinListItem]
+                            val categoryId = handling
+                                .getCategories(AppBaseHandling.GetCategoriesPurpose.ShowingInStatusNotification)
+                                .elementAtOrNull(indexWithinListItem)
 
+                            if (categoryId != null) {
                                 buildNotificationForAppWithCategoryUsage(
                                         appPackageName = app.packageName,
                                         appActivityToShow = if (activityLevelBlocking) app.activityName else null,
@@ -628,9 +674,12 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                     } else {
                         val pageWithin = currentPage - pagesForTheForegroundApps
 
-                        if (backgroundAppBaseHandling is AppBaseHandling.UseCategories) {
-                            val categoryId = backgroundAppBaseHandling.categoryIds.toList()[pageWithin]
+                        val categoryId = backgroundAppBaseHandling
+                            .getCategories(AppBaseHandling.GetCategoriesPurpose.ShowingInStatusNotification)
+                            .asIterable()
+                            .elementAtOrNull(pageWithin)
 
+                        if (categoryId != null) {
                             buildNotificationForAppWithCategoryUsage(
                                     appPackageName = audioPlaybackPackageName,
                                     appActivityToShow = null,
