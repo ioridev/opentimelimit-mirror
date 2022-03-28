@@ -95,7 +95,7 @@ abstract class PlatformIntegration(
     var systemClockChangeListener: Runnable? = null
 }
 
-data class ForegroundApp(val packageName: String, val activityName: String)
+data class ForegroundApp(val packageName: String, val activityName: String?)
 
 enum class ProtectionLevel {
     None, SimpleDeviceAdmin, PasswordDeviceAdmin, DeviceOwner

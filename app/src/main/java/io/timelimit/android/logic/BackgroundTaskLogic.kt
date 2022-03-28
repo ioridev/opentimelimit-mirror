@@ -33,6 +33,7 @@ import io.timelimit.android.date.getMinuteOfWeek
 import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.extensions.nextBlockedMinuteOfWeek
 import io.timelimit.android.integration.platform.AppStatusMessage
+import io.timelimit.android.integration.platform.ForegroundApp
 import io.timelimit.android.integration.platform.NetworkId
 import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.integration.platform.android.AccessibilityService
@@ -293,7 +294,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                         )
                     }
                 } else listOf(
-                    DummyApps.MISSING_PERMISSION_FG_APP to AppBaseHandling.SanctionCountEverything(
+                    ForegroundApp(DummyApps.MISSING_PERMISSION_APP, null) to AppBaseHandling.SanctionCountEverything(
                         categoryIds = userRelatedData.categoryById.keys
                     )
                 )

@@ -248,7 +248,7 @@ class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHel
     // Android 9 (and maybe older versions too) do not report pausing Apps if they are disabled while running
     private fun doesActivityExist(app: ForegroundApp) = doesActivityExistSimple(app) || doesActivityExistAsAlias(app)
 
-    private fun doesActivityExistSimple(app: ForegroundApp) = try {
+    private fun doesActivityExistSimple(app: ForegroundApp) = app.activityName != null && try {
         packageManager.getActivityInfo(ComponentName(app.packageName, app.activityName), 0).isEnabled
     } catch (ex: PackageManager.NameNotFoundException) {
         false
