@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.google.android.material.snackbar.Snackbar
 import io.timelimit.android.R
@@ -37,6 +38,8 @@ import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.category.settings.addusedtime.AddUsedTimeDialogFragment
 import io.timelimit.android.ui.manage.category.settings.networks.ManageCategoryNetworksView
+import io.timelimit.android.ui.manage.category.settings.timewarning.CategoryTimeWarningStatus
+import io.timelimit.android.ui.manage.category.settings.timewarning.CategoryTimeWarningView
 import io.timelimit.android.ui.util.bind
 
 class CategorySettingsFragment : Fragment() {
@@ -44,6 +47,7 @@ class CategorySettingsFragment : Fragment() {
         private const val PERMISSION_REQUEST_CODE = 1
         private const val CHILD_ID = "childId"
         private const val CATEGORY_ID = "categoryId"
+        private const val TIME_WARNING_STATUS = "timeWarningStatus"
 
         fun newInstance(childId: String, categoryId: String) = CategorySettingsFragment().apply {
             arguments = Bundle().apply {
@@ -58,10 +62,35 @@ class CategorySettingsFragment : Fragment() {
     private val childId: String get() = requireArguments().getString(CHILD_ID)!!
     private val categoryId: String get() = requireArguments().getString(CATEGORY_ID)!!
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    private val timeWarningStatus = MutableLiveData<CategoryTimeWarningStatus>()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        timeWarningStatus.value = savedInstanceState?.getParcelable(TIME_WARNING_STATUS) ?: CategoryTimeWarningStatus.default
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = FragmentCategorySettingsBinding.inflate(inflater, container, false)
 
         val categoryEntry = appLogic.database.category().getCategoryByChildIdAndId(childId, categoryId)
+        val timeWarnings = appLogic.database.timeWarning().getItemsByCategoryIdLive(categoryId)
+
+        categoryEntry.observe(viewLifecycleOwner) {
+            if (it != null) {
+                timeWarningStatus.value?.let { old ->
+                    timeWarningStatus.value = old.update(it)
+                }
+            }
+        }
+
+        timeWarnings.observe(viewLifecycleOwner) {
+            if (it != null) {
+                timeWarningStatus.value?.let { old ->
+                    timeWarningStatus.value = old.update(it)
+                }
+            }
+        }
 
         val childDate = appLogic.database.user().getChildUserByIdLive(childId).mapToTimezone().switchMap { timezone ->
             liveDataFromFunction (1000 * 10L) { DateInTimezone.newInstance(appLogic.timeApi.getCurrentTimeInMillis(), timezone) }
@@ -117,11 +146,12 @@ class CategorySettingsFragment : Fragment() {
         )
 
         CategoryTimeWarningView.bind(
-                view = binding.timeWarnings,
-                auth = auth,
-                categoryLive = categoryEntry,
-                lifecycleOwner = this,
-                fragmentManager = parentFragmentManager
+            view = binding.timeWarnings,
+            auth = auth,
+            statusLive = timeWarningStatus,
+            lifecycleOwner = this,
+            fragmentManager = parentFragmentManager,
+            categoryId = categoryId
         )
 
         ManageCategoryNetworksView.bind(
@@ -238,5 +268,11 @@ class CategorySettingsFragment : Fragment() {
                 Toast.makeText(requireContext(), R.string.generic_runtime_permission_rejected, Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        timeWarningStatus.value?.let { outState.putParcelable(TIME_WARNING_STATUS, it) }
     }
 }

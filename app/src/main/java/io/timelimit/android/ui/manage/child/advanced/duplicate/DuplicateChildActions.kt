@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -91,9 +91,19 @@ object DuplicateChildActions {
                         result.add(UpdateCategoryTimeWarningsAction(
                                 categoryId = newCategoryId,
                                 enable = true,
-                                flags = timeWarnings
+                                flags = timeWarnings,
+                                minutes = null
                         ))
                     }
+                }
+
+                oldCategory.additionalTimeWarnings.forEach { timeWarning ->
+                    result.add(UpdateCategoryTimeWarningsAction(
+                        categoryId = newCategoryId,
+                        enable = true,
+                        flags = 0,
+                        minutes = timeWarning.minutes
+                    ))
                 }
 
                 if (oldCategory.category.minBatteryLevelWhileCharging != 0 || oldCategory.category.minBatteryLevelMobile != 0) {

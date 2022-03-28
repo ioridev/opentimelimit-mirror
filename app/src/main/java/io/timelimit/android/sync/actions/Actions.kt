@@ -208,9 +208,20 @@ data class UpdateCategoryTemporarilyBlockedAction(val categoryId: String, val bl
         }
     }
 }
-data class UpdateCategoryTimeWarningsAction(val categoryId: String, val enable: Boolean, val flags: Int): ParentAction() {
+data class UpdateCategoryTimeWarningsAction(
+    val categoryId: String,
+    val enable: Boolean,
+    val flags: Int,
+    val minutes: Int?
+): ParentAction() {
     init {
         IdGenerator.assertIdValid(categoryId)
+
+        if (minutes != null) {
+            if (minutes < CategoryTimeWarning.MIN || minutes > CategoryTimeWarning.MAX) {
+                throw IllegalArgumentException()
+            }
+        }
     }
 }
 data class SetCategoryForUnassignedApps(val childId: String, val categoryId: String): ParentAction() {

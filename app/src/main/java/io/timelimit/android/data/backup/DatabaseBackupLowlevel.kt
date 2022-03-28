@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ object DatabaseBackupLowlevel {
     private const val USER_LIMIT_LOGIN_CATEGORY = "userLimitLoginCategory"
     private const val CATEGORY_NETWORK_ID = "categoryNetworkId"
     private const val CHILD_TASK = "childTask"
+    private const val CATEGORY_TIME_WARNINGS = "timeWarnings"
 
     fun outputAsBackupJson(database: Database, outputStream: OutputStream) {
         val writer = JsonWriter(OutputStreamWriter(outputStream, Charsets.UTF_8))
@@ -71,6 +72,14 @@ object DatabaseBackupLowlevel {
             writer.endArray()
         }
 
+        fun <T: JsonSerializable> handleCollection(name: String, items: List<T>) {
+            writer.name(name).beginArray()
+
+            items.forEach { it.serialize(writer) }
+
+            writer.endArray()
+        }
+
         handleCollection(APP) {offset, pageSize -> database.app().getAppPageSync(offset, pageSize) }
         handleCollection(CATEGORY) {offset: Int, pageSize: Int -> database.category().getCategoryPageSync(offset, pageSize) }
         handleCollection(CATEGORY_APP) { offset, pageSize -> database.categoryApp().getCategoryAppPageSync(offset, pageSize) }
@@ -90,6 +99,7 @@ object DatabaseBackupLowlevel {
         handleCollection(USER_LIMIT_LOGIN_CATEGORY) { offset, pageSize -> database.userLimitLoginCategoryDao().getAllowedContactPageSync(offset, pageSize) }
         handleCollection(CATEGORY_NETWORK_ID) { offset, pageSize -> database.categoryNetworkId().getPageSync(offset, pageSize) }
         handleCollection(CHILD_TASK) { offset, pageSize -> database.childTasks().getPageSync(offset, pageSize) }
+        handleCollection(CATEGORY_TIME_WARNINGS, database.timeWarning().getAllItemsSync())
 
         writer.endObject().flush()
     }
@@ -101,6 +111,7 @@ object DatabaseBackupLowlevel {
             var userLoginLimitCategories = emptyList<UserLimitLoginCategory>()
             var categoryNetworkId = emptyList<CategoryNetworkId>()
             var childTasks = emptyList<ChildTask>()
+            var timeWarnings = emptyList<CategoryTimeWarning>()
 
             database.deleteAllData()
 
@@ -261,6 +272,19 @@ object DatabaseBackupLowlevel {
 
                         reader.endArray()
                     }
+                    CATEGORY_TIME_WARNINGS -> {
+                        reader.beginArray()
+
+                        mutableListOf<CategoryTimeWarning>().let { list ->
+                            while (reader.hasNext()) {
+                                list.add(CategoryTimeWarning.parse(reader))
+                            }
+
+                            timeWarnings = list
+                        }
+
+                        reader.endArray()
+                    }
                     else -> reader.skipValue()
                 }
             }
@@ -269,6 +293,7 @@ object DatabaseBackupLowlevel {
             if (userLoginLimitCategories.isNotEmpty()) { database.userLimitLoginCategoryDao().addItemsSync(userLoginLimitCategories) }
             if (categoryNetworkId.isNotEmpty()) { database.categoryNetworkId().insertItemsSync(categoryNetworkId) }
             if (childTasks.isNotEmpty()) { database.childTasks().insertItemsSync(childTasks) }
+            if (timeWarnings.isNotEmpty()) { database.timeWarning().insertItemsSync(timeWarnings) }
         }
     }
 }

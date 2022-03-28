@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,8 @@ data class CategoryRelatedData(
         val rules: List<TimeLimitRule>,
         val usedTimes: List<UsedTimeItem>,
         val durations: List<SessionDuration>,
-        val networks: List<CategoryNetworkId>
+        val networks: List<CategoryNetworkId>,
+        val additionalTimeWarnings: List<CategoryTimeWarning>
 ) {
     companion object {
         fun load(category: Category, database: Database): CategoryRelatedData = database.runInUnobservedTransaction {
@@ -32,14 +33,28 @@ data class CategoryRelatedData(
             val usedTimes = database.usedTimes().getUsedTimeItemsByCategoryId(category.id)
             val durations = database.sessionDuration().getSessionDurationItemsByCategoryIdSync(category.id)
             val networks = database.categoryNetworkId().getByCategoryIdSync(category.id)
+            val additionalTimeWarnings = database.timeWarning().getItemsByCategoryIdSync(category.id)
 
             CategoryRelatedData(
                     category = category,
                     rules = rules,
                     usedTimes = usedTimes,
                     durations = durations,
-                    networks = networks
+                    networks = networks,
+                    additionalTimeWarnings = additionalTimeWarnings
             )
+        }
+    }
+
+    val allTimeWarningMinutes: Set<Int> by lazy {
+        mutableSetOf<Int>().also { result ->
+            CategoryTimeWarnings.durationInMinutesToBitIndex.entries.forEach { (durationInMinutes, bitIndex) ->
+                if (category.timeWarnings and (1 shl bitIndex) != 0) {
+                    result.add(durationInMinutes)
+                }
+            }
+
+            additionalTimeWarnings.forEach { result.add(it.minutes) }
         }
     }
 
@@ -49,6 +64,7 @@ data class CategoryRelatedData(
             updateTimes: Boolean,
             updateDurations: Boolean,
             updateNetworks: Boolean,
+            updateTimeWarnings: Boolean,
             database: Database
     ): CategoryRelatedData = database.runInUnobservedTransaction {
         if (category.id != this.category.id) {
@@ -59,8 +75,12 @@ data class CategoryRelatedData(
         val usedTimes = if (updateTimes) database.usedTimes().getUsedTimeItemsByCategoryId(category.id) else usedTimes
         val durations = if (updateDurations) database.sessionDuration().getSessionDurationItemsByCategoryIdSync(category.id) else durations
         val networks = if (updateNetworks) database.categoryNetworkId().getByCategoryIdSync(category.id) else networks
+        val additionalTimeWarnings = if (updateTimeWarnings) database.timeWarning().getItemsByCategoryIdSync(category.id) else additionalTimeWarnings
 
-        if (category == this.category && rules == this.rules && usedTimes == this.usedTimes && durations == this.durations && networks == this.networks) {
+        if (
+            category == this.category && rules == this.rules && usedTimes == this.usedTimes &&
+            durations == this.durations && networks == this.networks && additionalTimeWarnings == this.additionalTimeWarnings
+        ) {
             this
         } else {
             CategoryRelatedData(
@@ -68,7 +88,8 @@ data class CategoryRelatedData(
                     rules = rules,
                     usedTimes = usedTimes,
                     durations = durations,
-                    networks = networks
+                    networks = networks,
+                    additionalTimeWarnings = additionalTimeWarnings
             )
         }
     }

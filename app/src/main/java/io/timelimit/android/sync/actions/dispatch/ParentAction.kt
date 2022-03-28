@@ -608,6 +608,19 @@ object LocalDatabaseParentActionDispatcher {
                         database.category().updateCategorySync(modified)
                     }
 
+                    if (action.minutes != null) {
+                        if (action.enable) database.timeWarning().insertItemIgnoreConflictSync(
+                            CategoryTimeWarning(
+                                categoryId = action.categoryId,
+                                minutes = action.minutes
+                            )
+                        )
+                        else database.timeWarning().deleteItem(
+                            categoryId = action.categoryId,
+                            minutes = action.minutes
+                        )
+                    }
+
                     null
                 }
                 is UpdateCategoryBatteryLimit -> {

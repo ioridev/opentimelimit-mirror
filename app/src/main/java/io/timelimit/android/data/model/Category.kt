@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -227,15 +227,13 @@ data class Category(
 }
 
 object CategoryTimeWarnings {
-    val durationToBitIndex = mapOf(
-            1000L * 60 to 0, // 1 minute
-            1000L * 60 * 3 to 1, // 3 minutes
-            1000L * 60 * 5 to 2, // 5 minutes
-            1000L * 60 * 10 to 3, // 10 minutes
-            1000L * 60 * 15 to 4 // 15 minutes
+    val durationInMinutesToBitIndex = mapOf(
+        1 to 0,
+        3 to 1,
+        5 to 2,
+        10 to 3,
+        15 to 4
     )
-
-    val durations = durationToBitIndex.keys
 }
 
 object CategoryFlags {

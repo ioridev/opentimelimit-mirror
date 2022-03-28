@@ -924,6 +924,7 @@
 
     <string name="notification_channel_time_warning_title">Time warning</string>
     <string name="notification_channel_time_warning_text">Notification for childs if there is not much time remaining</string>
+    <string name="time_warning_custom_add">Add time warning</string>
 
     <string name="notification_filter_not_blocked_title">TimeLimit has blocked a notification</string>
     <string name="notification_filter_blocking_failed_title">TimeLimit could not block a notification</string>

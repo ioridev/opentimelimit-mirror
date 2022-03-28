@@ -302,6 +302,7 @@
 
     <string name="time_warning_title">Zeitwarnung</string>
     <string name="time_warning_desc">Wenn weniger Zeit als ausgewählt übrig ist, dann wird eine Benachrichtigung angezeigt</string>
+    <string name="time_warning_custom_add">Zeitwarnung hinzufügen</string>
 
     <string name="time_warning_not_title">Zeitwarnung für %s</string>
     <string name="time_warning_not_title_session">Sitzungsdauerwarnung für %s</string>

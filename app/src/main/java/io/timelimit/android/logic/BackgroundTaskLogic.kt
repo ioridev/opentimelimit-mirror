@@ -25,7 +25,6 @@ import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.coroutines.runAsyncExpectForever
 import io.timelimit.android.data.backup.DatabaseBackup
-import io.timelimit.android.data.model.CategoryTimeWarnings
 import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.data.model.derived.UserRelatedData
@@ -51,7 +50,6 @@ import io.timelimit.android.util.TimeTextUtil
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.*
 
@@ -362,33 +360,50 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                         val oldSessionDuration = handling.remainingSessionDuration?.let { it - timeToSubtractForCategory }
 
                         // trigger time warnings
-                        fun showTimeWarningNotification(title: Int, roundedNewTime: Long) {
-                            appLogic.platformIntegration.showTimeWarningNotification(
-                                    title = appLogic.context.getString(title, category.title),
-                                    text = TimeTextUtil.remaining(roundedNewTime.toInt(), appLogic.context)
-                            )
+                        fun handleTimeWarnings(
+                            notificationTitleStringResource: Int,
+                            roundedNewTimeInMilliseconds: Long
+                        ) {
+                            val roundedNewTimeInMinutes = roundedNewTimeInMilliseconds / (1000 * 60)
+
+                            if (
+                                // CategoryTimeWarning.MAX is still small enough for an integer
+                                roundedNewTimeInMilliseconds >= 0 &&
+                                roundedNewTimeInMilliseconds < Int.MAX_VALUE &&
+                                roundedNewTimeInMinutes >= 0 &&
+                                roundedNewTimeInMinutes < Int.MAX_VALUE &&
+                                handling.createdWithCategoryRelatedData.allTimeWarningMinutes.contains(
+                                    roundedNewTimeInMinutes.toInt()
+                                )
+                            ) {
+                                appLogic.platformIntegration.showTimeWarningNotification(
+                                    title = appLogic.context.getString(
+                                        notificationTitleStringResource,
+                                        category.title
+                                    ),
+                                    text = TimeTextUtil.remaining(
+                                        roundedNewTimeInMilliseconds.toInt(),
+                                        appLogic.context
+                                    )
+                                )
+                            }
                         }
 
                         if (oldRemainingTime / (1000 * 60) != newRemainingTime / (1000 * 60)) {
-                            // eventually show remaining time warning
-                            val roundedNewTime = ((newRemainingTime / (1000 * 60)) + 1) * (1000 * 60)
-                            val flagIndex = CategoryTimeWarnings.durationToBitIndex[roundedNewTime]
-
-                            if (flagIndex != null && category.timeWarnings and (1 shl flagIndex) != 0) {
-                                showTimeWarningNotification(title = R.string.time_warning_not_title, roundedNewTime = roundedNewTime)
-                            }
+                            handleTimeWarnings(
+                                notificationTitleStringResource = R.string.time_warning_not_title,
+                                roundedNewTimeInMilliseconds = ((newRemainingTime / (1000 * 60)) + 1) * 1000 * 60
+                            )
                         }
 
                         if (oldSessionDuration != null) {
                             val newSessionDuration = oldSessionDuration - timeToSubtract
-                            // eventually show session duration warning
-                            if (oldSessionDuration / (1000 * 60) != newSessionDuration / (1000 * 60)) {
-                                val roundedNewTime = ((newSessionDuration / (1000 * 60)) + 1) * (1000 * 60)
-                                val flagIndex = CategoryTimeWarnings.durationToBitIndex[roundedNewTime]
 
-                                if (flagIndex != null && category.timeWarnings and (1 shl flagIndex) != 0) {
-                                    showTimeWarningNotification(title = R.string.time_warning_not_title_session, roundedNewTime = roundedNewTime)
-                                }
+                            if (oldSessionDuration / (1000 * 60) != newSessionDuration / (1000 * 60)) {
+                                handleTimeWarnings(
+                                    notificationTitleStringResource = R.string.time_warning_not_title_session,
+                                    roundedNewTimeInMilliseconds = ((newSessionDuration / (1000 * 60)) + 1) * (1000 * 60)
+                                )
                             }
                         }
 
@@ -403,12 +418,11 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
                             if (nextBlockedMinute != null) {
                                 val minutesUntilNextBlockedMinute = nextBlockedMinute - nowMinuteOfWeek
-                                val msUntilNextBlocking = minutesUntilNextBlockedMinute.toLong() * 1000 * 60
-                                val flagIndex = CategoryTimeWarnings.durationToBitIndex[msUntilNextBlocking]
 
-                                if (flagIndex != null && category.timeWarnings and (1 shl flagIndex) != 0) {
-                                    showTimeWarningNotification(title = R.string.time_warning_not_title_blocked_time_area, roundedNewTime = msUntilNextBlocking)
-                                }
+                                handleTimeWarnings(
+                                    notificationTitleStringResource = R.string.time_warning_not_title_blocked_time_area,
+                                    roundedNewTimeInMilliseconds = minutesUntilNextBlockedMinute.toLong() * 1000 * 60
+                                )
                             }
                         }
                     }

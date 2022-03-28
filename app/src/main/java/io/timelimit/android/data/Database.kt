@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@ interface Database {
     fun userLimitLoginCategoryDao(): UserLimitLoginCategoryDao
     fun categoryNetworkId(): CategoryNetworkIdDao
     fun childTasks(): ChildTaskDao
+    fun timeWarning(): CategoryTimeWarningDao
 
     fun <T> runInTransaction(block: () -> T): T
     fun <T> runInUnobservedTransaction(block: () -> T): T
