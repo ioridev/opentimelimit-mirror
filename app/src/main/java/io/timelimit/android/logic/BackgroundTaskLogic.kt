@@ -512,9 +512,12 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                 ): AppStatusMessage {
                     val handling = categoryHandlingCache.get(categoryId)
 
+                    val titlePrefix = getCategoryTitle(categoryId) + " - "
+
                     return if (handling.areLimitsTemporarilyDisabled) {
                         buildStatusMessageWithCurrentAppTitle(
                                 text = appLogic.context.getString(R.string.background_logic_limits_disabled),
+                                titlePrefix = titlePrefix,
                                 titleSuffix = suffix,
                                 appPackageName = appPackageName,
                                 appActivityToShow = appActivityToShow
@@ -522,7 +525,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                     } else if (handling.remainingTime == null) {
                         buildStatusMessageWithCurrentAppTitle(
                                 text = appLogic.context.getString(R.string.background_logic_no_timelimit),
-                                titlePrefix = getCategoryTitle(categoryId) + " - ",
+                                titlePrefix = titlePrefix,
                                 titleSuffix = suffix,
                                 appPackageName = appPackageName,
                                 appActivityToShow = appActivityToShow
@@ -543,7 +546,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                                     TimeTextUtil.pauseIn(remainingSessionDuration.toInt(), appLogic.context)
                                 else
                                     TimeTextUtil.remaining(realRemainingTimeDefault.toInt() ?: 0, appLogic.context),
-                                titlePrefix = getCategoryTitle(categoryId) + " - ",
+                                titlePrefix = titlePrefix,
                                 titleSuffix = suffix,
                                 appPackageName = appPackageName,
                                 appActivityToShow = appActivityToShow
