@@ -1,1 +1,3 @@
-- improved detection of the running Apps at Android 10 and newer; the new detection is used for now in 50% of the sessions and if enabled manually
+- custom time warnings
+- counting of all categories if the usage stats access is missing
+- showing the category name in the status notification while the limits for a category are disabled

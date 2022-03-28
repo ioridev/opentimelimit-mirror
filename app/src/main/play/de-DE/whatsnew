@@ -1,1 +1,3 @@
-- Erkennung der aktiven Apps ab Android 10 überarbeitet; die neue Variante wird zunächst in 50% der Sitzungen aktiviert und kann manuell auch immer aktiviert werden
+- benutzerdefinierte Zeitwarnungen
+- Zeitzählung für alle Kategorien, wenn der Nutzungsdatenzugriff fehlt
+- Anzeigen des Kategorienamens in der Statusbenachrichtigung, wenn die Begrenzungen für eine Kategorie deaktiviert wurden
