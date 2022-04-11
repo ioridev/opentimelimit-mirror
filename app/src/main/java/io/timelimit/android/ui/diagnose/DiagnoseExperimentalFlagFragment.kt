@@ -172,12 +172,6 @@ data class DiagnoseExperimentalFlagItem(
                         enable = { true }
                 ),
             DiagnoseExperimentalFlagItem(
-                label = R.string.diagnose_exf_ifd,
-                enableFlags = ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION,
-                disableFlags = ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION,
-                enable = { true }
-            ),
-            DiagnoseExperimentalFlagItem(
                 label = R.string.diagnose_exf_soc,
                 enableFlags = ExperimentalFlags.STRICT_OVERLAY_CHECKING,
                 disableFlags = ExperimentalFlags.STRICT_OVERLAY_CHECKING,

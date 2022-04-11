@@ -16,25 +16,20 @@
 package io.timelimit.android.integration.platform.android.foregroundapp
 
 import android.content.Context
-import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.integration.platform.ForegroundApp
 import io.timelimit.android.integration.platform.android.foregroundapp.usagestats.DirectUsageStatsReader
-import java.security.SecureRandom
 
 class QForegroundAppHelper(context: Context): UsageStatsForegroundAppHelper(context) {
     private val legacy = LollipopForegroundAppHelper(context)
     private val modern = InstanceIdForegroundAppHelper(context)
-    private val forceNewMethod = SecureRandom().nextBoolean()
 
     override suspend fun getForegroundApps(
         queryInterval: Long,
         experimentalFlags: Long
     ): Set<ForegroundApp> {
         val canUseModern = DirectUsageStatsReader.instanceIdSupported
-        val didUserRequestModern = experimentalFlags and ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION == ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION
-        val useModern = forceNewMethod || didUserRequestModern
 
-        return if (canUseModern && useModern) modern.getForegroundApps(queryInterval, experimentalFlags)
+        return if (canUseModern) modern.getForegroundApps(queryInterval, experimentalFlags)
         else legacy.getForegroundApps(queryInterval, experimentalFlags)
     }
 }

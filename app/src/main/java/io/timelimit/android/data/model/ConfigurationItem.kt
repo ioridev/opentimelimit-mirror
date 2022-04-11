@@ -181,7 +181,7 @@ object ExperimentalFlags {
     const val BLOCK_SPLIT_SCREEN = 256L
     const val HIDE_MANIPULATION_WARNING = 512L
     const val ENABLE_SOFT_BLOCKING = 1024L
-    const val INSTANCE_ID_FG_APP_DETECTION = 2048L
+    // const val INSTANCE_ID_FG_APP_DETECTION = 2048L
     // private const val OBSOLETE_DISABLE_FG_APP_DETECTION_FALLBACK = 4096L
     const val STRICT_OVERLAY_CHECKING = 0x2000L
 }
