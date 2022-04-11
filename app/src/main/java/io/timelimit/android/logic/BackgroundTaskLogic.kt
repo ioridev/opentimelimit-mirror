@@ -301,7 +301,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
                 val backgroundAppBaseHandling = AppBaseHandling.calculate(
                         foregroundAppPackageName = audioPlaybackPackageName,
-                        foregroundAppActivityName = null,
+                        foregroundAppActivityName = DummyApps.ACTIVITY_BACKGROUND_AUDIO,
                         pauseForegroundAppBackgroundLoop = false,
                         userRelatedData = userRelatedData,
                         deviceRelatedData = deviceRelatedData,
@@ -594,7 +594,11 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
                 val showBackgroundStatus = !(backgroundAppBaseHandling is AppBaseHandling.Idle) &&
                         !blockAudioPlayback &&
-                        foregroundAppsOrNullOnMissingPermission?.find { it.packageName == audioPlaybackPackageName } == null
+                        foregroundAppWithBaseHandlings.find { (app, handling) ->
+                            app.packageName == audioPlaybackPackageName &&
+                                    handling.getCategories(AppBaseHandling.GetCategoriesPurpose.ShowingInStatusNotification) ==
+                                    backgroundAppBaseHandling.getCategories(AppBaseHandling.GetCategoriesPurpose.ShowingInStatusNotification)
+                        } == null
 
                 val statusMessage = if (blockedForegroundApp != null) {
                     buildStatusMessageWithCurrentAppTitle(
@@ -686,14 +690,14 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                         if (categoryId != null) {
                             buildNotificationForAppWithCategoryUsage(
                                     appPackageName = audioPlaybackPackageName,
-                                    appActivityToShow = null,
+                                    appActivityToShow = if (activityLevelBlocking) DummyApps.ACTIVITY_BACKGROUND_AUDIO else null,
                                     suffix = suffix,
                                     categoryId = categoryId
                             )
                         } else {
                             buildNotificationForAppWithoutCategoryUsage(
                                     appPackageName = audioPlaybackPackageName,
-                                    appActivityToShow = null,
+                                    appActivityToShow = if (activityLevelBlocking) DummyApps.ACTIVITY_BACKGROUND_AUDIO else null,
                                     suffix = suffix,
                                     handling = backgroundAppBaseHandling
                             )

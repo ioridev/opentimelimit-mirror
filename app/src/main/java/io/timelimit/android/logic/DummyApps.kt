@@ -26,6 +26,7 @@ object DummyApps {
     const val NOT_ASSIGNED_SYSTEM_IMAGE_APP = ".dummy.system_image"
     const val MISSING_PERMISSION_APP = ".dummy.missing_usage_stats_permission"
     const val FEATURE_APP_PREFIX = ".feature."
+    const val ACTIVITY_BACKGROUND_AUDIO = ".background_audio"
 
     fun getTitle(packageName: String, context: Context): String? = when (packageName) {
         NOT_ASSIGNED_SYSTEM_IMAGE_APP -> context.getString(R.string.dummy_app_unassigned_system_image_app)

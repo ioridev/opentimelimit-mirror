@@ -1124,6 +1124,7 @@
 
     <string name="dummy_app_unassigned_system_image_app">nicht zugeordnete Apps von der Systempartition</string>
     <string name="dummy_app_feature_adb">Entwickleroptionen</string>
+    <string name="dummy_app_activity_audio">Hintergrundmusikwiedergabe</string>
 
     <string name="biometric_title">Biometrische Authentifizierung</string>
     <string name="biometric_title_enable">Biometrische Authentifizierung aktivieren</string>
