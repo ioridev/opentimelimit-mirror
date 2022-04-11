@@ -214,14 +214,11 @@
         Wenn der Benachrichtigungszugriff in den Geräte-Einträgen aktiviert wurde,
         dann werden Benachrichtigungen bei Sperrzeiten und wenn die Zeit abgelaufen ist blockiert.
         Hiermit können die Benachrichtigungen von Apps einer Kategorie immer blockiert werden.
+        Damit werden auch (Hintergrund)musikwiedergaben blockiert.
         Diese Funktion setzt voraus, dass der Benachrichtigungszugriff aktiviert wurde. Ansonsten funktioniert
         diese Funktion nicht.
     </string>
     <string name="category_notifications_filter_checkbox">Alle Benachrichtigungen blockieren</string>
-    <string name="category_notifications_filter_dialog">
-        Wenn Sie diese Option aktivieren, dann werden ALLE Benachrichtigungen von Apps dieser Kategorie blockiert,
-        auch wenn Apps dieser Kategorie erlaubt sind. Damit werden auch (Hintergrund)musikwiedergaben blockiert.
-    </string>
     <string name="category_notification_filter_missing_permission">TimeLimit fehlt der Benachrichtigunszugriff.</string>
     <string name="category_notification_filter_delay_intro">Das Sperren von Benachrichtigungen kann verzögert werden.
         Wenn die Kategorie und nicht nur die Benachrichtigungen blockiert wurden, dann wird die Verzögerung ignoriert

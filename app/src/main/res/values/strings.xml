@@ -247,15 +247,11 @@
         When enabling the notification access in the device entries,
         then notifications are blocked at blocked time areas and when the time is over.
         Here you can enable blocking all notifications from Apps of a category.
+        This will block (background) music playback, too.
         This feature requires that the notification access was enabled. Otherwise,
         it does not work.
     </string>
     <string name="category_notifications_filter_checkbox">Block all notifications</string>
-    <string name="category_notifications_filter_dialog">
-        Enabling this blocks ALL notifications from Apps of this category,
-        when the Apps itself are blocked AND when the Apps itself are not blocked.
-        This will block (background) music playback, too.
-    </string>
     <string name="category_notification_filter_missing_permission">TimeLimit does not have the notification access permission.</string>
     <string name="category_notification_filter_delay_intro">It is possible to delay blocking the notifications.
         This only applies when the category itself is not blocked.
