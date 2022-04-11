@@ -112,12 +112,12 @@ sealed class AppBaseHandling {
                 return PauseLogic
             } else if (
                     (foregroundAppPackageName == BuildConfig.APPLICATION_ID) ||
-                    (foregroundAppPackageName != null && AndroidIntegrationApps.ignoredApps.contains(foregroundAppPackageName))
+                    (foregroundAppPackageName != null && isSystemImageApp && AndroidIntegrationApps.ignoredApps.contains(foregroundAppPackageName))
             ) {
                 return Whitelist.App
             } else if (
                 foregroundAppPackageName != null && foregroundAppActivityName != null &&
-                AndroidIntegrationApps.shouldIgnoreActivity(foregroundAppPackageName, foregroundAppActivityName)
+                isSystemImageApp && AndroidIntegrationApps.shouldIgnoreActivity(foregroundAppPackageName, foregroundAppActivityName)
             ) {
                 return Whitelist.Activity
             } else if (foregroundAppPackageName != null && deviceRelatedData.temporarilyAllowedApps.contains(foregroundAppPackageName)) {
