@@ -35,6 +35,7 @@ import java.util.concurrent.Executors
 class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHelper(context) {
     companion object {
         private const val LOG_TAG = "LollipopForegroundApp"
+        private const val QUERY_TIME_TOLERANCE = 2500L
 
         private val foregroundAppThread: Executor by lazy { Executors.newSingleThreadExecutor() }
         val enableMultiAppDetectionGeneral = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
@@ -88,15 +89,10 @@ class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHel
                 now - 1000 * 60 * 60 * 24 * 7
             } else {
                 // query data since last query
-                // note: when the duration is too small, Android returns no data
-                //       due to that, 1 second more than required is queried
-                //       which seems to provide all data
-                // update: with 1 second, some App switching events were missed
-                //         it seems to always work with 1.5 seconds
-                lastQueryTime - Math.max(queryInterval, 1500)
+                lastQueryTime - Math.max(queryInterval, QUERY_TIME_TOLERANCE)
             }
 
-            usageStatsManager.queryEvents(queryStartTime, now)?.let { usageEvents ->
+            usageStatsManager.queryEvents(queryStartTime, now + QUERY_TIME_TOLERANCE)?.let { usageEvents ->
                 while (usageEvents.hasNextEvent()) {
                     usageEvents.getNextEvent(event)
 
