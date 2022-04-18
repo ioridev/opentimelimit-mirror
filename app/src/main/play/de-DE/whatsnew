@@ -1,3 +1,3 @@
-- benutzerdefinierte Zeitwarnungen
-- Zeitzählung für alle Kategorien, wenn der Nutzungsdatenzugriff fehlt
-- Anzeigen des Kategorienamens in der Statusbenachrichtigung, wenn die Begrenzungen für eine Kategorie deaktiviert wurden
+- Möglichkeit, Hintergrundwiedergaben zu einer anderen Kategorie zuzuordnen als die zugehörige App
+- verbesserte Erkennung der aktiven App ab Android 5
+- Erkennung mehrerer aktiver Apps für alle Benutzer ab Android 10 aktiviert
