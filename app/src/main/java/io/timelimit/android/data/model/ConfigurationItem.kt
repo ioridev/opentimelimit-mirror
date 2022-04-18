@@ -178,7 +178,7 @@ object ExperimentalFlags {
     const val NETWORKTIME_AT_SYSTEMLEVEL = 32L
     const val HIGH_MAIN_LOOP_DELAY = 64L
     const val MULTI_APP_DETECTION = 128L
-    const val BLOCK_SPLIT_SCREEN = 256L
+    // const val BLOCK_SPLIT_SCREEN = 256L
     const val HIDE_MANIPULATION_WARNING = 512L
     const val ENABLE_SOFT_BLOCKING = 1024L
     // const val INSTANCE_ID_FG_APP_DETECTION = 2048L

@@ -394,7 +394,6 @@
     <string name="diagnose_exf_nas">Netzwerkzeitnutzung auf Systemebene erzwingen</string>
     <string name="diagnose_exf_mld">Hauptschleifenintervall erhöhen</string>
     <string name="diagnose_exf_mad">Versuche, mehrere aktive Apps zu erkennen (Splitscreen-Untersützung)</string>
-    <string name="diagnose_exf_bss">Splitscreen automatisch beenden per Bedienhilfe</string>
     <string name="diagnose_exf_hmw">Manipulationswarnung in der Kategorienliste ausblenden</string>
     <string name="diagnose_exf_esb">Overlay und Home-Button nicht zum Sperren verwenden</string>
     <string name="diagnose_exf_soc">strengere Prüfung der Überlagerungs-Berechtigung aktivieren</string>
@@ -749,8 +748,6 @@
         Das kann das Sperren in einigen Fällen verbessern.
         Außerdem ist diese Berechtigung eine Möglichkeit, um TimeLimit bei neueren Android-Versionen zu erlauben,
         den Sperrbildschirm zu öffnen.
-        Zusätzlich kann TimeLimit damit den Splitscreen-Modus erkennen und sperren, sofern Sie die
-        entsprechende Option aktivieren.
     </string>
 
     <string name="manage_device_permission_device_admin_title">Geräte-Administrator</string>
