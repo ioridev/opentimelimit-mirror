@@ -45,11 +45,13 @@ object AndroidIntegrationApps {
         ignoredApps.add("com.android.bluetooth")
         ignoredApps.add("com.android.nfc")
         ignoredApps.add("com.android.emergency")
+        ignoredApps.add("com.oplus.sos")
     }
 
     val appsToNotSuspend = setOf<String>(
             "com.android.emergency",
-            "com.android.phone"
+            "com.android.phone",
+            "com.oplus.sos"
     )
 
     val appsToIncludeInLockTasks = appsToNotSuspend + setOf("com.android.dialer")
