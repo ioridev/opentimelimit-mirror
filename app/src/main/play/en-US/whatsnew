@@ -1,3 +1,2 @@
-- add option to assign the background playback of an App to another category than the App
-- improved detection of the foreground App for Android 5 and newer
-- enabled detection of multiple foreground Apps for all users at Android 10 and newer
+- fixed issues related to disabling device admins
+- extended whitelist

@@ -1,3 +1,2 @@
-- Möglichkeit, Hintergrundwiedergaben zu einer anderen Kategorie zuzuordnen als die zugehörige App
-- verbesserte Erkennung der aktiven App ab Android 5
-- Erkennung mehrerer aktiver Apps für alle Benutzer ab Android 10 aktiviert
+- Fehler im Zusammenhang mit der Deaktivierung von Geräte-Administratoren behoben
+- Whitelist erweitert
