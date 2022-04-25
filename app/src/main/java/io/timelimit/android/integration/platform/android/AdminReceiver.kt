@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ import android.content.Intent
 import android.os.UserHandle
 import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsync
+import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.TriedDisablingDeviceAdminAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
@@ -39,12 +40,14 @@ class AdminReceiver: DeviceAdminReceiver() {
     }
 
     override fun onDisableRequested(context: Context, intent: Intent): CharSequence {
-        runAsync {
-            ApplyActionUtil.applyAppLogicAction(
+        if (DefaultAppLogic.with(context).platformIntegration.getCurrentProtectionLevel() != ProtectionLevel.DeviceOwner) {
+            runAsync {
+                ApplyActionUtil.applyAppLogicAction(
                     action = TriedDisablingDeviceAdminAction,
                     appLogic = DefaultAppLogic.with(context),
                     ignoreIfDeviceIsNotConfigured = true
-            )
+                )
+            }
         }
 
         return context.getString(R.string.admin_disable_warning)
