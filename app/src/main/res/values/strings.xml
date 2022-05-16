@@ -896,11 +896,13 @@
     <string name="manipulation_activity_intro">There was a manipulation. Due to that, this device must be unlocked by a parent.</string>
 
     <string name="must_read_child_manipulation">
-        Because some users do not realize it:
-        \n1st: In the default settings, TimeLimit can be removed easily, even by children.
-        If this is a problem for you, then get in touch with the support.
-        \n2nd: If \"it does not work\" then this is most likely caused by power saving features.
-        This features are often enabled even if you did not enable it actively.
+        The help contains details about the following two topics:
+        \n\n1. TimeLimit is executed — like all other Apps — within a sandbox. Due to this, TimeLimit
+        itself can not prevent that the child disables or removes it.
+        \n\n2. TimeLimit is made for the original Android (AOSP) and similar environments.
+        This are e.g. the preinstalled OS at Google Pixel phones, LineageOS and GrapheneOS.
+        There can be issues at other systems, for example due to so called power saving features.
+        In most cases, the issues can be fixed by changing the system settings.
     </string>
     <string name="must_read_add_already_assigned_apps">
         Apps with category are removed from the previous category when they are added to a new category -
@@ -1025,6 +1027,7 @@
         because the default configuration is most likely not what you need.
         This links are shown in the about screen, so there is no need to write them down.
         If all that does not help you, then you can still ask the support.
+        Every proper support request results in a proper reply within a short time.
     </string>
 
     <string name="setup_local_mode_explaination">Select a password which allows you to change the settings. You can add more parents and passwords later.</string>

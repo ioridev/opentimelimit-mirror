@@ -860,11 +860,14 @@
     <string name="manipulation_activity_intro">Es gab eine Manipulation. Deswegen muss dieses Gerät durch ein Elternteil freigegeben werden.</string>
 
     <string name="must_read_child_manipulation">
-        Da es manchmal nicht wahrgenommen wird:
-        \n1. In den Standardeinstellungen kann TimeLimit ganz leicht,
-        auch von einem Kind, entfernt werden. Wenn das ein Problem ist wenden Sie sich an den Support.
-        \n2. Wenn \"es nicht funktioniert\" liegt es oft an Energiesparfunktionen die deaktiviert werden müssen.
-        Diese sind oft automatisch aktiviert, ohne das es Ihnen als Nutzer bewusst ist.
+        Die Hilfe informiert auch über Details zu den folgenden zwei Themen:
+        \n\n1. TimeLimit läuft — wie auch alle anderen Apps — in einer Sandbox. Dadurch kann TimeLimit
+        nicht selbst verhinderen, dass es vom Kind deaktiviert oder entfernt wird.
+        \n\n2. TimeLimit ist für den Einsatz auf dem originalen Android (AOSP) sowie damit vergleichbaren Umgebungen konzipiert.
+        Das entspricht dem vorinstallierten System auf Google Pixel Smartphones sowie den Systemen
+        LineageOS und GrapheneOS. Bei anderen Systemen kann es Probleme beim Einschränken geben,
+        insbesondere durch sogenannte Energiesparfunktionen. In vielen Fällen lassen sich die Probleme durch
+        Änderungen an den Systemeinstellungen beheben.
     </string>
     <string name="must_read_add_already_assigned_apps">
         Apps mit Kategorie werden beim Hinzufügen aus der vorherigen Kategorie entfernt - für mehrere Kategorien gleichzeitig können Sie Ober- und Unter-Kategorien verwenden
@@ -992,6 +995,7 @@
         hohen Wahrscheinlichkeit nicht das ist, was Sie brauchen. Diese Seiten sind auch im
         Über-Bildschirm verlinkt, Sie müssen sich diese also nicht notieren.
         Falls der Fall eintritt, dass all dies nicht weiterhilft, gibt es immer noch den Support.
+        Jede ordentliche Supportanfrage wird zügig und ordentlich beantwortet.
     </string>
 
     <string name="setup_local_mode_explaination">Legen Sie nun ein Passwort fest, mit dem Sie die Einstellungen ändern können. Sie können später weitere Elternteile/ Passwörter hinzufügen.</string>
