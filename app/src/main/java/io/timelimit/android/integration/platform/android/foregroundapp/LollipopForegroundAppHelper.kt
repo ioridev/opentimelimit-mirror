@@ -22,14 +22,11 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
-import android.util.SparseIntArray
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.integration.platform.ForegroundApp
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHelper(context) {
@@ -37,24 +34,11 @@ class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHel
         private const val LOG_TAG = "LollipopForegroundApp"
         private const val QUERY_TIME_TOLERANCE = 2500L
 
-        private val foregroundAppThread: Executor by lazy { Executors.newSingleThreadExecutor() }
         val enableMultiAppDetectionGeneral = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-        private val supportsCompleteEvents = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-
-        private fun hash(event: UsageEvents.Event): Int {
-            val a = event.eventType.hashCode()
-            val b = event.packageName?.hashCode() ?: 522
-            val c = event.className?.hashCode() ?: 754
-            val d = event.timeStamp.hashCode()
-
-            return (((31 * a) + b) * 31 + c) * 31 + d
-        }
     }
 
     private var lastQueryTime: Long = 0
-    private val currentForegroundApps = mutableMapOf<ForegroundApp, Int>()
-    private val expectedStopEvents = mutableSetOf<ForegroundApp>()
-    private val seenEvents = SparseIntArray()
+    private val currentForegroundApps = mutableSetOf<ForegroundApp>()
     private var currentForegroundAppsSnapshot: Set<ForegroundApp> = emptySet()
     private var lastHandledEventTime: Long = 0
     private val event = UsageEvents.Event()
@@ -70,7 +54,7 @@ class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHel
         val enableMultiAppDetection = experimentalFlags and ExperimentalFlags.MULTI_APP_DETECTION == ExperimentalFlags.MULTI_APP_DETECTION
         val effectiveEnableMultiAppDetection = enableMultiAppDetection && enableMultiAppDetectionGeneral
 
-        foregroundAppThread.executeAndWait {
+        backgroundThread.executeAndWait {
             val now = System.currentTimeMillis()
             var currentForegroundAppsModified = false
 
@@ -79,8 +63,6 @@ class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHel
                 lastQueryTime = 0
                 lastHandledEventTime = 0
                 currentForegroundApps.clear(); currentForegroundAppsModified = true
-                seenEvents.clear()
-                expectedStopEvents.clear()
                 lastEnableMultiAppDetection = effectiveEnableMultiAppDetection
             }
 
@@ -97,15 +79,7 @@ class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHel
                     usageEvents.getNextEvent(event)
 
                     if (event.timeStamp >= lastHandledEventTime) {
-                        if (event.timeStamp > lastHandledEventTime) {
-                            seenEvents.clear()
-                            lastHandledEventTime = event.timeStamp
-                        }
-
-                        val hash = hash(event)
-
-                        if (seenEvents.get(hash, 0) != 0) continue
-                        seenEvents.put(hash, 1)
+                        lastHandledEventTime = event.timeStamp
 
                         if (event.eventType == UsageEvents.Event.DEVICE_SHUTDOWN || event.eventType == UsageEvents.Event.DEVICE_STARTUP) {
                             if (BuildConfig.DEBUG) {
@@ -113,7 +87,6 @@ class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHel
                             }
 
                             currentForegroundApps.clear(); currentForegroundAppsModified = true
-                            expectedStopEvents.clear()
                         } else if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) {
                             if (BuildConfig.DEBUG) {
                                 Log.d(LOG_TAG, "resume ${event.packageName}:${event.className}")
@@ -130,19 +103,13 @@ class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHel
                                     continue
                                 }
 
-                                if (supportsCompleteEvents) {
-                                    val currentCounter = currentForegroundApps.getOrDefault(app, 0)
-
-                                    currentForegroundApps[app] = currentCounter + 1; currentForegroundAppsModified = true
-                                } else {
-                                    currentForegroundApps[app] = 1; currentForegroundAppsModified = true
-                                }
+                                currentForegroundApps.add(app); currentForegroundAppsModified = true
                             } else {
-                                val currentForegroundApp = currentForegroundApps.keys.singleOrNull()
+                                val currentForegroundApp = currentForegroundApps.singleOrNull()
                                 val matchingForegroundApp = currentForegroundApp != null && currentForegroundApp.packageName == event.packageName && currentForegroundApp.activityName == event.className
 
                                 if (!matchingForegroundApp) {
-                                    currentForegroundApps.clear(); currentForegroundApps.set(ForegroundApp(event.packageName, event.className), 1)
+                                    currentForegroundApps.clear(); currentForegroundApps.add(ForegroundApp(event.packageName, event.className))
 
                                     currentForegroundAppsModified = true
                                 }
@@ -155,52 +122,18 @@ class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHel
                                     Log.d(LOG_TAG, "pause ${event.packageName}:${event.className}")
                                 }
 
-                                val currentCounter = currentForegroundApps.getOrDefault(app, 0)
+                                val currentlyRunning = currentForegroundApps.contains(app)
 
-                                if (currentCounter == 0) {
+                                if (!currentlyRunning) {
                                     if (BuildConfig.DEBUG) {
                                         Log.d(LOG_TAG, "... was not running")
                                     }
-                                } else if (currentCounter == 1) {
+                                } else {
                                     if (BuildConfig.DEBUG) {
                                         Log.d(LOG_TAG, "... stopped last instance")
                                     }
 
                                     currentForegroundApps.remove(app); currentForegroundAppsModified = true
-                                } else {
-                                    currentForegroundApps[app] = currentCounter - 1; currentForegroundAppsModified = true
-                                }
-
-                                if (supportsCompleteEvents) {
-                                    expectedStopEvents.add(app)
-                                }
-                            }
-                        } else if (supportsCompleteEvents && event.eventType == UsageEvents.Event.ACTIVITY_STOPPED) {
-                            val app = ForegroundApp(event.packageName, event.className)
-
-                            if (BuildConfig.DEBUG) {
-                                Log.d(LOG_TAG, "stop ${event.packageName}:${event.className}")
-                            }
-
-                            if (expectedStopEvents.remove(app)) {
-                                if (BuildConfig.DEBUG) {
-                                    Log.d(LOG_TAG, "... expected and ignored")
-                                }
-                            } else {
-                                val currentCounter = currentForegroundApps.getOrDefault(app, 0)
-
-                                if (currentCounter == 0) {
-                                    if (BuildConfig.DEBUG) {
-                                        Log.d(LOG_TAG, "... was not running")
-                                    }
-                                } else if (currentCounter == 1) {
-                                    if (BuildConfig.DEBUG) {
-                                        Log.d(LOG_TAG, "... stopped last instance")
-                                    }
-
-                                    currentForegroundApps.remove(app); currentForegroundAppsModified = true
-                                } else {
-                                    currentForegroundApps[app] = currentCounter - 1; currentForegroundAppsModified = true
                                 }
                             }
                         }
@@ -218,7 +151,7 @@ class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHel
                 val iterator = currentForegroundApps.iterator()
 
                 while (iterator.hasNext()) {
-                    val app = iterator.next().key
+                    val app = iterator.next()
 
                     if (!doesActivityExist(app)) {
                         if (BuildConfig.DEBUG) {
@@ -232,7 +165,7 @@ class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHel
             }
 
             if (currentForegroundAppsModified) {
-                currentForegroundAppsSnapshot = currentForegroundApps.keys.toSet()
+                currentForegroundAppsSnapshot = currentForegroundApps.toSet()
             }
 
             lastQueryTime = now
