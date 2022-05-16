@@ -17,11 +17,13 @@ package io.timelimit.android.ui.manipulation
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProviders
+import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.databinding.AnnoyActivityBinding
@@ -39,6 +41,8 @@ import io.timelimit.android.util.TimeTextUtil
 
 class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder {
     companion object {
+        private const val LOG_TAG = "AnnoyActivity"
+
         fun start(context: Context) {
             context.startActivity(
                     Intent(context, AnnoyActivity::class.java)
@@ -63,7 +67,15 @@ class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder {
         setContentView(binding.root)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            val lockTaskPackages = AndroidIntegrationApps.appsToIncludeInLockTasks + setOf(packageName)
+            val systemImageApps = packageManager.getInstalledApplications(0)
+                .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == ApplicationInfo.FLAG_SYSTEM }
+                .map { it.packageName }.toSet()
+
+            val lockTaskPackages = AndroidIntegrationApps.appsToIncludeInLockTasks + setOf(packageName) + systemImageApps
+
+            if (BuildConfig.DEBUG) {
+                Log.d(LOG_TAG, "setLockTaskPackages: $lockTaskPackages")
+            }
 
             if (logic.platformIntegration.setLockTaskPackages(lockTaskPackages.toList())) {
                 startLockTask()
