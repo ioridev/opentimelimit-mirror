@@ -16,6 +16,7 @@
  */
 package io.timelimit.android.ui.login
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
@@ -26,10 +27,9 @@ import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.biometric.BiometricPrompt
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import io.timelimit.android.R
@@ -37,7 +37,11 @@ import io.timelimit.android.async.Threads
 import io.timelimit.android.data.model.User
 import io.timelimit.android.databinding.NewLoginFragmentBinding
 import io.timelimit.android.extensions.setOnEnterListenr
+import io.timelimit.android.ui.extensions.openNextWizardScreen
+import io.timelimit.android.ui.extensions.openPreviousWizardScreen
 import io.timelimit.android.ui.main.getActivityViewModel
+import io.timelimit.android.ui.manage.parent.key.MissingBarcodeScannerDialogFragment
+import io.timelimit.android.ui.manage.parent.key.ScanBarcode
 import io.timelimit.android.ui.manage.parent.key.ScannedKey
 import io.timelimit.android.ui.view.KeyboardViewListener
 
@@ -60,11 +64,19 @@ class NewLoginFragment: DialogFragment() {
         private const val PARENT_LOGIN_BLOCKED = 5
     }
 
-    private val model: LoginDialogFragmentModel by lazy {
-        ViewModelProviders.of(this).get(LoginDialogFragmentModel::class.java)
-    }
+    private val model: LoginDialogFragmentModel by viewModels()
+
     private val inputMethodManager: InputMethodManager by lazy {
-        context!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    }
+
+    private val scanLoginCode = registerForActivityResult(ScanBarcode()) { barcode ->
+        barcode ?: return@registerForActivityResult
+
+        ScannedKey.tryDecode(barcode).let { key ->
+            if (key == null) Toast.makeText(requireContext(), R.string.manage_user_key_invalid, Toast.LENGTH_SHORT).show()
+            else tryCodeLogin(key)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,11 +87,11 @@ class NewLoginFragment: DialogFragment() {
         }
 
         if (savedInstanceState == null) {
-            model.tryDefaultLogin(getActivityViewModel(activity!!))
+            model.tryDefaultLogin(getActivityViewModel(requireActivity()))
         }
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?) = object: BottomSheetDialog(context!!, theme) {
+    override fun onCreateDialog(savedInstanceState: Bundle?) = object: BottomSheetDialog(requireContext(), theme) {
         override fun onBackPressed() {
             if (!model.goBack()) {
                 super.onBackPressed()
@@ -123,9 +135,11 @@ class NewLoginFragment: DialogFragment() {
             }
 
             override fun onScanCodeRequested() {
-                CodeLoginDialogFragment().apply {
-                    setTargetFragment(this@NewLoginFragment, 0)
-                }.show(parentFragmentManager)
+                try {
+                    scanLoginCode.launch(null)
+                } catch (ex: ActivityNotFoundException) {
+                    MissingBarcodeScannerDialogFragment.newInstance().show(parentFragmentManager)
+                }
             }
         }
 
@@ -150,7 +164,7 @@ class NewLoginFragment: DialogFragment() {
             fun go() {
                 model.tryParentLogin(
                         password = password.text.toString(),
-                        model = getActivityViewModel(activity!!)
+                        model = getActivityViewModel(requireActivity())
                 )
             }
 
@@ -188,11 +202,7 @@ class NewLoginFragment: DialogFragment() {
                     dismissAllowingStateLoss()
                 }
                 is UserListLoginDialogStatus -> {
-                    if (binding.switcher.displayedChild != USER_LIST) {
-                        binding.switcher.setInAnimation(context!!, R.anim.wizard_close_step_in)
-                        binding.switcher.setOutAnimation(context!!, R.anim.wizard_close_step_out)
-                        binding.switcher.displayedChild = USER_LIST
-                    }
+                    binding.switcher.openPreviousWizardScreen(USER_LIST)
 
                     adapter.data = status.usersToShow.map { LoginUserAdapterUser(it) } + LoginUserAdapterScan
 
@@ -202,9 +212,8 @@ class NewLoginFragment: DialogFragment() {
                 }
                 is ParentUserLogin -> {
                     if (binding.switcher.displayedChild != PARENT_AUTH) {
-                        binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
-                        binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
-                        binding.switcher.displayedChild = PARENT_AUTH
+                        binding.switcher.openNextWizardScreen(PARENT_AUTH)
+
                         if (status.biometricAuthEnabled && !model.biometricPromptDismissed) {
                             tryBiometricLogin()
                         }
@@ -219,7 +228,7 @@ class NewLoginFragment: DialogFragment() {
                     }
 
                     if (status.wasPasswordWrong) {
-                        Toast.makeText(context!!, R.string.login_snackbar_wrong, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), R.string.login_snackbar_wrong, Toast.LENGTH_SHORT).show()
                         binding.enterPassword.password.setText("")
 
                         model.resetPasswordWrong()
@@ -228,31 +237,19 @@ class NewLoginFragment: DialogFragment() {
                     null
                 }
                 is CanNotSignInChildHasNoPassword -> {
-                    if (binding.switcher.displayedChild != CHILD_MISSING_PASSWORD) {
-                        binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
-                        binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
-                        binding.switcher.displayedChild = CHILD_MISSING_PASSWORD
-                    }
+                    binding.switcher.openNextWizardScreen(CHILD_MISSING_PASSWORD)
 
                     binding.childWithoutPassword.childName = status.childName
 
                     null
                 }
                 is ChildAlreadyDeviceUser -> {
-                    if (binding.switcher.displayedChild != CHILD_ALREADY_CURRENT_USER) {
-                        binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
-                        binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
-                        binding.switcher.displayedChild = CHILD_ALREADY_CURRENT_USER
-                    }
+                    binding.switcher.openNextWizardScreen(CHILD_ALREADY_CURRENT_USER)
 
                     null
                 }
                 is ChildUserLogin -> {
-                    if (binding.switcher.displayedChild != CHILD_AUTH) {
-                        binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
-                        binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
-                        binding.switcher.displayedChild = CHILD_AUTH
-                    }
+                    binding.switcher.openNextWizardScreen(CHILD_AUTH)
 
                     binding.childPassword.password.requestFocus()
                     inputMethodManager.showSoftInput(binding.childPassword.password, 0)
@@ -260,7 +257,7 @@ class NewLoginFragment: DialogFragment() {
                     binding.childPassword.password.isEnabled = !status.isCheckingPassword
 
                     if (status.wasPasswordWrong) {
-                        Toast.makeText(context!!, R.string.login_snackbar_wrong, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), R.string.login_snackbar_wrong, Toast.LENGTH_SHORT).show()
                         binding.childPassword.password.setText("")
 
                         model.resetPasswordWrong()
@@ -269,14 +266,10 @@ class NewLoginFragment: DialogFragment() {
                     null
                 }
                 is ParentUserLoginBlockedByCategory -> {
-                    if (binding.switcher.displayedChild != PARENT_LOGIN_BLOCKED) {
-                        binding.switcher.setInAnimation(context!!, R.anim.wizard_open_step_in)
-                        binding.switcher.setOutAnimation(context!!, R.anim.wizard_open_step_out)
-                        binding.switcher.displayedChild = PARENT_LOGIN_BLOCKED
-                    }
+                    binding.switcher.openNextWizardScreen(PARENT_LOGIN_BLOCKED)
 
                     binding.parentLoginBlocked.categoryTitle = status.categoryTitle
-                    binding.parentLoginBlocked.reason = LoginDialogFragmentModel.formatBlockingReasonForLimitLoginCategory(status.reason, context!!)
+                    binding.parentLoginBlocked.reason = LoginDialogFragmentModel.formatBlockingReasonForLimitLoginCategory(status.reason, requireContext())
 
                     null
                 }
@@ -287,7 +280,7 @@ class NewLoginFragment: DialogFragment() {
     }
 
     fun tryCodeLogin(code: ScannedKey) {
-        model.tryCodeLogin(code, getActivityViewModel(activity!!))
+        model.tryCodeLogin(code, getActivityViewModel(requireActivity()))
     }
 
     private fun tryBiometricLogin() {

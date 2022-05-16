@@ -846,7 +846,8 @@
     <string name="manage_user_key_title">Benutzerschlüssel</string>
     <string name="manage_user_key_info">Hiermit kann sich ein Benutzer durch
         das Scannen eines Barcodes anmelden. Der gescannte Code muss von TimeLimit
-        generiert worden sein.
+        generiert worden sein. Dafür muss TimeLimit auf einem anderen Gerät als
+        Schlüsselgenerator eingerichtet sein.
     </string>
     <string name="manage_user_key_not_enrolled">Es gibt keinen Schlüssel für diesen Benutzer</string>
     <string name="manage_user_key_is_enrolled">Dieser Benutzer hat den Schlüssel %s</string>
