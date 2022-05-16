@@ -948,7 +948,6 @@
     </string>
 
     <string name="password_validator_too_short">Das Passwort muss mindestens <xliff:g example="5" id="number of chars">%d</xliff:g> Zeichen haben</string>
-    <string name="password_validator_min_letters">Das Passwort muss mindestens <xliff:g example="2" id="number of letters">%d</xliff:g> Buchstaben enthalten</string>
 
     <string name="rename_child_title">Kind-Benutzer umbenennen</string>
 

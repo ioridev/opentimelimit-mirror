@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@ import android.content.Context
 import io.timelimit.android.R
 
 object PasswordValidator {
-    private const val MINIMAL_CHAR_AMOUNT = 5
-    private const val MINIMAL_LETTER_AMOUNT = 2
+    private const val MINIMAL_CHAR_AMOUNT = 2
 
     /**
      * Use this function to check if the password is possible
@@ -30,30 +29,10 @@ object PasswordValidator {
      * @return a string which says what is missing or null if it is ok
      */
     fun validate(password: String, context: Context): String? {
-        return if (length(password) < MINIMAL_CHAR_AMOUNT) {
+        return if (password.length < MINIMAL_CHAR_AMOUNT) {
             context.getString(R.string.password_validator_too_short, MINIMAL_CHAR_AMOUNT)
-        } else if (countAlphabeticChars(password) < MINIMAL_LETTER_AMOUNT) {
-            context.getString(R.string.password_validator_min_letters, MINIMAL_LETTER_AMOUNT)
         } else {
             null
         }
-    }
-
-    private fun countAlphabeticChars(string: String): Int {
-        var alphabetic = 0
-        var i = 0
-        val length = length(string)
-        while (i < length) {
-            if (Character.isLetter(string[i])) {
-                alphabetic++
-            }
-            i++
-        }
-
-        return alphabetic
-    }
-
-    private fun length(string: String?): Int {
-        return string?.length ?: 0
     }
 }

@@ -982,7 +982,6 @@
     </string>
 
     <string name="password_validator_too_short">The password must have at least <xliff:g example="5" id="number of chars">%d</xliff:g> characters</string>
-    <string name="password_validator_min_letters">The password must have at least <xliff:g example="2" id="number of letters">%d</xliff:g> letters</string>
 
     <string name="rename_child_title">Rename child user</string>
 
