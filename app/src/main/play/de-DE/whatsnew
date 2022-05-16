@@ -1,2 +1,5 @@
-- Fehler im Zusammenhang mit der Deaktivierung von Geräte-Administratoren behoben
-- Whitelist erweitert
+- Möglichkeit, Begrenzungen für einzelne Kategorien vom Sperrbildschirm aus vorübergehend zu deaktivieren
+- Lockerung der Passwortanforderungen
+- verbesserte Erkennung des Geräte-Modells
+- Hinweise bei der Einrichtung aktualisiert
+- Hinweise für den Elternschlüssel aktualisiert

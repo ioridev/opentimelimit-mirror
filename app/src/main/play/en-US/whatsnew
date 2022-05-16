@@ -1,2 +1,5 @@
-- fixed issues related to disabling device admins
-- extended whitelist
+- option to disable limits for a single category temporarily from the lockscreen
+- relaxed password requirements
+- improved device model detection
+- updated messages during setup
+- updated instructions for the parent key
