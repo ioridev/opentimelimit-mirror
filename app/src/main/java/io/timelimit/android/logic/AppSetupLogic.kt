@@ -16,7 +16,6 @@
 package io.timelimit.android.logic
 
 import android.content.Context
-import com.jaredrummler.android.device.DeviceName
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
@@ -25,6 +24,7 @@ import io.timelimit.android.crypto.PasswordHashing
 import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.backup.DatabaseBackup
 import io.timelimit.android.data.customtypes.ImmutableBitmask
+import io.timelimit.android.data.devicename.DeviceName
 import io.timelimit.android.data.model.*
 import io.timelimit.android.integration.platform.NewPermissionStatus
 import io.timelimit.android.integration.platform.ProtectionLevel
@@ -69,7 +69,7 @@ class AppSetupLogic(private val appLogic: AppLogic) {
 
                 run {
                     // add device
-                    val deviceName = DeviceName.getDeviceName()
+                    val deviceName = DeviceName.getDeviceNameSync(appLogic.context)
 
                     val device = Device(
                             id = ownDeviceId,
