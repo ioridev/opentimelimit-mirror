@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ import io.timelimit.android.ui.manage.child.ManageChildFragmentArgs
 import io.timelimit.android.ui.manage.child.ManageChildFragmentDirections
 import io.timelimit.android.ui.manage.child.category.create.CreateCategoryDialogFragment
 import io.timelimit.android.ui.manage.child.category.specialmode.SetCategorySpecialModeFragment
+import io.timelimit.android.ui.manage.child.category.specialmode.SpecialModeDialogMode
 
 class ManageChildCategoriesFragment : Fragment() {
     companion object {
@@ -118,7 +119,7 @@ class ManageChildCategoriesFragment : Fragment() {
                         SetCategorySpecialModeFragment.newInstance(
                                 childId = params.childId,
                                 categoryId = category.category.id,
-                                selfLimitMode = true
+                                mode = SpecialModeDialogMode.Regular
                         ).show(parentFragmentManager)
 
                         false
@@ -128,7 +129,7 @@ class ManageChildCategoriesFragment : Fragment() {
                         SetCategorySpecialModeFragment.newInstance(
                                 childId = params.childId,
                                 categoryId = category.category.id,
-                                selfLimitMode = !auth.isParentAuthenticated()
+                                mode = if (auth.isParentAuthenticated()) SpecialModeDialogMode.Regular else SpecialModeDialogMode.SelfLimitAdd
                         ).show(parentFragmentManager)
                     }
 

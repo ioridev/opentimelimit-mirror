@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
     private val typeLive = MutableLiveData<Type?>().apply { value = null }
     private var didInit = false
     private val childAndCategoryId = MutableLiveData<Pair<String, String>>()
-    private val selfLimitAddModeLive = MutableLiveData<Boolean>().apply { value = false }
+    private val specialMode = MutableLiveData<SpecialModeDialogMode>()
 
     fun now() = logic.timeApi.getCurrentTimeInMillis()
 
@@ -67,8 +67,8 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
         }
     }
 
-    val minTimestamp = selfLimitAddModeLive.switchMap { selfLimitAddMode ->
-        if (selfLimitAddMode) selfLimitAddModeMinTimestamp else nowLive
+    val minTimestamp = specialMode.switchMap { mode ->
+        if (mode == SpecialModeDialogMode.SelfLimitAdd) selfLimitAddModeMinTimestamp else nowLive
     }
 
     val content: LiveData<Content?> = object: MediatorLiveData<Content>() {
@@ -79,7 +79,7 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
             addSource(durationSelectionLive) { update() }
             addSource(typeLive) { update() }
             addSource(userRelatedData) { didLoadUserRelatedData = true; update() }
-            addSource(selfLimitAddModeLive) { update() }
+            addSource(specialMode) { update() }
         }
 
         fun update() {
@@ -92,19 +92,22 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
             val durationSelection = durationSelectionLive.value!!
             val type = typeLive.value
             val (userRelatedData, categoryId) = userRelatedData.value ?: run { value = null; return }
-            val selfLimitAddMode = selfLimitAddModeLive.value ?: return
+            val specialMode = specialMode.value ?: return
 
             val targetCategory = userRelatedData.categoryById[categoryId] ?: run { value = null; return }
             val categoryTitle = targetCategory.category.title
 
-            if (targetCategory.category.temporarilyBlocked && targetCategory.category.temporarilyBlockedEndTime == 0L && selfLimitAddMode) {
+            if (
+                targetCategory.category.temporarilyBlocked && targetCategory.category.temporarilyBlockedEndTime == 0L &&
+                specialMode == SpecialModeDialogMode.SelfLimitAdd
+            ) {
                 value = null; return
             }
 
             val screen = if (type == null) Screen.SelectType else when (durationSelection) {
                 DurationSelection.SuggestionList -> when (type) {
                     Type.BlockTemporarily -> {
-                        if (selfLimitAddMode) SpecialModeDuration.items
+                        if (specialMode == SpecialModeDialogMode.SelfLimitAdd) SpecialModeDuration.items
                         else listOf(SpecialModeOption.NoEndTimeOption) + SpecialModeDuration.items
                     }
                     Type.DisableLimits -> SpecialModeDuration.items
@@ -135,7 +138,10 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
         durationSelectionLive.value = DurationSelection.SuggestionList
 
         true
-    } else if (typeLive.value != null) {
+    } else if (
+        typeLive.value != null &&
+        specialMode.value != SpecialModeDialogMode.DisableLimitsOnly
+    ) {
         typeLive.value = null
 
         true
@@ -146,7 +152,7 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
     fun applySelection(selection: SpecialModeOption, auth: ActivityViewModel) {
         val content = content.value
         val screen = content?.screen
-        val selfLimitAddMode = selfLimitAddModeLive.value ?: return
+        val specialMode = specialMode.value ?: return
 
         if (screen is Screen.WithType) {
             when (selection) {
@@ -159,7 +165,7 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
                                 timezone = content.childTimezone
                         )
 
-                        if (selfLimitAddMode) {
+                        if (specialMode == SpecialModeDialogMode.SelfLimitAdd) {
                             val minTime = minTimestamp.value ?: return
 
                             if (endTime < minTime) {
@@ -175,7 +181,7 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
                                         endTime = endTime,
                                         blocked = true
                                 ),
-                                allowAsChild = selfLimitAddMode
+                                allowAsChild = specialMode == SpecialModeDialogMode.SelfLimitAdd
                         )
 
                         requestClose.value = true
@@ -220,12 +226,16 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
             auth = auth
     )
 
-    fun init(childId: String, categoryId: String, selfLimitAddMode: Boolean) {
+    fun init(childId: String, categoryId: String, mode: SpecialModeDialogMode) {
         if (!didInit) {
             didInit = true
 
             childAndCategoryId.value = childId to categoryId
-            selfLimitAddModeLive.value = selfLimitAddMode
+            specialMode.value = mode
+
+            if (mode == SpecialModeDialogMode.DisableLimitsOnly) {
+                selectType(Type.DisableLimits)
+            }
         }
     }
 

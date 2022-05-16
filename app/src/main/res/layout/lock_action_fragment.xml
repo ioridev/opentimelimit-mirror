@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+  TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation version 3 of the License.
@@ -216,11 +216,32 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <io.timelimit.android.ui.view.ManageDisableTimelimitsView
+            <androidx.cardview.widget.CardView
                 android:visibility="@{reason == BlockingReason.BlockedAtThisTime || reason == BlockingReason.TimeOver || reason == BlockingReason.TimeOverExtraTimeCanBeUsedLater || reason == BlockingReason.SessionDurationLimit || reason == BlockingReason.MissingRequiredNetwork ? View.VISIBLE : View.GONE}"
-                android:id="@+id/manage_disable_time_limits"
+                android:foreground="?selectableItemBackground"
+                android:onClick="@{() -> handlers.disableLimitsTemporarily()}"
+                app:cardUseCompatPadding="true"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:padding="8dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        tools:text="@string/manage_child_special_mode_wizard_disable_limits_title"
+                        android:text="@{@string/manage_child_special_mode_wizard_disable_limits_title(appCategoryTitle)}"
+                        android:textAppearance="?android:textAppearanceLarge"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:text="@string/lock_disable_limits_temporarily_text"
+                        android:textAppearance="?android:textAppearanceMedium"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
                 android:visibility="@{(reason == BlockingReason.MissingRequiredNetwork || reason == BlockingReason.MissingNetworkCheckPermission) &amp;&amp; missingNetworkIdPermission ? View.VISIBLE : View.GONE}"

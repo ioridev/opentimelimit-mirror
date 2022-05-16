@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,18 +42,18 @@ class SetCategorySpecialModeFragment: DialogFragment() {
 
         private const val CHILD_ID = "childId"
         private const val CATEGORY_ID = "categoryId"
-        private const val SELF_LIMIT_MODE = "selfLimitMode"
+        private const val MODE = "mode"
 
         private const val PAGE_TYPE = 0
         private const val PAGE_SUGGESTION = 1
         private const val PAGE_CLOCK = 2
         private const val PAGE_CALENDAR = 3
 
-        fun newInstance(childId: String, categoryId: String, selfLimitMode: Boolean) = SetCategorySpecialModeFragment().apply {
+        fun newInstance(childId: String, categoryId: String, mode: SpecialModeDialogMode) = SetCategorySpecialModeFragment().apply {
             arguments = Bundle().apply {
                 putString(CHILD_ID, childId)
                 putString(CATEGORY_ID, categoryId)
-                putBoolean(SELF_LIMIT_MODE, selfLimitMode)
+                putSerializable(MODE, mode)
             }
         }
     }
@@ -72,11 +72,11 @@ class SetCategorySpecialModeFragment: DialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val childId = requireArguments().getString(CHILD_ID)!!
         val categoryId = requireArguments().getString(CATEGORY_ID)!!
-        val selfLimitMode = requireArguments().getBoolean(SELF_LIMIT_MODE)
+        val mode = requireArguments().getSerializable(MODE)!! as SpecialModeDialogMode
 
-        model.init(childId = childId, categoryId = categoryId, selfLimitAddMode = selfLimitMode)
+        model.init(childId = childId, categoryId = categoryId, mode = mode)
 
-        if (selfLimitMode) {
+        if (mode == SpecialModeDialogMode.SelfLimitAdd) {
             auth.authenticatedUserOrChild.observe(viewLifecycleOwner) { if (it == null) dismissAllowingStateLoss() }
         } else {
             auth.authenticatedUser.observe(viewLifecycleOwner) { if (it == null) dismissAllowingStateLoss() }
@@ -125,7 +125,8 @@ class SetCategorySpecialModeFragment: DialogFragment() {
 
                     when (screen) {
                         is SetCategorySpecialModeModel.Screen.WithType.SuggestionList -> {
-                            setPage(PAGE_SUGGESTION)
+                            if (flipper.displayedChild == 0 && mode == SpecialModeDialogMode.DisableLimitsOnly) flipper.displayedChild = 1
+                            else setPage(PAGE_SUGGESTION)
 
                             specialModeOptionAdapter.items = screen.options
                         }
@@ -139,7 +140,7 @@ class SetCategorySpecialModeFragment: DialogFragment() {
         binding.blockTemporarilyOption.setOnClickListener { model.selectType(SetCategorySpecialModeModel.Type.BlockTemporarily) }
         binding.disableLimitsOption.setOnClickListener { model.selectType(SetCategorySpecialModeModel.Type.DisableLimits) }
 
-        binding.isAddLimitMode = selfLimitMode
+        binding.isAddLimitMode = mode == SpecialModeDialogMode.SelfLimitAdd
 
         binding.suggestionList.also {
             it.adapter = specialModeOptionAdapter

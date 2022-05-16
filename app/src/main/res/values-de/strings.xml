@@ -466,6 +466,8 @@
     <string name="lock_grant_permission_title">Berechtigung erteilen</string>
     <string name="lock_grant_permission_text">TimeLimit ermöglichen, das verbundene Netzwerk zu erkennen</string>
 
+    <string name="lock_disable_limits_temporarily_text">Begrenzungen für die Kategorie vorübergehnd deaktivieren, um diese Anwendung freizugeben</string>
+
     <string name="lock_reason_no_category">
         Die App wurde zu keiner Kategorie zugeordnet. Das bedeutet, dass es keine Einschränkungs-Einstellungen gibt. Und da ist es die einfachste Lösung, die App zu sperren.
     </string>

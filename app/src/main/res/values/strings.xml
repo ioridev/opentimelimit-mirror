@@ -509,6 +509,8 @@
     <string name="lock_grant_permission_title">Grant permission</string>
     <string name="lock_grant_permission_text">Allow TimeLimit to see the connected network</string>
 
+    <string name="lock_disable_limits_temporarily_text">Temporarily disable limits for the category to allow using this application</string>
+
     <string name="lock_reason_no_category">
         This App was not assigned to any category.
         Due to that, there are no restriction settings.
