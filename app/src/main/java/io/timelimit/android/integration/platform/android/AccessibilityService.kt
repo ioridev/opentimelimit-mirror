@@ -31,8 +31,6 @@ class AccessibilityService: AccessibilityService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             this.serviceInfo = AccessibilityServiceInfo().apply {
                 feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
-                eventTypes = AccessibilityEvent.TYPE_WINDOWS_CHANGED
-                flags = AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
             }
         }
 
