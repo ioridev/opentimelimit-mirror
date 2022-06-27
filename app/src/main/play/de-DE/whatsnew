@@ -1,5 +1,1 @@
-- Möglichkeit, Begrenzungen für einzelne Kategorien vom Sperrbildschirm aus vorübergehend zu deaktivieren
-- Lockerung der Passwortanforderungen
-- verbesserte Erkennung des Geräte-Modells
-- Hinweise bei der Einrichtung aktualisiert
-- Hinweise für den Elternschlüssel aktualisiert
+- fehlende Verarbeitung des aktuellen Netzwerkes bei Anmeldeverhinderungskategorien hinzugefügt

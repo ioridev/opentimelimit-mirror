@@ -1,5 +1,1 @@
-- option to disable limits for a single category temporarily from the lockscreen
-- relaxed password requirements
-- improved device model detection
-- updated messages during setup
-- updated instructions for the parent key
+- added missing processing of the current network for limit login categories
