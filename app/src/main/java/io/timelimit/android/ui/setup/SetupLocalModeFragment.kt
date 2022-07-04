@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
  */
 package io.timelimit.android.ui.setup
 
+import android.Manifest
 import android.app.Application
 import android.os.Bundle
 import android.util.Log
@@ -22,7 +23,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -33,25 +36,64 @@ import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.databinding.FragmentSetupLocalModeBinding
 import io.timelimit.android.livedata.mergeLiveData
+import io.timelimit.android.livedata.mergeLiveDataWaitForValues
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.mustread.MustReadFragment
+import io.timelimit.android.ui.view.NotifyPermissionCard
 
 class SetupLocalModeFragment : Fragment() {
+    companion object {
+        private const val STATUS_NOTIFY_PERMISSION = "notify permission"
+    }
+
+    private val model: SetupLocalModeModel by viewModels()
+    private var notifyPermission = MutableLiveData<NotifyPermissionCard.Status>()
+
+    private val requestNotifyPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) notifyPermission.value = NotifyPermissionCard.Status.Granted
+        else Toast.makeText(requireContext(), R.string.notify_permission_rejected_toast, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        if (savedInstanceState != null) {
+            notifyPermission.value = savedInstanceState.getSerializable(STATUS_NOTIFY_PERMISSION, NotifyPermissionCard.Status::class.java)!!
+        }
+
+        notifyPermission.value = NotifyPermissionCard.updateStatus(notifyPermission.value ?: NotifyPermissionCard.Status.Unknown, requireContext())
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        notifyPermission.value = NotifyPermissionCard.updateStatus(notifyPermission.value ?: NotifyPermissionCard.Status.Unknown, requireContext())
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putSerializable(STATUS_NOTIFY_PERMISSION, notifyPermission.value)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = FragmentSetupLocalModeBinding.inflate(inflater, container, false)
-
-        val model = ViewModelProviders.of(this).get(SetupLocalModeModel::class.java)
         val navigation = Navigation.findNavController(container!!)
 
-        mergeLiveData(binding.setPasswordView.passwordOk, model.status).observe(this, Observer {
-            binding.nextBtn.isEnabled = it!!.first == true && it.second == SetupLocalModeModel.Status.Idle
-        })
+        mergeLiveDataWaitForValues(binding.setPasswordView.passwordOk, model.status, notifyPermission)
+            .observe(viewLifecycleOwner) { (passwordGood, modelStatus, notifyPermission) ->
+                val isIdle = modelStatus == SetupLocalModeModel.Status.Idle
 
-        model.status.observe(this, Observer {
+                binding.setPasswordView.isEnabled = isIdle
+
+                binding.nextBtn.isEnabled = passwordGood && isIdle && NotifyPermissionCard.canProceed(notifyPermission)
+            }
+
+        model.status.observe(viewLifecycleOwner) {
             val isIdle = it == SetupLocalModeModel.Status.Idle
 
             binding.setPasswordView.isEnabled = isIdle
-        })
+        }
 
         model.status.observe(this, Observer {
             if (it == SetupLocalModeModel.Status.Done) {
@@ -68,6 +110,13 @@ class SetupLocalModeFragment : Fragment() {
         }
 
         binding.setPasswordView.allowNoPassword.value = true
+
+        NotifyPermissionCard.bind(object: NotifyPermissionCard.Listener {
+            override fun onGrantClicked() { requestNotifyPermission.launch(Manifest.permission.POST_NOTIFICATIONS) }
+            override fun onSkipClicked() { notifyPermission.value = NotifyPermissionCard.Status.SkipGrant }
+        }, binding.notifyPermissionCard)
+
+        notifyPermission.observe(viewLifecycleOwner) { NotifyPermissionCard.bind(it, binding.notifyPermissionCard) }
 
         return binding.root
     }

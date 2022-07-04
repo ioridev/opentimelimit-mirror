@@ -1147,4 +1147,17 @@
     <string name="biometric_manage_no_credentials_dialog_action_v28">Anmeldemerkmale erfassen</string>
     <string name="biometric_manage_error_no_hw">Kein biometrisches Erfassungsgerät erkannt.</string>
     <string name="biometric_manage_error_hw_not_available">Das Gerät zur biometrischen Merkmalserfassung ist gerade nicht verfügbar.</string>
+
+    <string name="notify_permission_title">Benachrichtigungen</string>
+    <string name="notify_permission_text">Abhängig von der verwendeten Android-Version benötigen Apps
+        und damit auch TimeLimit
+        eine Berechtigung, um Benachrichtigungen anzuzeigen. Das wird z.B. verwendet,
+        um die verbleibende Zeit anzuzeigen und beim Sperren
+        von Benachrichtigungen einen Hinweis anzuzeigen.
+        Es wird ausdrücklich empfohlen, das Anzeigen von Benachrichtigungen zu erlauben.
+    </string>
+    <string name="notify_permission_text_granted">Das Anzeigen von Benachrichtigungen wurde erlaubt</string>
+    <string name="notify_permission_btn_grant">Erlauben</string>
+    <string name="notify_permission_btn_later">ohne Aktivierung der Benachrichtigungsfunktion fortfahren</string>
+    <string name="notify_permission_rejected_toast">abgelehnt; möglicherweise können Sie dies nur noch über die Systemeinstellungen erlauben</string>
 </resources>

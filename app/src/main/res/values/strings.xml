@@ -1202,4 +1202,16 @@
     <string name="biometric_manage_no_credentials_dialog_action_v28">Enroll Credentials</string>
     <string name="biometric_manage_error_no_hw">No biometric hardware detected.</string>
     <string name="biometric_manage_error_hw_not_available">The biometric hardware is somehow not available at the moment.</string>
+
+    <string name="notify_permission_title">Notifications</string>
+    <string name="notify_permission_text">Apps including TimeLimit need your permission to
+        show notifications at some Android versions.
+        TimeLimit uses e.g. to show the remaining time and to
+        show a message when a notification was blocked.
+        It is highly recommend to allow showing notifications.
+    </string>
+    <string name="notify_permission_text_granted">Showing notifications was allowed</string>
+    <string name="notify_permission_btn_grant">Allow</string>
+    <string name="notify_permission_btn_later">Continue without enabling notifications</string>
+    <string name="notify_permission_rejected_toast">rejected; it could be that you can only change this using the system settings</string>
 </resources>

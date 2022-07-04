@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ class SetPasswordView(context: Context, attributeSet: AttributeSet): FrameLayout
     val noPasswordChecked = MutableLiveData<Boolean>().apply { value = false }
     val useEmptyPassword = allowNoPassword.and(noPasswordChecked)
 
-    fun readPassword() = if (useEmptyPassword.value!! == true)
+    fun readPassword() = if (useEmptyPassword.value!!)
         ""
     else
         password.value!!
@@ -131,6 +131,7 @@ class SetPasswordView(context: Context, attributeSet: AttributeSet): FrameLayout
     override fun setEnabled(enabled: Boolean) {
         super.setEnabled(enabled)
 
+        binding.noPasswordCheckbox.isEnabled = enabled
         binding.fieldPassword.isEnabled = enabled
         binding.fieldPasswordRepeat.isEnabled = enabled
     }
