@@ -923,6 +923,9 @@
     <string name="notification_channel_time_warning_text">Notification for childs if there is not much time remaining</string>
     <string name="time_warning_custom_add">Add time warning</string>
 
+    <string name="notification_channel_apps_temporarily_allowed_title">Temporarily allowed Apps</string>
+    <string name="notification_channel_apps_temporarily_allowed_text">Shows that some Apps were temporarily allowed and provides the option to revoke that</string>
+
     <string name="notification_filter_not_blocked_title">TimeLimit has blocked a notification</string>
     <string name="notification_filter_blocking_failed_title">TimeLimit could not block a notification</string>
 

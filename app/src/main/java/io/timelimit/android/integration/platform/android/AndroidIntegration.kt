@@ -372,7 +372,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
                     PendingIntentIds.PENDING_INTENT_FLAGS
             )
 
-            val notification = NotificationCompat.Builder(context, NotificationChannels.APP_STATUS)
+            val notification = NotificationCompat.Builder(context, NotificationChannels.TEMP_ALLOWED_APP)
                     .setSmallIcon(R.drawable.ic_stat_check)
                     .setContentTitle(context.getString(R.string.background_logic_temporarily_allowed_title))
                     .setContentText(context.getString(R.string.background_logic_temporarily_allowed_text))

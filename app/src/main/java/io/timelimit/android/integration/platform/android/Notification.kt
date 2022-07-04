@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ object NotificationChannels {
     const val APP_STATUS = "app status"
     const val BLOCKED_NOTIFICATIONS_NOTIFICATION = "notification blocked notification"
     const val TIME_WARNING = "time warning"
+    const val TEMP_ALLOWED_APP = "temporarily allowed App"
 
     private fun createAppStatusChannel(notificationManager: NotificationManager, context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -82,10 +83,30 @@ object NotificationChannels {
         }
     }
 
+    private fun createTempAllowedAppChannel(notificationManager: NotificationManager, context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationManager.createNotificationChannel(
+                NotificationChannel(
+                    TEMP_ALLOWED_APP,
+                    context.getString(R.string.notification_channel_apps_temporarily_allowed_title),
+                    NotificationManager.IMPORTANCE_LOW
+                ).apply {
+                    description = context.getString(R.string.notification_channel_apps_temporarily_allowed_text)
+                    enableLights(false)
+                    setSound(null, null)
+                    enableVibration(false)
+                    setShowBadge(false)
+                    lockscreenVisibility = NotificationCompat.VISIBILITY_SECRET
+                }
+            )
+        }
+    }
+
     fun createNotificationChannels(notificationManager: NotificationManager, context: Context) {
         createAppStatusChannel(notificationManager, context)
         createBlockedNotificationChannel(notificationManager, context)
         createTimeWarningsNotificationChannel(notificationManager, context)
+        createTempAllowedAppChannel(notificationManager, context)
     }
 }
 
