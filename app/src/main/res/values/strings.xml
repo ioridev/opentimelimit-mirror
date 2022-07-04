@@ -792,12 +792,12 @@
     </string>
     <string name="manage_device_permission_device_admin_text_disabled">
         The device admin permission was not granted.
-        TimeLimit can be stopped at any time using the system settings.
+        TimeLimit can be stopped at any time without detecting this.
     </string>
     <string name="manage_device_permission_device_admin_text_simple">
         The device admin permission was granted.
-        This must be disabled before TimeLimit can be uninstalled or stopped using the system settings.
-        This permission can be disabled without the password of the parents.
+        It is very likely that TimeLimit can detect if it was stopped.
+        However, it is still possible that the child is able to stop TimeLimit.
     </string>
     <string name="manage_device_permission_device_admin_text_password">
         The device admin permission with the possibility to lock the system after an manipulation was granted.

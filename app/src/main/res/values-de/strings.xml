@@ -757,12 +757,12 @@
         Geräte-Besitzer kann abhängig von den Umständen verwendet werden, um Manipulationen zu erkennen oder zu verhindern.
     </string>
     <string name="manage_device_permission_device_admin_text_disabled">
-        Die Geräte-Administrator-Berechtigung wurde nicht gewährt. TimeLimit kann jederzeit über die Systemeinstellungen beendet werden.
+        Die Geräte-Administrator-Berechtigung wurde nicht gewährt. TimeLimit kann jederzeit beendet werden, ohne dass das erkannt wird.
     </string>
     <string name="manage_device_permission_device_admin_text_simple">
         Die Geräte-Administrator-Berechtigung wurde gewährt.
-        Diese muss deaktiviert werden, bevor TimeLimit über die Systemeinstellungen beendet oder deinstalliert werden kann.
-        Diese Deaktivierung kann auch durch das Kind durchgeführt werden.
+        TimeLimit kann wahrscheinlich erkennen, wenn es beendet wurde.
+        Es ist aber auch anzunehmen, dass das Kind TimeLimit dennoch beenden kann.
     </string>
     <string name="manage_device_permission_device_admin_text_password">
         Die Geräte-Administrator-Berechtigung mit der Möglichkeit, das System bei einem Manipulationsversuch zu sperren, wurde gewährt.
