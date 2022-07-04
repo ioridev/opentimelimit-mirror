@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ import com.google.android.material.snackbar.Snackbar
 import io.timelimit.android.R
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.HadManipulationFlag
+import io.timelimit.android.data.model.ManipulationFlag
 import io.timelimit.android.databinding.ManageDeviceManipulationViewBinding
 import io.timelimit.android.livedata.map
 import io.timelimit.android.sync.actions.IgnoreManipulationAction
@@ -62,7 +63,7 @@ object ManageDeviceManipulation {
                 entries.forEach { warning ->
                     container.addView(
                             createCheckbox().apply {
-                                setText(ManipulationWarningTypeLabel.getLabel(warning))
+                                setText(warning.labelResourceId)
                                 isChecked = selection.contains(warning)
 
                                 setOnCheckedChangeListener { _, newIsChecked ->
@@ -128,60 +129,74 @@ data class ManipulationWarnings(val current: List<ManipulationWarningType>, val 
             fun isFlagSet(flag: Long) = (manipulationFlags and flag) == flag
 
             if (device.manipulationTriedDisablingDeviceAdmin) {
-                current.add(ManipulationWarningType.TriedDisablingDeviceAdmin)
+                current.add(ManipulationWarningType.Classic(ClassicManipulationWarningType.TriedDisablingDeviceAdmin))
             }
 
             if (device.manipulationOfAppVersion) {
-                current.add(ManipulationWarningType.AppDowngrade)
+                current.add(ManipulationWarningType.Classic(ClassicManipulationWarningType.AppDowngrade))
             }
             if (isFlagSet(HadManipulationFlag.APP_VERSION)) {
-                past.add(ManipulationWarningType.AppDowngrade)
+                past.add(ManipulationWarningType.Classic(ClassicManipulationWarningType.AppDowngrade))
             }
 
             if (device.manipulationOfProtectionLevel) {
-                current.add(ManipulationWarningType.DeviceAdmin)
+                current.add(ManipulationWarningType.Classic(ClassicManipulationWarningType.DeviceAdmin))
             }
             if (isFlagSet(HadManipulationFlag.PROTECTION_LEVEL)) {
-                past.add(ManipulationWarningType.DeviceAdmin)
+                past.add(ManipulationWarningType.Classic(ClassicManipulationWarningType.DeviceAdmin))
             }
 
             if (device.manipulationOfUsageStats) {
-                current.add(ManipulationWarningType.UsageStats)
+                current.add(ManipulationWarningType.Classic(ClassicManipulationWarningType.UsageStats))
             }
             if (isFlagSet(HadManipulationFlag.USAGE_STATS_ACCESS)) {
-                past.add(ManipulationWarningType.UsageStats)
+                past.add(ManipulationWarningType.Classic(ClassicManipulationWarningType.UsageStats))
             }
 
             if (device.manipulationOfNotificationAccess) {
-                current.add(ManipulationWarningType.NotificationAccess)
+                current.add(ManipulationWarningType.Classic(ClassicManipulationWarningType.NotificationAccess))
             }
             if (isFlagSet(HadManipulationFlag.NOTIFICATION_ACCESS)) {
-                past.add(ManipulationWarningType.NotificationAccess)
+                past.add(ManipulationWarningType.Classic(ClassicManipulationWarningType.NotificationAccess))
             }
 
             if (device.manipulationOfOverlayPermission) {
-                current.add(ManipulationWarningType.OverlayPermission)
+                current.add(ManipulationWarningType.Classic(ClassicManipulationWarningType.OverlayPermission))
             }
             if (isFlagSet(HadManipulationFlag.OVERLAY_PERMISSION)) {
-                past.add(ManipulationWarningType.OverlayPermission)
+                past.add(ManipulationWarningType.Classic(ClassicManipulationWarningType.OverlayPermission))
             }
 
             if (device.wasAccessibilityServiceEnabled) {
                 if (!device.accessibilityServiceEnabled) {
-                    current.add(ManipulationWarningType.AccessibilityService)
+                    current.add(ManipulationWarningType.Classic(ClassicManipulationWarningType.AccessibilityService))
                 }
             }
             if (isFlagSet(HadManipulationFlag.ACCESSIBILITY_SERVICE)) {
-                past.add(ManipulationWarningType.AccessibilityService)
+                past.add(ManipulationWarningType.Classic(ClassicManipulationWarningType.AccessibilityService))
             }
 
             if (device.manipulationDidReboot) {
-                current.add(ManipulationWarningType.DidReboot)
+                current.add(ManipulationWarningType.Classic(ClassicManipulationWarningType.DidReboot))
             }
 
             if (device.hadManipulation) {
                 if (past.isEmpty()) {
-                    past.add(ManipulationWarningType.Unknown)
+                    past.add(ManipulationWarningType.Classic(ClassicManipulationWarningType.Unknown))
+                }
+            }
+
+            if (device.manipulationFlags != 0L) {
+                var remainingFlags = device.manipulationFlags
+
+                if (remainingFlags and ManipulationFlag.USED_FGS_KILLER == ManipulationFlag.USED_FGS_KILLER) {
+                    past.add(ManipulationWarningType.Flag(ManipulationFlag.USED_FGS_KILLER, R.string.manage_device_manipulation_fgs_killer))
+
+                    remainingFlags = remainingFlags.and(ManipulationFlag.USED_FGS_KILLER.inv())
+                }
+
+                if (remainingFlags != 0L) {
+                    past.add(ManipulationWarningType.Flag(remainingFlags, R.string.manage_device_manipulation_unknown))
                 }
             }
 
@@ -197,38 +212,69 @@ data class ManipulationWarnings(val current: List<ManipulationWarningType>, val 
 
     fun buildIgnoreAction(deviceId: String): IgnoreManipulationAction {
         var ignoreHadManipulationFlags = 0L
+        var ignoreManipulationFlags = 0L
 
         past.forEach { type ->
-            ignoreHadManipulationFlags = ignoreHadManipulationFlags or when(type) {
-                ManipulationWarningType.TriedDisablingDeviceAdmin -> throw IllegalArgumentException()
-                ManipulationWarningType.AppDowngrade -> HadManipulationFlag.APP_VERSION
-                ManipulationWarningType.DeviceAdmin -> HadManipulationFlag.PROTECTION_LEVEL
-                ManipulationWarningType.UsageStats -> HadManipulationFlag.USAGE_STATS_ACCESS
-                ManipulationWarningType.NotificationAccess -> HadManipulationFlag.NOTIFICATION_ACCESS
-                ManipulationWarningType.OverlayPermission -> HadManipulationFlag.OVERLAY_PERMISSION
-                ManipulationWarningType.AccessibilityService -> HadManipulationFlag.ACCESSIBILITY_SERVICE
-                ManipulationWarningType.DidReboot -> throw IllegalArgumentException()
-                ManipulationWarningType.Unknown -> 0L   // handled at an other location
-            }
+            when (type) {
+                is ManipulationWarningType.Classic -> {
+                    ignoreHadManipulationFlags = ignoreHadManipulationFlags or when(type.type) {
+                        ClassicManipulationWarningType.TriedDisablingDeviceAdmin -> throw IllegalArgumentException()
+                        ClassicManipulationWarningType.AppDowngrade -> HadManipulationFlag.APP_VERSION
+                        ClassicManipulationWarningType.DeviceAdmin -> HadManipulationFlag.PROTECTION_LEVEL
+                        ClassicManipulationWarningType.UsageStats -> HadManipulationFlag.USAGE_STATS_ACCESS
+                        ClassicManipulationWarningType.NotificationAccess -> HadManipulationFlag.NOTIFICATION_ACCESS
+                        ClassicManipulationWarningType.OverlayPermission -> HadManipulationFlag.OVERLAY_PERMISSION
+                        ClassicManipulationWarningType.AccessibilityService -> HadManipulationFlag.ACCESSIBILITY_SERVICE
+                        ClassicManipulationWarningType.DidReboot -> throw IllegalArgumentException()
+                        ClassicManipulationWarningType.Unknown -> 0L   // handled at an other location
+                    }
+                }
+                is ManipulationWarningType.Flag -> {
+                    ignoreManipulationFlags = ignoreManipulationFlags or type.mask
+                }
+            }.let {/* require handling all cases */}
         }
+
+        val currentClassic = current.filterIsInstance<ManipulationWarningType.Classic>().map { it.type }
 
         return IgnoreManipulationAction(
                 deviceId = deviceId,
-                ignoreUsageStatsAccessManipulation = current.contains(ManipulationWarningType.UsageStats),
-                ignoreNotificationAccessManipulation = current.contains(ManipulationWarningType.NotificationAccess),
-                ignoreDeviceAdminManipulationAttempt = current.contains(ManipulationWarningType.TriedDisablingDeviceAdmin),
-                ignoreDeviceAdminManipulation = current.contains(ManipulationWarningType.DeviceAdmin),
-                ignoreOverlayPermissionManipulation = current.contains(ManipulationWarningType.OverlayPermission),
-                ignoreAccessibilityServiceManipulation = current.contains(ManipulationWarningType.AccessibilityService),
-                ignoreAppDowngrade = current.contains(ManipulationWarningType.AppDowngrade),
-                ignoreReboot = current.contains(ManipulationWarningType.DidReboot),
-                ignoreHadManipulation = past.contains(ManipulationWarningType.Unknown),
-                ignoreHadManipulationFlags = ignoreHadManipulationFlags
+                ignoreUsageStatsAccessManipulation = currentClassic.contains(ClassicManipulationWarningType.UsageStats),
+                ignoreNotificationAccessManipulation = currentClassic.contains(ClassicManipulationWarningType.NotificationAccess),
+                ignoreDeviceAdminManipulationAttempt = currentClassic.contains(ClassicManipulationWarningType.TriedDisablingDeviceAdmin),
+                ignoreDeviceAdminManipulation = currentClassic.contains(ClassicManipulationWarningType.DeviceAdmin),
+                ignoreOverlayPermissionManipulation = currentClassic.contains(ClassicManipulationWarningType.OverlayPermission),
+                ignoreAccessibilityServiceManipulation = currentClassic.contains(ClassicManipulationWarningType.AccessibilityService),
+                ignoreAppDowngrade = currentClassic.contains(ClassicManipulationWarningType.AppDowngrade),
+                ignoreReboot = currentClassic.contains(ClassicManipulationWarningType.DidReboot),
+                ignoreHadManipulation = currentClassic.contains(ClassicManipulationWarningType.Unknown),
+                ignoreHadManipulationFlags = ignoreHadManipulationFlags,
+                ignoreManipulationFlags = ignoreManipulationFlags
         )
     }
 }
 
-enum class ManipulationWarningType {
+sealed class ManipulationWarningType {
+    abstract val labelResourceId: Int
+
+    data class Classic(val type: ClassicManipulationWarningType): ManipulationWarningType() {
+        override val labelResourceId = when (type) {
+            ClassicManipulationWarningType.TriedDisablingDeviceAdmin -> R.string.manage_device_manipulation_device_admin_disable_attempt
+            ClassicManipulationWarningType.AppDowngrade -> R.string.manage_device_manipulation_app_version
+            ClassicManipulationWarningType.DeviceAdmin -> R.string.manage_device_manipulation_device_admin_disabled
+            ClassicManipulationWarningType.UsageStats -> R.string.manage_device_manipulation_usage_stats_access
+            ClassicManipulationWarningType.NotificationAccess -> R.string.manage_device_manipulation_notification_access
+            ClassicManipulationWarningType.OverlayPermission -> R.string.manage_device_manipulation_overlay_permission
+            ClassicManipulationWarningType.AccessibilityService -> R.string.manage_device_manipulation_accessibility_service
+            ClassicManipulationWarningType.DidReboot -> R.string.manage_device_manipulation_reboot
+            ClassicManipulationWarningType.Unknown -> R.string.manage_device_manipulation_existed
+        }
+    }
+
+    data class Flag(val mask: Long, override val labelResourceId: Int): ManipulationWarningType()
+}
+
+enum class ClassicManipulationWarningType {
     TriedDisablingDeviceAdmin,
     AppDowngrade,
     DeviceAdmin,
@@ -238,20 +284,6 @@ enum class ManipulationWarningType {
     AccessibilityService,
     DidReboot,
     Unknown
-}
-
-object ManipulationWarningTypeLabel {
-    fun getLabel(type: ManipulationWarningType) = when (type) {
-        ManipulationWarningType.TriedDisablingDeviceAdmin -> R.string.manage_device_manipulation_device_admin_disable_attempt
-        ManipulationWarningType.AppDowngrade -> R.string.manage_device_manipulation_app_version
-        ManipulationWarningType.DeviceAdmin -> R.string.manage_device_manipulation_device_admin_disabled
-        ManipulationWarningType.UsageStats -> R.string.manage_device_manipulation_usage_stats_access
-        ManipulationWarningType.NotificationAccess -> R.string.manage_device_manipulation_notification_access
-        ManipulationWarningType.OverlayPermission -> R.string.manage_device_manipulation_overlay_permission
-        ManipulationWarningType.AccessibilityService -> R.string.manage_device_manipulation_accessibility_service
-        ManipulationWarningType.DidReboot -> R.string.manage_device_manipulation_reboot
-        ManipulationWarningType.Unknown -> R.string.manage_device_manipulation_existed
-    }
 }
 
 class ManageDeviceManipulationStatus {

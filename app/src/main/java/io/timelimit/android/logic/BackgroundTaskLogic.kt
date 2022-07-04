@@ -26,16 +26,14 @@ import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.coroutines.runAsyncExpectForever
 import io.timelimit.android.data.backup.DatabaseBackup
 import io.timelimit.android.data.model.ExperimentalFlags
+import io.timelimit.android.data.model.ManipulationFlag
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.data.model.derived.UserRelatedData
 import io.timelimit.android.date.DateInTimezone
 import io.timelimit.android.date.getMinuteOfWeek
 import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.extensions.nextBlockedMinuteOfWeek
-import io.timelimit.android.integration.platform.AppStatusMessage
-import io.timelimit.android.integration.platform.ForegroundApp
-import io.timelimit.android.integration.platform.NetworkId
-import io.timelimit.android.integration.platform.ProtectionLevel
+import io.timelimit.android.integration.platform.*
 import io.timelimit.android.integration.platform.android.AccessibilityService
 import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.blockingreason.AppBaseHandling
@@ -74,6 +72,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
         runAsyncExpectForever { syncDeviceStatusLoop() }
         runAsyncExpectForever { backupDatabaseLoop() }
         runAsyncExpectForever { annoyUserOnManipulationLoop() }
+        runAsync { checkForceKilled() }
         runAsync {
             // this is effective after an reboot
 
@@ -815,6 +814,33 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
             syncDeviceStatusSlow()
 
             appLogic.timeApi.sleep(CHECK_PERMISSION_INTERVAL)
+        }
+    }
+
+    private suspend fun checkForceKilled() {
+        appLogic.platformIntegration.getExitLog(1).singleOrNull()?.let { item ->
+            if (
+                item.reason == ExitReason.UserRequest &&
+                item.description != null &&
+                item.description.startsWith("fully stop ") &&
+                item.description.endsWith("by user request")
+            ) {
+                appLogic.isInitialized.waitUntilValueMatches { it == true }
+
+                try {
+                    ApplyActionUtil.applyAppLogicAction(
+                        action = UpdateDeviceStatusAction.empty.copy(
+                            addedManipulationFlags = ManipulationFlag.USED_FGS_KILLER
+                        ),
+                        appLogic = appLogic,
+                        ignoreIfDeviceIsNotConfigured = true
+                    )
+                } catch (ex: Exception) {
+                    if (BuildConfig.DEBUG) {
+                        Log.w(LOG_TAG, "could not save a forced kill notification", ex)
+                    }
+                }
+            }
         }
     }
 

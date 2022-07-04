@@ -723,6 +723,8 @@
     <string name="manage_device_manipulation_app_version">older App version installed</string>
     <string name="manage_device_manipulation_reboot">device was rebooted</string>
     <string name="manage_device_manipulation_existed">there was a manipulation which was stopped again</string>
+    <string name="manage_device_manipulation_unknown">unknown Manipulation</string>
+    <string name="manage_device_manipulation_fgs_killer">killed using task manager</string>
     <string name="manage_device_manipulation_btn_ignore">Confirm and hide warnings</string>
     <string name="manage_device_manipulation_toast_nothing_selected">You have to select warnings to ignore first</string>
 

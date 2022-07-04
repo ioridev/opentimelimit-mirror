@@ -89,7 +89,7 @@ abstract class PlatformIntegration(
         confirmationLevel: SystemPermissionConfirmationLevel = SystemPermissionConfirmationLevel.None
     ): Boolean
 
-    abstract fun getExitLog(): List<ExitLogItem>
+    abstract fun getExitLog(length: Int): List<ExitLogItem>
 
     var installedAppsChangeListener: Runnable? = null
     var systemClockChangeListener: Runnable? = null

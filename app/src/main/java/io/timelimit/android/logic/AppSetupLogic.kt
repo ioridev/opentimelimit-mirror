@@ -97,7 +97,8 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             accessibilityServiceEnabled = false,
                             wasAccessibilityServiceEnabled = false,
                             enableActivityLevelBlocking = false,
-                            qOrLater = AndroidVersion.qOrLater
+                            qOrLater = AndroidVersion.qOrLater,
+                            manipulationFlags = 0
                     )
 
                     appLogic.database.device().addDeviceSync(device)

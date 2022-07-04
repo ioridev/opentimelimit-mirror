@@ -789,9 +789,9 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
         }
     }
 
-    override fun getExitLog(): List<ExitLogItem> {
+    override fun getExitLog(length: Int): List<ExitLogItem> {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            activityManager.getHistoricalProcessExitReasons(context.packageName, 0, 0)
+            activityManager.getHistoricalProcessExitReasons(context.packageName, 0, length)
                 .map { ExitLogItem.fromApplicationExitInfo(it) }
         } else emptyList()
     }

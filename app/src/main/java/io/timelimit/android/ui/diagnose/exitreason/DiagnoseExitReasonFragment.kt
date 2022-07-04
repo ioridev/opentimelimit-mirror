@@ -31,7 +31,7 @@ import io.timelimit.android.ui.main.FragmentWithCustomTitle
 class DiagnoseExitReasonFragment: Fragment(), FragmentWithCustomTitle {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = DiagnoseExitReasonFragmentBinding.inflate(inflater, container, false)
-        val data = DefaultAppLogic.with(requireContext()).platformIntegration.getExitLog()
+        val data = DefaultAppLogic.with(requireContext()).platformIntegration.getExitLog(0)
         val recycler = binding.recycler
         val adapter = DiagnoseExitReasonAdapter()
 

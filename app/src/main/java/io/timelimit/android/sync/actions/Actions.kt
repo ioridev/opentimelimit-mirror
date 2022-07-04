@@ -342,7 +342,8 @@ data class UpdateDeviceStatusAction(
         val newAccessibilityServiceEnabled: Boolean?,
         val newAppVersion: Int?,
         val didReboot: Boolean,
-        val isQOrLaterNow: Boolean
+        val isQOrLaterNow: Boolean,
+        val addedManipulationFlags: Long
 ): AppLogicAction() {
     companion object {
         val empty = UpdateDeviceStatusAction(
@@ -353,7 +354,8 @@ data class UpdateDeviceStatusAction(
                 newAccessibilityServiceEnabled = null,
                 newAppVersion = null,
                 didReboot = false,
-                isQOrLaterNow = false
+                isQOrLaterNow = false,
+                addedManipulationFlags = 0L
         )
     }
 
@@ -375,7 +377,8 @@ data class IgnoreManipulationAction(
         val ignoreAccessibilityServiceManipulation: Boolean,
         val ignoreReboot: Boolean,
         val ignoreHadManipulation: Boolean,
-        val ignoreHadManipulationFlags: Long
+        val ignoreHadManipulationFlags: Long,
+        val ignoreManipulationFlags: Long
 ): ParentAction() {
     init {
         IdGenerator.assertIdValid(deviceId)
@@ -388,7 +391,8 @@ data class IgnoreManipulationAction(
             (!ignoreUsageStatsAccessManipulation) &&
             (!ignoreReboot) &&
             (!ignoreHadManipulation) &&
-            (ignoreHadManipulationFlags == 0L)
+            (ignoreHadManipulationFlags == 0L) &&
+            (ignoreManipulationFlags == 0L)
 }
 
 object TriedDisablingDeviceAdminAction: AppLogicAction()

@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -302,6 +302,10 @@ object LocalDatabaseAppLogicActionDispatcher {
 
                     if (action.isQOrLaterNow && !device.qOrLater) {
                         device = device.copy(qOrLater = true)
+                    }
+
+                    if (action.addedManipulationFlags != 0L) {
+                        device = device.copy(manipulationFlags = device.manipulationFlags or action.addedManipulationFlags)
                     }
 
                     database.device().updateDeviceEntry(device)

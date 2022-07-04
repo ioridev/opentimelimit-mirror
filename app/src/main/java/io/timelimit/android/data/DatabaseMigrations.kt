@@ -199,4 +199,10 @@ object DatabaseMigrations {
             database.execSQL("CREATE TABLE IF NOT EXISTS `category_time_warning` (`category_id` TEXT NOT NULL, `minutes` INTEGER NOT NULL, PRIMARY KEY(`category_id`, `minutes`), FOREIGN KEY(`category_id`) REFERENCES `category`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )")
         }
     }
+
+    val MIGRATE_TO_V26 = object: Migration(25, 26) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE device ADD COLUMN manipulation_flags INTEGER NOT NULL DEFAULT 0")
+        }
+    }
 }

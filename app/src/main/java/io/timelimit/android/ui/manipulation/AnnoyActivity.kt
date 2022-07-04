@@ -35,7 +35,6 @@ import io.timelimit.android.ui.backdoor.BackdoorDialogFragment
 import io.timelimit.android.ui.login.NewLoginFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
-import io.timelimit.android.ui.manage.device.manage.ManipulationWarningTypeLabel
 import io.timelimit.android.ui.manage.device.manage.ManipulationWarnings
 import io.timelimit.android.util.TimeTextUtil
 
@@ -94,7 +93,7 @@ class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder {
         logic.deviceEntry.map {
             val reasonItems = (it?.let { ManipulationWarnings.getFromDevice(it) } ?: ManipulationWarnings.empty)
                     .current
-                    .map { getString(ManipulationWarningTypeLabel.getLabel(it)) }
+                    .map { getString(it.labelResourceId) }
 
             if (reasonItems.isEmpty()) {
                 null
