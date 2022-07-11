@@ -1,1 +1,2 @@
-- added missing processing of the current network for limit login categories
+- adjustments for Android 13
+- improved notification channel organization
