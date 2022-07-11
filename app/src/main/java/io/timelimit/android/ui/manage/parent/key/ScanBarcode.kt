@@ -21,7 +21,7 @@ import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
 
 class ScanBarcode: ActivityResultContract<Unit, String?>() {
-    override fun createIntent(context: Context, input: Unit?): Intent = Intent()
+    override fun createIntent(context: Context, input: Unit): Intent = Intent()
         .setPackage("de.markusfisch.android.binaryeye")
         .setAction("com.google.zxing.client.android.SCAN")
 
