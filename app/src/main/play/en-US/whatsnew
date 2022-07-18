@@ -1,2 +1,1 @@
-- adjustments for Android 13
-- improved notification channel organization
+- fix the possibility to extend a temporarily blocking of a category as a child user
