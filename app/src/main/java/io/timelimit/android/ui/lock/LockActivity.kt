@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,12 +28,15 @@ import io.timelimit.android.databinding.LockActivityBinding
 import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.logic.BlockingReason
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.u2f.U2fManager
+import io.timelimit.android.u2f.protocol.U2FDevice
+import io.timelimit.android.ui.login.AuthTokenLoginProcessor
 import io.timelimit.android.ui.login.NewLoginFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticationFab
 
-class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
+class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.DeviceFoundListener {
     companion object {
         private const val EXTRA_PACKAGE_NAME = "pkg"
         private const val EXTRA_ACTIVITY_NAME = "an"
@@ -77,6 +80,8 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        U2fManager.setupActivity(this)
 
         val adapter = LockActivityAdapter(supportFragmentManager, this)
 
@@ -132,12 +137,14 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
         super.onResume()
 
         lockTaskModeWorkaround()
+        U2fManager.with(this).registerListener(this)
     }
 
     override fun onPause() {
         super.onPause()
 
         lockTaskModeWorkaround()
+        U2fManager.with(this).unregisterListener(this)
     }
 
     override fun onStop() {
@@ -169,4 +176,6 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
         // do nothing because going back would open the blocked app again
         // super.onBackPressed()
     }
+
+    override fun onDeviceFound(device: U2FDevice) = AuthTokenLoginProcessor.process(device, getActivityViewModel())
 }

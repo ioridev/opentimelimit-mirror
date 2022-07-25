@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,9 @@ import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.u2f.U2fManager
+import io.timelimit.android.u2f.protocol.U2FDevice
+import io.timelimit.android.ui.login.AuthTokenLoginProcessor
 import io.timelimit.android.ui.login.NewLoginFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
@@ -43,7 +46,7 @@ import io.timelimit.android.ui.overview.main.MainFragment
 import io.timelimit.android.ui.parentmode.ParentModeFragment
 import io.timelimit.android.ui.setup.SetupTermsFragment
 
-class MainActivity : AppCompatActivity(), ActivityViewModelHolder {
+class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.DeviceFoundListener {
     companion object {
         private const val AUTH_DIALOG_TAG = "adt"
     }
@@ -55,6 +58,8 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        U2fManager.setupActivity(this)
 
         if (savedInstanceState == null) {
             NavHostFragment.create(R.navigation.nav_graph).let { navhost ->
@@ -178,4 +183,18 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder {
             NewLoginFragment().showSafe(supportFragmentManager, AUTH_DIALOG_TAG)
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+
+        U2fManager.with(this).registerListener(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        U2fManager.with(this).unregisterListener(this)
+    }
+
+    override fun onDeviceFound(device: U2FDevice) = AuthTokenLoginProcessor.process(device, getActivityViewModel())
 }

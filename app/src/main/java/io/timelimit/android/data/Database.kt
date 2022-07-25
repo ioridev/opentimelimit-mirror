@@ -39,6 +39,7 @@ interface Database {
     fun categoryNetworkId(): CategoryNetworkIdDao
     fun childTasks(): ChildTaskDao
     fun timeWarning(): CategoryTimeWarningDao
+    fun u2f(): U2FDao
 
     fun <T> runInTransaction(block: () -> T): T
     fun <T> runInUnobservedTransaction(block: () -> T): T

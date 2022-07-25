@@ -58,3 +58,7 @@
 -keep class org.whispersystems.curve25519.JavaCurve25519Provider {}
 -keep class org.whispersystems.curve25519.J2meCurve25519Provider {}
 -keep class org.whispersystems.curve25519.OpportunisticCurve25519Provider {}
+
+# bouncycastle
+-keep class org.bouncycastle.jcajce.provider.** { *; }
+-keep class org.bouncycastle.jce.provider.** { *; }

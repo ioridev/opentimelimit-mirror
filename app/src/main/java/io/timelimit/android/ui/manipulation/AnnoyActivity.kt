@@ -31,14 +31,17 @@ import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.integration.platform.android.AndroidIntegrationApps
 import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.u2f.U2fManager
+import io.timelimit.android.u2f.protocol.U2FDevice
 import io.timelimit.android.ui.backdoor.BackdoorDialogFragment
+import io.timelimit.android.ui.login.AuthTokenLoginProcessor
 import io.timelimit.android.ui.login.NewLoginFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.manage.device.manage.ManipulationWarnings
 import io.timelimit.android.util.TimeTextUtil
 
-class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder {
+class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.DeviceFoundListener {
     companion object {
         private const val LOG_TAG = "AnnoyActivity"
 
@@ -59,6 +62,8 @@ class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        U2fManager.setupActivity(this)
 
         val logic = DefaultAppLogic.with(this)
 
@@ -132,4 +137,18 @@ class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder {
         // super.onBackPressed()
         // just ignore it
     }
+
+    override fun onResume() {
+        super.onResume()
+
+        U2fManager.with(this).registerListener(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        U2fManager.with(this).unregisterListener(this)
+    }
+
+    override fun onDeviceFound(device: U2FDevice) = AuthTokenLoginProcessor.process(device, getActivityViewModel())
 }

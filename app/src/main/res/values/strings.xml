@@ -78,6 +78,10 @@
         (<a href="https://github.com/signalapp/curve25519-java/blob/master/LICENSE">GNU General Public License v3.0</a>)
         \n<a href="https://github.com/zxing/zxing">ZXing</a>
         (<a href="https://github.com/zxing/zxing/blob/master/LICENSE">Apache License 2.0</a>)
+        \n<a href="https://www.bouncycastle.org/">Bouncy Castle</a>
+        (<a href="https://www.bouncycastle.org/licence.html">MIT License</a>)
+        \n<a href="https://github.com/Yubico/java-u2flib-server">java-u2flib-server</a>
+        (<a href="https://github.com/Yubico/java-u2flib-server/blob/master/COPYING">BSD License</a>)
     </string>
 
     <string name="about_diagnose_title">Error diagnose</string>
@@ -863,6 +867,9 @@
     <string name="manage_parent_change_password_toast_success">The password was changed</string>
     <string name="manage_parent_change_password_toast_wrong_password">The old password is invalid</string>
 
+    <string name="manage_parent_u2f_title">U2F Keys</string>
+    <string name="manage_parent_u2f_description">Setup NFC U2F Tokens to authenticate</string>
+
     <string name="manage_parent_remove_user_title">Remove user</string>
     <string name="manage_parent_remove_user_text">
         To delete %1$s, you need the password of %1$s
@@ -1216,4 +1223,23 @@
     <string name="notify_permission_btn_grant">Allow</string>
     <string name="notify_permission_btn_later">Continue without enabling notifications</string>
     <string name="notify_permission_rejected_toast">rejected; it could be that you can only change this using the system settings</string>
+
+    <string name="manage_parent_u2f_add_key">Add Token</string>
+    <string name="manage_parent_u2f_status_wait_key">Waiting for your key; NFC is %s</string>
+    <string name="manage_parent_u2f_status_wait_key_nfc_enabled">enabled</string>
+    <string name="manage_parent_u2f_status_wait_key_nfc_disabled">disabled</string>
+    <string name="manage_parent_u2f_status_wait_key_nfc_unsupported">unsupported</string>
+    <string name="manage_parent_u2f_status_working">Linking in progress, do not disconnect yet</string>
+    <string name="manage_parent_u2f_status_interrupted">Connection was interrupted</string>
+    <string name="manage_parent_u2f_status_failed">The Request Failed</string>
+    <string name="manage_parent_u2f_status_already_linked">This device is already linked</string>
+    <string name="manage_parent_u2f_status_done">The Device was linked</string>
+
+    <string name="manage_parent_u2f_remove_key_text">Would you like to remove this key?</string>
+    <string name="manage_parent_u2f_remove_key_requires_password">You can only remove keys after signing in by password</string>
+
+    <string name="manage_parent_u2f_err_wrong_user">Only the user itself can manage its U2F Keys</string>
+
+    <string name="u2f_login_error_unknown">unknown key</string>
+    <string name="u2f_login_error_invalid">invalid key</string>
 </resources>

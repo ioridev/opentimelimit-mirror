@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  * Copyright <C> 2020 Marcel Voigt
  *
  * This program is free software: you can redistribute it and/or modify
@@ -142,6 +142,7 @@ class ActivityViewModel(application: Application): AndroidViewModel(application)
 
     fun setAuthenticatedUser(user: AuthenticatedUser) {
         authenticatedUserMetadata.value = user
+        shouldHighlightAuthenticationButton.value = false
     }
 
     fun getAuthenticatedUser() = authenticatedUserMetadata.value

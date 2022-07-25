@@ -139,6 +139,16 @@ class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
                         R.id.manageParentFragment
                 )
             }
+
+            override fun onManageU2FClicked() {
+                navigation.safeNavigate(
+                    ManageParentFragmentDirections.
+                    actionManageParentFragmentToManageParentU2FKeyFragment(
+                        params.parentId
+                    ),
+                    R.id.manageParentFragment
+                )
+            }
         }
 
         return binding.root
@@ -149,4 +159,5 @@ class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
 
 interface ManageParentFragmentHandlers {
     fun onChangePasswordClicked()
+    fun onManageU2FClicked()
 }

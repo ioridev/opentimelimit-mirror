@@ -205,4 +205,12 @@ object DatabaseMigrations {
             database.execSQL("ALTER TABLE device ADD COLUMN manipulation_flags INTEGER NOT NULL DEFAULT 0")
         }
     }
+
+    val MIGRATE_TO_V27 = object: Migration(26, 27) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `user_u2f_key` (`key_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `user_id` TEXT NOT NULL, `added_at` INTEGER NOT NULL, `key_handle` BLOB NOT NULL, `public_key` BLOB NOT NULL, `next_counter` INTEGER NOT NULL, FOREIGN KEY(`user_id`) REFERENCES `user`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )")
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_user_u2f_key_user_id` ON `user_u2f_key` (`user_id`)")
+            database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_user_u2f_key_key_handle_public_key` ON `user_u2f_key` (`key_handle`, `public_key`)")
+        }
+    }
 }

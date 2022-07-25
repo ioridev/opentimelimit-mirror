@@ -44,7 +44,7 @@ import kotlinx.coroutines.sync.withLock
 
 class LoginDialogFragmentModel(application: Application): AndroidViewModel(application) {
     companion object {
-        private fun formatAllowLoginStatusError(status: AllowUserLoginStatus, context: Context): String = when (status) {
+        fun formatAllowLoginStatusError(status: AllowUserLoginStatus, context: Context): String = when (status) {
             is AllowUserLoginStatus.Allow -> context.getString(R.string.error_general)
             is AllowUserLoginStatus.ForbidUserNotFound -> context.getString(R.string.error_general)
             is AllowUserLoginStatus.ForbidByCategory -> context.getString(

@@ -819,6 +819,33 @@ object LocalDatabaseParentActionDispatcher {
                             )
                     )
                 }
+                is AddParentU2FKey -> {
+                    if (parentUserId == null) {
+                        throw IllegalArgumentException("parent must be authenticated to add key")
+                    }
+
+                    database.u2f().addKey(
+                        UserU2FKey(
+                            keyId = 0,
+                            userId = parentUserId,
+                            addedAt = System.currentTimeMillis(),
+                            keyHandle = action.keyHandle,
+                            publicKey = action.publicKey,
+                            nextCounter = 0
+                        )
+                    )
+                }
+                is RemoveParentU2FKey -> {
+                    if (parentUserId == null) {
+                        throw IllegalArgumentException("parent must be authenticated to remove key")
+                    }
+
+                    database.u2f().deleteKey(
+                        parentUserId = parentUserId,
+                        keyHandle = action.keyHandle,
+                        publicKey = action.publicKey
+                    )
+                }
             }.let { }
         }
     }

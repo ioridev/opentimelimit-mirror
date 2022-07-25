@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+    Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -249,6 +249,13 @@
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+        <action
+            android:id="@+id/action_manageParentFragment_to_manageParentU2FKeyFragment"
+            app:destination="@id/manageParentU2FKeyFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
     </fragment>
     <fragment
         android:id="@+id/changeParentPasswordFragment"
@@ -477,4 +484,13 @@
         android:id="@+id/diagnoseExitReasonFragment"
         android:name="io.timelimit.android.ui.diagnose.exitreason.DiagnoseExitReasonFragment"
         android:label="DiagnoseExitReasonFragment" />
+    <fragment
+        android:id="@+id/manageParentU2FKeyFragment"
+        android:name="io.timelimit.android.ui.manage.parent.u2fkey.ManageParentU2FKeyFragment"
+        android:label="manage_parent_u2f_key_item"
+        tools:layout="@layout/manage_parent_u2f_key_fragment" >
+        <argument
+            android:name="userId"
+            app:argType="string" />
+    </fragment>
 </navigation>

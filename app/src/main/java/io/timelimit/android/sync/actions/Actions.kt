@@ -598,6 +598,10 @@ data class UpdateUserLimitLoginPreBlockDuration(val userId: String, val preBlock
     }
 }
 
+data class AddParentU2FKey(val keyHandle: ByteArray, val publicKey: ByteArray): ParentAction()
+
+data class RemoveParentU2FKey(val publicKey: ByteArray, val keyHandle: ByteArray): ParentAction()
+
 // child actions
 object ChildSignInAction: ChildAction()
 

@@ -828,6 +828,9 @@
     <string name="manage_parent_change_password_toast_success">Das Passwort wurde geändert</string>
     <string name="manage_parent_change_password_toast_wrong_password">Das alte Passwort ist falsch</string>
 
+    <string name="manage_parent_u2f_title">U2F-Schlüssel</string>
+    <string name="manage_parent_u2f_description">NFC U2F-Tokens zum Authentifizieren einrichten</string>
+
     <string name="manage_parent_remove_user_title">Benutzer entfernen</string>
     <string name="manage_parent_remove_user_text">
         Um %1$s zu löschen, wird das Passwort von %1$s
@@ -1162,4 +1165,23 @@
     <string name="notify_permission_btn_grant">Erlauben</string>
     <string name="notify_permission_btn_later">ohne Aktivierung der Benachrichtigungsfunktion fortfahren</string>
     <string name="notify_permission_rejected_toast">abgelehnt; möglicherweise können Sie dies nur noch über die Systemeinstellungen erlauben</string>
+
+    <string name="manage_parent_u2f_add_key">Token hinzufügen</string>
+    <string name="manage_parent_u2f_status_wait_key">Warte auf einen Schlüssel; NFC %s</string>
+    <string name="manage_parent_u2f_status_wait_key_nfc_enabled">ist aktiviert</string>
+    <string name="manage_parent_u2f_status_wait_key_nfc_disabled">ist deaktiviert</string>
+    <string name="manage_parent_u2f_status_wait_key_nfc_unsupported">wird von Ihrem Gerät nicht unterstützt</string>
+    <string name="manage_parent_u2f_status_working">Verknüpfung läuft; Gerät noch nicht trennen</string>
+    <string name="manage_parent_u2f_status_interrupted">Verbindung unterbrochen</string>
+    <string name="manage_parent_u2f_status_failed">Anfrage fehlgeschlagen</string>
+    <string name="manage_parent_u2f_status_already_linked">Dieses Gerät ist bereits verknüpft</string>
+    <string name="manage_parent_u2f_status_done">Das Gerät wurde verknüpft</string>
+
+    <string name="manage_parent_u2f_remove_key_text">Möchten sich diesen Schlüssel wirklich entfernen?</string>
+    <string name="manage_parent_u2f_remove_key_requires_password">Schlüssel können nur nach einer Anmeldung mittels Passwort entfernt werden</string>
+
+    <string name="manage_parent_u2f_err_wrong_user">Nur der Benutzer selbst kann seine U2F-Schlüssel verwalten</string>
+
+    <string name="u2f_login_error_unknown">unbekannter Schlüssel</string>
+    <string name="u2f_login_error_invalid">ungültiger Schlüssel</string>
 </resources>
