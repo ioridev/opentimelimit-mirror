@@ -1,1 +1,1 @@
-- fix the possibility to extend a temporarily blocking of a category as a child user
+- add support for using U2F tokens to sign in as parent user (only using NFC)
