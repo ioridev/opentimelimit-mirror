@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,12 +42,22 @@ object ManageUserKeyView {
 
         view.addKeyButton.setOnClickListener {
             if (auth.requestAuthenticationOrReturnTrue()) {
-                AddUserKeyDialogFragment.newInstance(userId).show(fragmentManager)
+                if (auth.authenticatedUser.value?.id == userId) {
+                    AddUserKeyDialogFragment.newInstance(userId).show(fragmentManager)
+                } else {
+                    ParentKeyWrongUserDialogFragment.newInstance().show(fragmentManager)
+                }
             }
         }
 
         view.removeKeyButton.setOnClickListener {
-            auth.tryDispatchParentAction(ResetUserKeyAction(userId))
+            if (auth.requestAuthenticationOrReturnTrue()) {
+                if (auth.authenticatedUser.value?.id == userId) {
+                    auth.tryDispatchParentAction(ResetUserKeyAction(userId))
+                } else {
+                    ParentKeyWrongUserDialogFragment.newInstance().show(fragmentManager)
+                }
+            }
         }
 
         view.titleView.setOnClickListener {

@@ -863,6 +863,7 @@
     <string name="manage_user_key_added">Der Schlüssel wurde hinzugefügt</string>
     <string name="manage_user_key_invalid">Dies ist kein gültiger TimeLimit-Schlüssel</string>
     <string name="manage_user_key_other_user">Dieser Schlüssel ist schon bei einem anderen Benutzer hinterlegt</string>
+    <string name="manage_user_key_wrong_user">Nur der Benutzer selbst kann seine Schlüssel verwalten</string>
 
     <string name="manipulation_activity_intro">Es gab eine Manipulation. Deswegen muss dieses Gerät durch ein Elternteil freigegeben werden.</string>
 

@@ -901,6 +901,7 @@
     <string name="manage_user_key_added">The key was added</string>
     <string name="manage_user_key_invalid">This was no valid TimeLimit key</string>
     <string name="manage_user_key_other_user">This key is already linked to an other user</string>
+    <string name="manage_user_key_wrong_user">Only the user itself can manage his keys</string>
 
     <string name="manipulation_activity_intro">There was a manipulation. Due to that, this device must be unlocked by a parent.</string>
 
