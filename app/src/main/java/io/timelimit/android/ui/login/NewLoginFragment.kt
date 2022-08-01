@@ -204,7 +204,12 @@ class NewLoginFragment: DialogFragment() {
                 is UserListLoginDialogStatus -> {
                     binding.switcher.openPreviousWizardScreen(USER_LIST)
 
-                    adapter.data = status.usersToShow.map { LoginUserAdapterUser(it) } + LoginUserAdapterScan
+                    val users = status.usersToShow.map { LoginUserAdapterUser(it) }
+
+                    adapter.data =  if (status.showScanOption)
+                        users + LoginUserAdapterScan
+                    else
+                        users
 
                     Threads.mainThreadHandler.post { binding.userList.recycler.requestFocus() }
 

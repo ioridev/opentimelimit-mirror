@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  * Copyright <C> 2020 Marcel Voigt
  *
  * This program is free software: you can redistribute it and/or modify
@@ -73,6 +73,7 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
     val selectedUserId = MutableLiveData<String?>().apply { value = null }
     private val logic = DefaultAppLogic.with(application)
     private val users = logic.database.user().getAllUsersLive()
+    private val hasParentKeys = logic.database.userKey().countLive().map { it > 0 }
     private val selectedUser = selectedUserId.switchMap { selectedUserId ->
         if (selectedUserId != null)
             logic.database.derivedDataDao().getUserLoginRelatedDataLive(selectedUserId)
@@ -139,8 +140,11 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
                         }
                     }
                     null -> {
-                        users.map { users ->
-                            UserListLoginDialogStatus(users) as LoginDialogStatus
+                        mergeLiveDataWaitForValues(users, hasParentKeys).map { (users, hasParentKeys) ->
+                            UserListLoginDialogStatus(
+                                usersToShow = users,
+                                showScanOption = hasParentKeys
+                            )
                         }
                     }
                 }
@@ -396,7 +400,7 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
 }
 
 sealed class LoginDialogStatus
-data class UserListLoginDialogStatus(val usersToShow: List<User>): LoginDialogStatus()
+data class UserListLoginDialogStatus(val usersToShow: List<User>, val showScanOption: Boolean): LoginDialogStatus()
 data class ParentUserLoginBlockedByCategory(val categoryTitle: String, val reason: BlockingReason): LoginDialogStatus()
 data class ParentUserLogin(
     val isCheckingPassword: Boolean,

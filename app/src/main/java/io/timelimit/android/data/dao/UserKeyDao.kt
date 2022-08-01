@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,4 +41,7 @@ interface UserKeyDao {
 
     @Query("UPDATE user_key SET last_use = :timestamp WHERE `key` = :key")
     fun updateKeyTimestamp(key: ByteArray, timestamp: Long)
+
+    @Query("SELECT COUNT(*) FROM user_key")
+    fun countLive(): LiveData<Long>
 }
