@@ -19,6 +19,7 @@ import android.content.Context
 import androidx.fragment.app.FragmentActivity
 import io.timelimit.android.u2f.nfc.NFCU2FManager
 import io.timelimit.android.u2f.protocol.U2FDevice
+import io.timelimit.android.u2f.usb.UsbU2FManager
 
 class U2fManager (context: Context) {
     companion object {
@@ -41,6 +42,7 @@ class U2fManager (context: Context) {
     }
 
     private val nfc = NFCU2FManager(this, context)
+    private val usb = UsbU2FManager(this, context)
 
     private val deviceFoundListeners = mutableListOf<DeviceFoundListener>()
 

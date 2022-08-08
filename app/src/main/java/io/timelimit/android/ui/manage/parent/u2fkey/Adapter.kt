@@ -35,6 +35,8 @@ class Adapter() : RecyclerView.Adapter<Adapter.Holder>() {
     var items: List<U2FKeyListItem> by Delegates.observable(emptyList()) { _, _, _ -> notifyDataSetChanged() }
     var listener: Handlers? = null
 
+    init { setHasStableIds(true) }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder = when (viewType) {
         TYPE_ADD -> Holder.Add(AddItemViewBinding.inflate(LayoutInflater.from(parent.context), parent, false)).also {
             it.binding.label = parent.context.getString(R.string.manage_parent_u2f_add_key)

@@ -45,97 +45,98 @@ object AuthTokenLoginProcessor {
 
         runAsync {
             try {
-                val session = device.connect()
-                val keys = Threads.database.executeAndWait { model.logic.database.u2f().getAllSync() }
-                val random = SecureRandom()
-                val applicationId = U2FApplicationId.fromUrl(U2FApplicationId.URL)
+                device.connect().use { session ->
+                    val keys = Threads.database.executeAndWait { model.logic.database.u2f().getAllSync() }
+                    val random = SecureRandom()
+                    val applicationId = U2FApplicationId.fromUrl(U2FApplicationId.URL)
 
-                for (key in keys) {
-                    if (BuildConfig.DEBUG) {
-                        Log.d(LOG_TAG, "try key $key")
-                    }
-
-                    val challenge = ByteArray(32).also { random.nextBytes(it) }
-
-                    try {
-                        val response = session.login(
-                            U2FRequest.Login(
-                                mode = U2FRequest.Login.Mode.DoNotEnforcePresence,
-                                challenge = challenge,
-                                applicationId = applicationId,
-                                keyHandle = key.keyHandle
-                            )
-                        )
-
+                    for (key in keys) {
                         if (BuildConfig.DEBUG) {
-                            Log.d(LOG_TAG, "got response $response")
+                            Log.d(LOG_TAG, "try key $key")
                         }
 
-                        val signatureValid = U2FThread.crypto.executeAndWait {
-                            U2FSignatureValidation.validate(
-                                applicationId = applicationId,
-                                challenge = challenge,
-                                response = response,
-                                publicKey = key.publicKey
+                        val challenge = ByteArray(32).also { random.nextBytes(it) }
+
+                        try {
+                            val response = session.login(
+                                U2FRequest.Login(
+                                    mode = U2FRequest.Login.Mode.DoNotEnforcePresence,
+                                    challenge = challenge,
+                                    applicationId = applicationId,
+                                    keyHandle = key.keyHandle
+                                )
                             )
-                        }
 
-                        if (!signatureValid) {
-                            toast(R.string.u2f_login_error_invalid)
+                            if (BuildConfig.DEBUG) {
+                                Log.d(LOG_TAG, "got response $response")
+                            }
 
-                            break
-                        }
+                            val signatureValid = U2FThread.crypto.executeAndWait {
+                                U2FSignatureValidation.validate(
+                                    applicationId = applicationId,
+                                    challenge = challenge,
+                                    response = response,
+                                    publicKey = key.publicKey
+                                )
+                            }
 
-                        val userEntry = Threads.database.executeAndWait {
-                            if (
-                                model.logic.database.u2f().updateCounter(
-                                    parentUserId = key.userId,
-                                    keyHandle = key.keyHandle,
-                                    publicKey = key.publicKey,
-                                    counter = response.counter.toLong()
-                                ) > 0
-                            ) {
-                                model.logic.database.user().getUserByIdSync(key.userId)!!
-                            } else null
-                        }
+                            if (!signatureValid) {
+                                toast(R.string.u2f_login_error_invalid)
 
-                        if (userEntry == null) {
-                            toast(R.string.u2f_login_error_invalid)
+                                break
+                            }
 
-                            break
-                        }
+                            val userEntry = Threads.database.executeAndWait {
+                                if (
+                                    model.logic.database.u2f().updateCounter(
+                                        parentUserId = key.userId,
+                                        keyHandle = key.keyHandle,
+                                        publicKey = key.publicKey,
+                                        counter = response.counter.toLong()
+                                    ) > 0
+                                ) {
+                                    model.logic.database.user().getUserByIdSync(key.userId)!!
+                                } else null
+                            }
 
-                        val allowLoginStatus = Threads.database.executeAndWait {
-                            AllowUserLoginStatusUtil.calculateSync(
-                                logic = model.logic,
-                                userId = userEntry.id
+                            if (userEntry == null) {
+                                toast(R.string.u2f_login_error_invalid)
+
+                                break
+                            }
+
+                            val allowLoginStatus = Threads.database.executeAndWait {
+                                AllowUserLoginStatusUtil.calculateSync(
+                                    logic = model.logic,
+                                    userId = userEntry.id
+                                )
+                            }
+
+                            val shouldSignIn = allowLoginStatus is AllowUserLoginStatus.Allow
+
+                            if (!shouldSignIn) {
+                                toast(LoginDialogFragmentModel.formatAllowLoginStatusError(allowLoginStatus, model.getApplication()))
+
+                                return@runAsync
+                            }
+
+                            model.setAuthenticatedUser(
+                                AuthenticatedUser(
+                                    userId = key.userId,
+                                    passwordHash = userEntry.password,
+                                    isPasswordDisabled = false,
+                                    authenticatedBy = AuthenticationMethod.KeyCode
+                                )
                             )
+
+                            return@runAsync // no need to try more
+                        } catch (ex: U2FException.BadKeyHandleException) {
+                            // ignore and try the next one
                         }
-
-                        val shouldSignIn = allowLoginStatus is AllowUserLoginStatus.Allow
-
-                        if (!shouldSignIn) {
-                            toast(LoginDialogFragmentModel.formatAllowLoginStatusError(allowLoginStatus, model.getApplication()))
-
-                            return@runAsync
-                        }
-
-                        model.setAuthenticatedUser(
-                            AuthenticatedUser(
-                                userId = key.userId,
-                                passwordHash = userEntry.password,
-                                isPasswordDisabled = false,
-                                authenticatedBy = AuthenticationMethod.KeyCode
-                            )
-                        )
-
-                        return@runAsync // no need to try more
-                    } catch (ex: U2FException.BadKeyHandleException) {
-                        // ignore and try the next one
                     }
-                }
 
-                toast(R.string.u2f_login_error_unknown)
+                    toast(R.string.u2f_login_error_unknown)
+                }
             } catch (ex: U2FException.DisconnectedException) {
                 if (BuildConfig.DEBUG) {
                     Log.d(LOG_TAG, "disconnected", ex)

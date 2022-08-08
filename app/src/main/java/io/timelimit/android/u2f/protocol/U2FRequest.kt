@@ -23,7 +23,7 @@ sealed class U2FRequest {
     abstract val p2: Byte
     abstract val payload: ByteArray
 
-    fun encode(): ByteArray {
+    fun encodeShort(): ByteArray {
         val cla: Byte = 0
 
         if (payload.size > 255) {
@@ -39,6 +39,23 @@ sealed class U2FRequest {
         ) + payload + byteArrayOf(0)
     }
 
+    fun encodeExtended(): ByteArray {
+        val cla: Byte = 0
+
+        if (payload.size > 65535) {
+            throw U2FException.CommunicationException()
+        }
+
+        return byteArrayOf(
+            cla,
+            ins,
+            p1,
+            p2,
+            0,
+            payload.size.ushr(8).toByte(),
+            payload.size.toByte()
+        ) + payload + byteArrayOf(1, 0)
+    }
     data class Register(
         val challenge: ByteArray,
         val applicationId: ByteArray

@@ -20,7 +20,6 @@ import android.nfc.tech.IsoDep
 import android.util.Log
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.coroutines.executeAndWait
-import io.timelimit.android.u2f.*
 import io.timelimit.android.u2f.protocol.U2FDeviceSession
 import io.timelimit.android.u2f.protocol.U2FRequest
 import io.timelimit.android.u2f.protocol.U2fRawResponse
@@ -35,7 +34,7 @@ class NfcU2FDeviceSession(private val tag: IsoDep): U2FDeviceSession {
 
     override suspend fun execute(request: U2FRequest): U2fRawResponse = U2FThread.nfc.executeAndWait {
         try {
-            var response = U2fRawResponse.decode(tag.transceive(request.encode()))
+            var response = U2fRawResponse.decode(tag.transceive(request.encodeShort()))
             var fullPayload = response.payload
 
             // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-nfc-protocol-v1.2-ps-20170411.html
@@ -60,9 +59,7 @@ class NfcU2FDeviceSession(private val tag: IsoDep): U2FDeviceSession {
 
             response = response.copy(payload = fullPayload)
 
-            if (response.status == 0x6A80.toUShort()) throw U2FException.BadKeyHandleException()
-            if (response.status == 0x6985.toUShort()) throw U2FException.UserInteractionRequired()
-            if (response.status != 0x9000.toUShort()) throw U2FException.DeviceException()
+            response.throwIfNoSuccess()
 
             response
         } catch (ex: TagLostException) {
@@ -73,6 +70,16 @@ class NfcU2FDeviceSession(private val tag: IsoDep): U2FDeviceSession {
             }
 
             throw U2FException.CommunicationException()
+        }
+    }
+
+    override fun close() {
+        U2FThread.nfc.submit {
+            try {
+                tag.close()
+            } catch (ex: IOException) {
+                // ignore
+            }
         }
     }
 }

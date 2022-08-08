@@ -115,6 +115,7 @@ object PendingIntentIds {
     const val REVOKE_TEMPORARILY_ALLOWED = 2
     const val SWITCH_TO_DEFAULT_USER = 3
     const val U2F_NFC_DISCOVERY = 4
+    const val U2F_USB_RESPONSE = 5
 
     val PENDING_INTENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE

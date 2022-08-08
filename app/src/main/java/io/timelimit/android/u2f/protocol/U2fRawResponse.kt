@@ -31,4 +31,11 @@ data class U2fRawResponse (
             )
         }
     }
+
+    fun throwIfNoSuccess() {
+        if (status == 0x6A80.toUShort()) throw U2FException.BadKeyHandleException()
+        if (status == 0x6985.toUShort()) throw U2FException.UserInteractionRequired()
+        if (status == 0x6700.toUShort()) throw U2FException.BadRequestLength()
+        if (status != 0x9000.toUShort()) throw U2FException.DeviceException(status)
+    }
 }

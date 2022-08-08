@@ -19,5 +19,6 @@ import java.util.concurrent.Executors
 
 object U2FThread {
     val nfc by lazy { Executors.newFixedThreadPool(2) }
+    val usb by lazy { Executors.newFixedThreadPool(2) }
     val crypto by lazy { Executors.newSingleThreadExecutor() }
 }

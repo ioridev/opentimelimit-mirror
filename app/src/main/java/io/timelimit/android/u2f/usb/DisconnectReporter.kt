@@ -13,16 +13,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.u2f.protocol
+package io.timelimit.android.u2f.usb
 
-import java.io.Closeable
+class DisconnectReporter {
+    private var didDisconnectInternal = false
 
-interface U2FDeviceSession: Closeable {
-    suspend fun execute(request: U2FRequest): U2fRawResponse
+    val didDisconnect get() = didDisconnectInternal
+
+    fun reportDisconnect() { didDisconnectInternal = true }
 }
-
-suspend fun U2FDeviceSession.register(requeset: U2FRequest.Register) =
-    U2FResponse.Register.parse(this.execute(requeset))
-
-suspend fun U2FDeviceSession.login(requeset: U2FRequest.Login) =
-    U2FResponse.Login.parse(this.execute(requeset))

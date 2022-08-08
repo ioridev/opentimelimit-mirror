@@ -32,11 +32,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LiveData
 import io.timelimit.android.BuildConfig
-import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.integration.platform.android.PendingIntentIds
 import io.timelimit.android.livedata.liveDataFromFunction
 import io.timelimit.android.livedata.liveDataFromNonNullValue
 import io.timelimit.android.u2f.U2fManager
+import io.timelimit.android.u2f.util.U2FId
 
 class NFCU2FManager (val parent: U2fManager, context: Context) {
     companion object {
@@ -48,17 +48,23 @@ class NFCU2FManager (val parent: U2fManager, context: Context) {
 
     private val nfcReceiver = object: BroadcastReceiver() {
         override fun onReceive(p0: Context?, intent: Intent?) {
-            val tagFromIntent: Tag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                intent?.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag::class.java) ?: return
-            else
-                intent?.getParcelableExtra(NfcAdapter.EXTRA_TAG) ?: return
+            try {
+                val tagFromIntent: Tag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                    intent?.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag::class.java) ?: return
+                else
+                    intent?.getParcelableExtra(NfcAdapter.EXTRA_TAG) ?: return
 
-            val isoDep: IsoDep = IsoDep.get(tagFromIntent) ?: return
+                val isoDep: IsoDep = IsoDep.get(tagFromIntent) ?: return
 
-            parent.dispatchDeviceFound(NfcU2FDevice(isoDep))
+                parent.dispatchDeviceFound(NfcU2FDevice(isoDep))
+            } catch (ex: Exception) {
+                if (BuildConfig.DEBUG) {
+                    Log.d(LOG_TAG, "could not handle nfc broadcast", ex)
+                }
+            }
         }
     }
-    private val nfcReceiverAction = (0..6).map { IdGenerator.generateId() }.joinToString()
+    private val nfcReceiverAction = U2FId.generate()
     private val nfcReceiverIntent = PendingIntent.getBroadcast(
         context,
         PendingIntentIds.U2F_NFC_DISCOVERY,

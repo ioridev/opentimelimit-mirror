@@ -13,16 +13,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.u2f.protocol
+package io.timelimit.android.u2f.usb.descriptors
 
-import java.io.Closeable
+import io.timelimit.android.u2f.usb.UsbException
 
-interface U2FDeviceSession: Closeable {
-    suspend fun execute(request: U2FRequest): U2fRawResponse
+object UnknownDescriptor {
+    fun parse(raw: ByteArray): ByteArray {
+        val descriptorLength = raw[0].toUByte().toInt()
+
+        if (raw.size < descriptorLength)
+            throw UsbException.InvalidDescriptorLengthException()
+
+        return raw.sliceArray(descriptorLength until raw.size)
+    }
 }
-
-suspend fun U2FDeviceSession.register(requeset: U2FRequest.Register) =
-    U2FResponse.Register.parse(this.execute(requeset))
-
-suspend fun U2FDeviceSession.login(requeset: U2FRequest.Login) =
-    U2FResponse.Login.parse(this.execute(requeset))

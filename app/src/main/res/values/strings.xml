@@ -868,7 +868,7 @@
     <string name="manage_parent_change_password_toast_wrong_password">The old password is invalid</string>
 
     <string name="manage_parent_u2f_title">U2F Keys</string>
-    <string name="manage_parent_u2f_description">Setup NFC U2F Tokens to authenticate</string>
+    <string name="manage_parent_u2f_description">Setup U2F Tokens (using USB or NFC) to authenticate</string>
 
     <string name="manage_parent_remove_user_title">Remove user</string>
     <string name="manage_parent_remove_user_text">
@@ -1226,7 +1226,7 @@
     <string name="notify_permission_rejected_toast">rejected; it could be that you can only change this using the system settings</string>
 
     <string name="manage_parent_u2f_add_key">Add Token</string>
-    <string name="manage_parent_u2f_status_wait_key">Waiting for your key; NFC is %s</string>
+    <string name="manage_parent_u2f_status_wait_key">Waiting for your key; Connect the key now; NFC is %s</string>
     <string name="manage_parent_u2f_status_wait_key_nfc_enabled">enabled</string>
     <string name="manage_parent_u2f_status_wait_key_nfc_disabled">disabled</string>
     <string name="manage_parent_u2f_status_wait_key_nfc_unsupported">unsupported</string>
@@ -1234,6 +1234,7 @@
     <string name="manage_parent_u2f_status_interrupted">Connection was interrupted</string>
     <string name="manage_parent_u2f_status_failed">The Request Failed</string>
     <string name="manage_parent_u2f_status_already_linked">This device is already linked</string>
+    <string name="manage_parent_u2f_status_needs_user_interaction">Waiting for button press at the key</string>
     <string name="manage_parent_u2f_status_done">The Device was linked</string>
 
     <string name="manage_parent_u2f_remove_key_text">Would you like to remove this key?</string>

@@ -13,16 +13,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.u2f.protocol
 
-import java.io.Closeable
+package io.timelimit.android.extensions
 
-interface U2FDeviceSession: Closeable {
-    suspend fun execute(request: U2FRequest): U2fRawResponse
+inline fun <T> Collection<T>.some(predicate: (T) -> Boolean): Boolean {
+    for (element in this) if (predicate(element)) return true
+
+    return false
 }
-
-suspend fun U2FDeviceSession.register(requeset: U2FRequest.Register) =
-    U2FResponse.Register.parse(this.execute(requeset))
-
-suspend fun U2FDeviceSession.login(requeset: U2FRequest.Login) =
-    U2FResponse.Login.parse(this.execute(requeset))

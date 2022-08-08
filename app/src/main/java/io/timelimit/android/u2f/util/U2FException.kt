@@ -15,11 +15,12 @@
  */
 package io.timelimit.android.u2f.util
 
-sealed class U2FException: RuntimeException() {
-    class CommunicationException: U2FException()
-    class DisconnectedException: U2FException()
-    class InvalidDataException: U2FException()
-    class DeviceException: U2FException()
-    class BadKeyHandleException: U2FException()
-    class UserInteractionRequired: U2FException()
+sealed class U2FException(message: String): RuntimeException(message) {
+    class CommunicationException: U2FException("communication error")
+    class DisconnectedException: U2FException("disconnected error")
+    class InvalidDataException: U2FException("invalid data")
+    class DeviceException(status: UShort): U2FException("device reported error $status")
+    class BadKeyHandleException: U2FException("bad key handle")
+    class UserInteractionRequired: U2FException("user interaction required")
+    class BadRequestLength: U2FException("wrong request length")
 }

@@ -71,6 +71,7 @@ class AddU2FDialogFragment: BottomSheetDialogFragment() {
                     AddU2FModel.Status.ConnectionInterrupted -> getString(R.string.manage_parent_u2f_status_interrupted)
                     AddU2FModel.Status.RequestFailed -> getString(R.string.manage_parent_u2f_status_failed)
                     AddU2FModel.Status.AlreadyLinked -> getString(R.string.manage_parent_u2f_status_already_linked)
+                    AddU2FModel.Status.NeedsUserInteraction -> getString(R.string.manage_parent_u2f_status_needs_user_interaction)
                     is AddU2FModel.Status.Done -> {
                         if (!status.commited) {
                             activityModel.tryDispatchParentAction(status.action)

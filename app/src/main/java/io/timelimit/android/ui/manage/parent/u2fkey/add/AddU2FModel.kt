@@ -33,6 +33,7 @@ import io.timelimit.android.u2f.protocol.U2FRequest
 import io.timelimit.android.u2f.protocol.login
 import io.timelimit.android.u2f.protocol.register
 import io.timelimit.android.u2f.util.U2FException
+import kotlinx.coroutines.delay
 import java.security.SecureRandom
 
 class AddU2FModel(application: Application): AndroidViewModel(application), U2fManager.DeviceFoundListener {
@@ -59,36 +60,57 @@ class AddU2FModel(application: Application): AndroidViewModel(application), U2fM
             try {
                 val applicationId = U2FApplicationId.fromUrl(U2FApplicationId.URL)
 
-                val session = device.connect()
+                device.connect().use { session ->
+                    val currentKeys =
+                        Threads.database.executeAndWait { logic.database.u2f().getAllSync() }
 
-                val currentKeys = Threads.database.executeAndWait { logic.database.u2f().getAllSync() }
-
-                for (key in currentKeys) {
-                    try {
-                        session.login(
-                            U2FRequest.Login(
-                                mode = U2FRequest.Login.Mode.CheckOnly,
-                                challenge = ByteArray(32).also { SecureRandom().nextBytes(it) },
-                                applicationId = applicationId,
-                                keyHandle = key.keyHandle
+                    for (key in currentKeys) {
+                        try {
+                            session.login(
+                                U2FRequest.Login(
+                                    mode = U2FRequest.Login.Mode.CheckOnly,
+                                    challenge = ByteArray(32).also { SecureRandom().nextBytes(it) },
+                                    applicationId = applicationId,
+                                    keyHandle = key.keyHandle
+                                )
                             )
-                        )
-                    } catch (ex: U2FException.BadKeyHandleException) {
-                        continue
-                    } catch (ex: U2FException.UserInteractionRequired) {
-                        statusInternal.value = Status.AlreadyLinked
+                        } catch (ex: U2FException.BadKeyHandleException) {
+                            continue
+                        } catch (ex: U2FException.UserInteractionRequired) {
+                            statusInternal.value = Status.AlreadyLinked
 
-                        return@runAsync
+                            return@runAsync
+                        }
+                    }
+
+                    val challenge = ByteArray(32).also { SecureRandom().nextBytes(it) }
+
+                    while (true) {
+                        try {
+                            val registerResponse = session.register(
+                                U2FRequest.Register(
+                                    challenge = challenge,
+                                    applicationId = applicationId
+                                )
+                            )
+
+                            statusInternal.value = Status.Done(
+                                AddParentU2FKey(
+                                    keyHandle = registerResponse.keyHandle,
+                                    publicKey = registerResponse.publicKey
+                                )
+                            )
+
+                            break
+                        } catch (ex: U2FException.UserInteractionRequired) {
+                            if (statusInternal.value != Status.NeedsUserInteraction) {
+                                statusInternal.value = Status.NeedsUserInteraction
+                            }
+
+                            delay(50)
+                        }
                     }
                 }
-
-                val challenge = ByteArray(32).also { SecureRandom().nextBytes(it) }
-
-                val registerResponse = session.register(U2FRequest.Register(challenge = challenge, applicationId = applicationId))
-
-                statusInternal.value = Status.Done(
-                    AddParentU2FKey(keyHandle = registerResponse.keyHandle, publicKey = registerResponse.publicKey)
-                )
             } catch (ex: U2FException.DisconnectedException) {
                 if (BuildConfig.DEBUG) {
                     Log.d(LOG_TAG, "connection interrupted", ex)
@@ -111,6 +133,7 @@ class AddU2FModel(application: Application): AndroidViewModel(application), U2fM
         object ConnectionInterrupted: Status()
         object RequestFailed: Status()
         object AlreadyLinked: Status()
+        object NeedsUserInteraction: Status()
         data class Done(val action: AddParentU2FKey, var commited: Boolean = false): Status()
     }
 }

@@ -13,16 +13,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.u2f.protocol
+package io.timelimit.android.u2f.usb
 
-import java.io.Closeable
+import android.content.Intent
+import android.hardware.usb.*
+import android.os.Build
 
-interface U2FDeviceSession: Closeable {
-    suspend fun execute(request: U2FRequest): U2fRawResponse
-}
+val Intent.usbDevice
+    get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        this.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)!!
+    else
+        this.getParcelableExtra(UsbManager.EXTRA_DEVICE)!!
 
-suspend fun U2FDeviceSession.register(requeset: U2FRequest.Register) =
-    U2FResponse.Register.parse(this.execute(requeset))
+val UsbDevice.interfaces
+    get() = (0 until this.interfaceCount).map { this.getInterface(it) }
 
-suspend fun U2FDeviceSession.login(requeset: U2FRequest.Login) =
-    U2FResponse.Login.parse(this.execute(requeset))
+val UsbInterface.endpoints
+    get() = (0 until this.endpointCount).map { this.getEndpoint(it) }

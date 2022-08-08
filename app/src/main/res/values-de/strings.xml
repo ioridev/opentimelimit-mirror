@@ -829,7 +829,7 @@
     <string name="manage_parent_change_password_toast_wrong_password">Das alte Passwort ist falsch</string>
 
     <string name="manage_parent_u2f_title">U2F-Schlüssel</string>
-    <string name="manage_parent_u2f_description">NFC U2F-Tokens zum Authentifizieren einrichten</string>
+    <string name="manage_parent_u2f_description">U2F-Tokens (über USB oder NFC) zum Authentifizieren einrichten</string>
 
     <string name="manage_parent_remove_user_title">Benutzer entfernen</string>
     <string name="manage_parent_remove_user_text">
@@ -1168,7 +1168,7 @@
     <string name="notify_permission_rejected_toast">abgelehnt; möglicherweise können Sie dies nur noch über die Systemeinstellungen erlauben</string>
 
     <string name="manage_parent_u2f_add_key">Token hinzufügen</string>
-    <string name="manage_parent_u2f_status_wait_key">Warte auf einen Schlüssel; NFC %s</string>
+    <string name="manage_parent_u2f_status_wait_key">Warte auf einen Schlüssel; Verbinden Sie jetzt den Schlüssel; NFC %s</string>
     <string name="manage_parent_u2f_status_wait_key_nfc_enabled">ist aktiviert</string>
     <string name="manage_parent_u2f_status_wait_key_nfc_disabled">ist deaktiviert</string>
     <string name="manage_parent_u2f_status_wait_key_nfc_unsupported">wird von Ihrem Gerät nicht unterstützt</string>
@@ -1176,6 +1176,7 @@
     <string name="manage_parent_u2f_status_interrupted">Verbindung unterbrochen</string>
     <string name="manage_parent_u2f_status_failed">Anfrage fehlgeschlagen</string>
     <string name="manage_parent_u2f_status_already_linked">Dieses Gerät ist bereits verknüpft</string>
+    <string name="manage_parent_u2f_status_needs_user_interaction">Warte auf Druck der Bestätigen-Taste am Schlüssel</string>
     <string name="manage_parent_u2f_status_done">Das Gerät wurde verknüpft</string>
 
     <string name="manage_parent_u2f_remove_key_text">Möchten sich diesen Schlüssel wirklich entfernen?</string>

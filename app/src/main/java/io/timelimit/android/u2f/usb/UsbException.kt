@@ -13,16 +13,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.u2f.protocol
+package io.timelimit.android.u2f.usb
 
-import java.io.Closeable
-
-interface U2FDeviceSession: Closeable {
-    suspend fun execute(request: U2FRequest): U2fRawResponse
+sealed class UsbException(message: String): RuntimeException(message) {
+    class InvalidDescriptorLengthException: UsbException("invalid descriptor length")
+    class InvalidDescriptorTypeException: UsbException("invalid descriptor type")
+    class WrongCounterException(type: String, expected: Int, found: Int): UsbException("expected $expected but found $found $type")
+    class InvalidIndexException: UsbException("invalid index")
 }
-
-suspend fun U2FDeviceSession.register(requeset: U2FRequest.Register) =
-    U2FResponse.Register.parse(this.execute(requeset))
-
-suspend fun U2FDeviceSession.login(requeset: U2FRequest.Login) =
-    U2FResponse.Login.parse(this.execute(requeset))
