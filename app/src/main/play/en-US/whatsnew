@@ -1,1 +1,1 @@
-- add support for using U2F tokens to sign in as parent user (only using NFC)
+- add support for USB U2F tokens
