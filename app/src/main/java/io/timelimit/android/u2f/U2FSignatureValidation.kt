@@ -16,26 +16,13 @@
 package io.timelimit.android.u2f
 
 import io.timelimit.android.u2f.protocol.U2FResponse
-import org.bouncycastle.asn1.sec.SECNamedCurves
-import org.bouncycastle.crypto.CryptoException
-import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.bouncycastle.jce.spec.ECParameterSpec
-import org.bouncycastle.jce.spec.ECPublicKeySpec
 import java.security.KeyFactory
-import java.security.Security
 import java.security.Signature
+import java.security.spec.InvalidKeySpecException
+import java.security.spec.X509EncodedKeySpec
 
 
 object U2FSignatureValidation {
-    init {
-        Security.removeProvider("BC")
-        Security.addProvider(BouncyCastleProvider())
-    }
-
-    private val curve = SECNamedCurves.getByName("secp256r1")
-    private val ecParamSpec = ECParameterSpec(curve.getCurve(), curve.getG(), curve.getN(),  curve.getH())
-
-    // based on https://github.com/Yubico/java-u2flib-server/blob/dd44d3cdce4eeaeb517f2acd1fd520d5a42ce752/u2flib-server-core/src/main/java/com/yubico/u2f/crypto/BouncyCastleCrypto.java
     fun validate(
         applicationId: ByteArray,
         challenge: ByteArray,
@@ -54,22 +41,22 @@ object U2FSignatureValidation {
 
             if (publicKey.size != 65 || publicKey[0] != 4.toByte()) return false
 
-            val point = curve.getCurve().decodePoint(publicKey)
+            val verifier = Signature.getInstance("SHA256withECDSA")
 
-            val decodedPublicKey = KeyFactory.getInstance("EC", "BC").generatePublic(
-                ECPublicKeySpec(point, ecParamSpec)
+            verifier.initVerify(
+                KeyFactory
+                    .getInstance("EC")
+                    .generatePublic(
+                        X509EncodedKeySpec(
+                            byteArrayOf(48, 89, 48, 19, 6, 7, 42, -122, 72, -50, 61, 2, 1, 6, 8, 42, -122, 72, -50, 61, 3, 1, 7, 3, 66, 0) + publicKey
+                        )
+                    )
             )
-
-            val verifier = Signature.getInstance("SHA256withECDSA", "BC")
-
-            verifier.initVerify(decodedPublicKey)
 
             verifier.update(signedData)
 
             return verifier.verify(response.signature)
-        } catch (ex: CryptoException) {
-            return false
-        } catch (ex: IllegalArgumentException) {
+        } catch (ex: InvalidKeySpecException) {
             return false
         }
     }

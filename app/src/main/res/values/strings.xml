@@ -78,10 +78,6 @@
         (<a href="https://github.com/signalapp/curve25519-java/blob/master/LICENSE">GNU General Public License v3.0</a>)
         \n<a href="https://github.com/zxing/zxing">ZXing</a>
         (<a href="https://github.com/zxing/zxing/blob/master/LICENSE">Apache License 2.0</a>)
-        \n<a href="https://www.bouncycastle.org/">Bouncy Castle</a>
-        (<a href="https://www.bouncycastle.org/licence.html">MIT License</a>)
-        \n<a href="https://github.com/Yubico/java-u2flib-server">java-u2flib-server</a>
-        (<a href="https://github.com/Yubico/java-u2flib-server/blob/master/COPYING">BSD License</a>)
     </string>
 
     <string name="about_diagnose_title">Error diagnose</string>
