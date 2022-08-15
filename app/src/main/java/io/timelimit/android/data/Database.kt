@@ -40,6 +40,7 @@ interface Database {
     fun childTasks(): ChildTaskDao
     fun timeWarning(): CategoryTimeWarningDao
     fun u2f(): U2FDao
+    fun widgetCategory(): WidgetCategoryDao
 
     fun <T> runInTransaction(block: () -> T): T
     fun <T> runInUnobservedTransaction(block: () -> T): T

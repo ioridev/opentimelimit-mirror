@@ -113,6 +113,14 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.widget.config.WidgetConfigActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+            </intent-filter>
+        </activity>
+
         <!-- system integration -->
 
         <receiver android:name=".integration.platform.android.receiver.BootReceiver" android:exported="false">

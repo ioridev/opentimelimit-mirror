@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,101 +17,150 @@ package io.timelimit.android.ui.widget
 
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.view.View
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
+import androidx.core.content.getSystemService
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.map
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
+import io.timelimit.android.livedata.mergeLiveDataWaitForValues
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.manage.child.category.CategoryItemLeftPadding
-import io.timelimit.android.util.TimeTextUtil
 
 class TimesWidgetService: RemoteViewsService() {
-    private val appWidgetManager: AppWidgetManager by lazy { AppWidgetManager.getInstance(this) }
+    companion object {
+        private const val EXTRA_APP_WIDGET_ID = "appWidgetId"
 
-    private val categoriesLive: LiveData<List<TimesWidgetItem>> by lazy {
-        TimesWidgetItems.with(DefaultAppLogic.with(this))
+        fun intent(context: Context, appWidgetId: Int) = Intent(context, TimesWidgetService::class.java)
+            .setData(Uri.parse("widget:$appWidgetId"))
+            .putExtra(EXTRA_APP_WIDGET_ID, appWidgetId)
+
+        fun notifyContentChanges(context: Context) {
+            context.getSystemService<AppWidgetManager>()?.also { appWidgetManager ->
+                val widgetIds = appWidgetManager.getAppWidgetIds(ComponentName(context, TimesWidgetProvider::class.java))
+
+                appWidgetManager.notifyAppWidgetViewDataChanged(widgetIds, android.R.id.list)
+            }
+        }
     }
 
-    private var categoriesInput: List<TimesWidgetItem> = emptyList()
-    private var categoriesCurrent: List<TimesWidgetItem> = categoriesInput
+    private val content: LiveData<Pair<TimesWidgetContent, TimesWidgetConfig>> by lazy {
+        val logic = DefaultAppLogic.with(this)
 
-    private val categoriesObserver = Observer<List<TimesWidgetItem>> {
-        categoriesInput = it
+        val content = TimesWidgetContentLoader.with(logic)
+        val config = logic.database.widgetCategory().queryLive().map { TimesWidgetConfig(it) }
 
-        val widgetIds = appWidgetManager.getAppWidgetIds(ComponentName(this, TimesWidgetProvider::class.java))
-
-        appWidgetManager.notifyAppWidgetViewDataChanged(widgetIds, android.R.id.list)
+        mergeLiveDataWaitForValues(content, config)
     }
 
-    private val factory = object : RemoteViewsFactory {
+    private var observerCounter = 0
+    private var contentInput: Pair<TimesWidgetContent, TimesWidgetConfig>? = null
+
+    private val contentObserver = Observer<Pair<TimesWidgetContent, TimesWidgetConfig>> {
+        contentInput = it
+
+        notifyContentChanges(this)
+    }
+
+    private fun createFactory(appWidgetId: Int) = object : RemoteViewsFactory {
+        private var currentItems: List<TimesWidgetItem> = emptyList()
+
+        init { onDataSetChanged() }
+
         override fun onCreate() {
-            Threads.mainThreadHandler.post { categoriesLive.observeForever(categoriesObserver) }
+            Threads.mainThreadHandler.post {
+                if (observerCounter < 0) throw IllegalStateException()
+                else if (observerCounter == 0) content.observeForever(contentObserver)
+
+                observerCounter++
+            }
         }
 
         override fun onDestroy() {
-            Threads.mainThreadHandler.post { categoriesLive.removeObserver(categoriesObserver) }
+            Threads.mainThreadHandler.post {
+                if (observerCounter <= 0) throw IllegalStateException()
+                else if (observerCounter == 1) content.removeObserver(contentObserver)
+
+                observerCounter--
+            }
         }
 
         override fun onDataSetChanged() {
-            categoriesCurrent = categoriesInput
+            currentItems = contentInput?.let { TimesWidgetItems.with(it.first, it.second, appWidgetId) } ?: emptyList()
         }
 
-        override fun getCount(): Int = categoriesCurrent.size
+        override fun getCount(): Int = currentItems.size
 
         override fun getViewAt(position: Int): RemoteViews {
-            if (position >= categoriesCurrent.size) {
-                return RemoteViews(packageName, R.layout.widget_times_item)
+            if (position >= currentItems.size) {
+                return RemoteViews(packageName, R.layout.widget_times_category_item)
             }
 
-            val category = categoriesCurrent[position]
-            val result = RemoteViews(packageName, R.layout.widget_times_item)
+            fun createCategoryItem(title: String?, subtitle: String, paddingLeft: Int) = RemoteViews(packageName, R.layout.widget_times_category_item).also { result ->
+                result.setTextViewText(R.id.title, title ?: "")
+                result.setTextViewText(R.id.subtitle, subtitle)
 
-            result.setTextViewText(R.id.title, category.title)
-            result.setTextViewText(
-                    R.id.subtitle,
-                    if (category.remainingTimeToday == null)
-                        getString(R.string.manage_child_category_no_time_limits)
-                    else
-                        TimeTextUtil.remaining(category.remainingTimeToday.toInt(), this@TimesWidgetService)
-            )
+                result.setViewPadding(R.id.widgetInnerContainer, paddingLeft, 0, 0, 0)
+                result.setViewVisibility(R.id.title, if (title != null) View.VISIBLE else View.GONE)
+                result.setViewVisibility(R.id.topPadding, if (position == 0) View.VISIBLE else View.GONE)
+                result.setViewVisibility(R.id.bottomPadding, if (position == count - 1) View.VISIBLE else View.GONE)
+            }
 
-            result.setViewPadding(
-                    R.id.widgetInnerContainer,
-                    // not much space here => / 2
-                    CategoryItemLeftPadding.calculate(category.level, this@TimesWidgetService) / 2,
-                    0, 0, 0
-            )
+            val item = currentItems[position]
 
-            result.setViewVisibility(R.id.topPadding, if (position == 0) View.VISIBLE else View.GONE)
-            result.setViewVisibility(R.id.bottomPadding, if (position == count - 1) View.VISIBLE else View.GONE)
+            return when (item) {
+                is TimesWidgetItem.Category -> item.category.let { category ->
+                    createCategoryItem(
+                        title = if (category.remainingTimeToday == null)
+                            getString(R.string.manage_child_category_no_time_limits_short)
+                        else {
+                            val remainingTimeToday = category.remainingTimeToday.coerceAtLeast(0) / (1000 * 60)
+                            val minutes = remainingTimeToday % 60
+                            val hours = remainingTimeToday / 60
 
-            return result
+                            if (hours == 0L) "$minutes m"
+                            else "$hours h $minutes m"
+                        },
+                        subtitle = category.categoryName,
+                        // not much space here => / 2
+                        paddingLeft = CategoryItemLeftPadding.calculate(category.level, this@TimesWidgetService) / 2
+                    )
+                }
+                is TimesWidgetItem.TextMessage -> createCategoryItem(null, getString(item.textRessourceId), 0)
+                is TimesWidgetItem.DefaultUserButton -> RemoteViews(packageName, R.layout.widget_times_button).also { result ->
+                    result.setTextViewText(R.id.button, getString(R.string.manage_device_default_user_switch_btn))
+                    result.setOnClickFillInIntent(R.id.button, Intent())
+                }
+            }
         }
 
-        override fun getLoadingView(): RemoteViews? {
-            return null
-        }
+        override fun getLoadingView(): RemoteViews?  = null
 
-        override fun getViewTypeCount(): Int {
-            return 1
-        }
+        override fun getViewTypeCount(): Int = 2
 
         override fun getItemId(position: Int): Long {
-            if (position >= categoriesCurrent.size) {
+            if (position >= currentItems.size) {
                 return -(position.toLong())
             }
 
-            return categoriesCurrent[position].hashCode().toLong()
+            val item = currentItems[position]
+
+            return when (item) {
+                is TimesWidgetItem.Category -> item.category.categoryId.hashCode()
+                else -> item.hashCode()
+            }.toLong()
         }
 
-        override fun hasStableIds(): Boolean {
-            return true
-        }
+        override fun hasStableIds(): Boolean = true
     }
 
-    override fun onGetViewFactory(intent: Intent): RemoteViewsFactory = factory
+    override fun onGetViewFactory(intent: Intent): RemoteViewsFactory = createFactory(
+        intent.getIntExtra(EXTRA_APP_WIDGET_ID, 0)
+    )
 }

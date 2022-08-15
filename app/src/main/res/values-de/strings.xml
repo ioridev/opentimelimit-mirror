@@ -593,6 +593,7 @@
     <string name="manage_child_tab_other">erweiterte Einstellungen</string>
 
     <string name="manage_child_category_no_time_limits">Keine Zeitbegrenzung</string>
+    <string name="manage_child_category_no_time_limits_short">keine Begrenzung</string>
 
     <string name="manage_child_categories_intro_title">Kategorien</string>
     <string name="manage_child_categories_intro_text">
@@ -1101,10 +1102,13 @@
 
     <string name="util_day_from_to">%s bis %s</string>
 
-    <string name="widget_empty_view">Wenn dieses Gerät einem Kind zugeordnet
-        wird und dieses Kind Kategorien hat, dann sollten diese Kategorien
-        hier angezeigt werden.
-    </string>
+    <string name="widget_msg_unconfigured">Dieses Widget funktioniert nur auf beschränkten Geräten</string>
+    <string name="widget_msg_no_child">Momentan hat dieses Gerät keinen Kind-Benutzer</string>
+    <string name="widget_msg_no_category">Das Kind hat keine Kategorien</string>
+    <string name="widget_msg_no_filtered_category">Das Kind hat keine für das Widget ausgewählten Kategorien</string>
+    <string name="widget_config_mode_all">alle Kategorien anzeigen</string>
+    <string name="widget_config_mode_filter">sichtbare Kategorien filtern</string>
+    <string name="widget_config_error_filter_empty">Sie müssen mindestens eine Kategorie auswählen</string>
 
     <string name="wiazrd_next">Weiter</string>
 

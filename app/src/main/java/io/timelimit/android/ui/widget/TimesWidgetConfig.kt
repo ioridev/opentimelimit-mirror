@@ -15,8 +15,10 @@
  */
 package io.timelimit.android.ui.widget
 
-sealed class TimesWidgetItem {
-    data class TextMessage(val textRessourceId: Int): TimesWidgetItem()
-    data class Category(val category: TimesWidgetContent.Categories.Item): TimesWidgetItem()
-    object DefaultUserButton: TimesWidgetItem()
+import io.timelimit.android.data.model.WidgetCategory
+
+data class TimesWidgetConfig (val categories: List<WidgetCategory>) {
+    val widgetCategoriesByWidgetId by lazy {
+        categories.groupBy { it.widgetId }.mapValues { it.value.map { it.categoryId }.toSet() }
+    }
 }

@@ -635,6 +635,7 @@
     <string name="manage_child_tab_other">Advanced settings</string>
 
     <string name="manage_child_category_no_time_limits">no time limit</string>
+    <string name="manage_child_category_no_time_limits_short">no limit</string>
 
     <string name="manage_child_categories_intro_title">Categories</string>
     <string name="manage_child_categories_intro_text">
@@ -1144,10 +1145,13 @@
 
     <string name="util_day_from_to">%s to %s</string>
 
-    <string name="widget_empty_view">If this device is assigned to a child
-        and this child has got categories, then the categories should
-        appear here.
-    </string>
+    <string name="widget_msg_unconfigured">This Widget only works on limited devices</string>
+    <string name="widget_msg_no_child">This device is not used by a child right now</string>
+    <string name="widget_msg_no_category">This child does not have any categories</string>
+    <string name="widget_msg_no_filtered_category">For this child, no visible categories were chosen for this widget</string>
+    <string name="widget_config_mode_all">Show all Categories</string>
+    <string name="widget_config_mode_filter">Filter visible Categories</string>
+    <string name="widget_config_error_filter_empty">You must select at least one category</string>
 
     <string name="wiazrd_next">Next</string>
 

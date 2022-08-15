@@ -15,8 +15,18 @@
  */
 package io.timelimit.android.ui.widget
 
-sealed class TimesWidgetItem {
-    data class TextMessage(val textRessourceId: Int): TimesWidgetItem()
-    data class Category(val category: TimesWidgetContent.Categories.Item): TimesWidgetItem()
-    object DefaultUserButton: TimesWidgetItem()
+sealed class TimesWidgetContent {
+        object UnconfiguredDevice: TimesWidgetContent()
+        data class NoChildUser(val canSwitchToDefaultUser: Boolean): TimesWidgetContent()
+        data class Categories(
+                val categories: List<Item>,
+                val canSwitchToDefaultUser: Boolean
+        ): TimesWidgetContent() {
+                data class Item(
+                        val categoryId: String,
+                        val categoryName: String,
+                        val level: Int,
+                        val remainingTimeToday: Long?
+                )
+        }
 }

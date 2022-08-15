@@ -29,6 +29,7 @@ import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.switchMap
+import io.timelimit.android.ui.widget.TimesWidgetProvider
 
 class AppLogic(
         val platformIntegration: PlatformIntegration,
@@ -79,6 +80,7 @@ class AppLogic(
     init {
         SyncInstalledAppsLogic(this)
         WatchdogLogic(this)
+        TimesWidgetProvider.triggerUpdates(context)
     }
 
     val manipulationLogic = ManipulationLogic(this)

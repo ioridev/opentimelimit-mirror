@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,102 +15,31 @@
  */
 package io.timelimit.android.ui.widget
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import io.timelimit.android.async.Threads
-import io.timelimit.android.data.extensions.sortedCategories
-import io.timelimit.android.livedata.ignoreUnchanged
-import io.timelimit.android.logic.AppLogic
-import io.timelimit.android.logic.blockingreason.CategoryHandlingCache
+import io.timelimit.android.R
 
 object TimesWidgetItems {
-    fun with(logic: AppLogic): LiveData<List<TimesWidgetItem>> {
-        val database = logic.database
-        val realTimeLogic = logic.realTimeLogic
-        val timeApi = logic.timeApi
-        val categoryHandlingCache = CategoryHandlingCache()
-        val handler = Threads.mainThreadHandler
+    fun with(content: TimesWidgetContent, config: TimesWidgetConfig, appWidgetId: Int): List<TimesWidgetItem> = when (content) {
+        is TimesWidgetContent.UnconfiguredDevice -> listOf(TimesWidgetItem.TextMessage(R.string.widget_msg_unconfigured))
+        is TimesWidgetContent.NoChildUser -> {
+            val base = TimesWidgetItem.TextMessage(R.string.widget_msg_no_child)
 
-        val deviceAndUserRelatedDataLive = database.derivedDataDao().getUserAndDeviceRelatedDataLive()
-        var deviceAndUserRelatedDataLiveLoaded = false
-
-        val batteryStatusLive = logic.platformIntegration.getBatteryStatusLive()
-
-        lateinit var timeModificationListener: () -> Unit
-        lateinit var updateByClockRunnable: Runnable
-        var isActive = false
-
-        val newResult = object: MediatorLiveData<List<TimesWidgetItem>>() {
-            override fun onActive() {
-                super.onActive()
-
-                isActive = true
-
-                realTimeLogic.registerTimeModificationListener(timeModificationListener)
-
-                // ensure that the next update gets scheduled
-                updateByClockRunnable.run()
-            }
-
-            override fun onInactive() {
-                super.onInactive()
-
-                isActive = true
-
-                realTimeLogic.unregisterTimeModificationListener(timeModificationListener)
-                handler.removeCallbacks(updateByClockRunnable)
-            }
+            if (content.canSwitchToDefaultUser) listOf(base, TimesWidgetItem.DefaultUserButton)
+            else listOf(base)
         }
+        is TimesWidgetContent.Categories -> {
+            val categoryFilter = config.widgetCategoriesByWidgetId[appWidgetId] ?: emptySet()
 
-        fun update() {
-            handler.removeCallbacks(updateByClockRunnable)
+            val categoryItems = if (content.categories.isEmpty()) listOf(TimesWidgetItem.TextMessage(R.string.widget_msg_no_category))
+            else if (categoryFilter.isEmpty()) content.categories.map { TimesWidgetItem.Category(it) }
+            else {
+                val filteredCategories = content.categories.filter { categoryFilter.contains(it.categoryId) }
 
-            if (!deviceAndUserRelatedDataLiveLoaded) { return }
-
-            val deviceAndUserRelatedData = deviceAndUserRelatedDataLive.value
-            val userRelatedData = deviceAndUserRelatedData?.userRelatedData
-            val timeInMillis = timeApi.getCurrentTimeInMillis()
-
-            if (userRelatedData == null) {
-                newResult.value = emptyList(); return
+                if (filteredCategories.isEmpty()) listOf(TimesWidgetItem.TextMessage(R.string.widget_msg_no_filtered_category))
+                else filteredCategories.map { TimesWidgetItem.Category(it) }
             }
 
-            categoryHandlingCache.reportStatus(
-                    user = userRelatedData,
-                    timeInMillis = timeInMillis,
-                    batteryStatus = logic.platformIntegration.getBatteryStatus(),
-                    currentNetworkId = null // not relevant here
-            )
-
-            var maxTime = Long.MAX_VALUE
-
-            val list = userRelatedData.sortedCategories().map { (level, category) ->
-                val handling = categoryHandlingCache.get(categoryId = category.category.id)
-
-                maxTime = maxTime.coerceAtMost(handling.dependsOnMaxTime)
-
-                TimesWidgetItem(
-                        title = category.category.title,
-                        level = level,
-                        remainingTimeToday = handling.remainingTime?.includingExtraTime
-                )
-            }
-
-            newResult.value = list
-
-            if (isActive && maxTime != Long.MAX_VALUE) {
-                val delay = maxTime - timeInMillis
-
-                handler.postDelayed(updateByClockRunnable, delay)
-            }
+            if (content.canSwitchToDefaultUser) categoryItems + TimesWidgetItem.DefaultUserButton
+            else categoryItems
         }
-
-        timeModificationListener = { update() }
-        updateByClockRunnable = Runnable { update() }
-
-        newResult.addSource(deviceAndUserRelatedDataLive) { deviceAndUserRelatedDataLiveLoaded = true; update() }
-        newResult.addSource(batteryStatusLive) { update() }
-
-        return newResult.ignoreUnchanged()
     }
 }

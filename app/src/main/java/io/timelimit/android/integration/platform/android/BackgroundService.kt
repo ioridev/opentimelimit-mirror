@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@ package io.timelimit.android.integration.platform.android
 
 import android.app.ActivityManager
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -89,12 +88,7 @@ class BackgroundService: Service() {
                         NotificationCompat.Action.Builder(
                             R.drawable.ic_account_circle_black_24dp,
                             context.getString(R.string.manage_device_default_user_switch_btn),
-                            PendingIntent.getService(
-                                context,
-                                PendingIntentIds.SWITCH_TO_DEFAULT_USER,
-                                BackgroundActionService.prepareSwitchToDefaultUser(context),
-                                PendingIntentIds.PENDING_INTENT_FLAGS
-                            )
+                            BackgroundActionService.getSwitchToDefaultUserIntent(context)
                         ).build()
                     )
                 }

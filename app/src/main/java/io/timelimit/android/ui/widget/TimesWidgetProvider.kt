@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,13 +17,45 @@ package io.timelimit.android.ui.widget
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.widget.RemoteViews
+import androidx.core.content.getSystemService
+import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
+import io.timelimit.android.async.Threads
+import io.timelimit.android.integration.platform.android.BackgroundActionService
 import io.timelimit.android.logic.DefaultAppLogic
 
 class TimesWidgetProvider: AppWidgetProvider() {
+    companion object {
+        private const val LOG_TAG = "TimesWidgetProvider"
+
+        private fun handleUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+            for (appWidgetId in appWidgetIds) {
+                val views = RemoteViews(context.packageName, R.layout.widget_times)
+
+                views.setRemoteAdapter(android.R.id.list, TimesWidgetService.intent(context, appWidgetId))
+                views.setPendingIntentTemplate(android.R.id.list, BackgroundActionService.getSwitchToDefaultUserIntent(context))
+                views.setEmptyView(android.R.id.list, android.R.id.empty)
+
+                appWidgetManager.updateAppWidget(appWidgetId, views)
+            }
+
+            TimesWidgetService.notifyContentChanges(context)
+        }
+
+        fun triggerUpdates(context: Context) {
+            context.getSystemService<AppWidgetManager>()?.also { appWidgetManager ->
+                val appWidgetIds = appWidgetManager.getAppWidgetIds(ComponentName(context, TimesWidgetProvider::class.java))
+
+                handleUpdate(context, appWidgetManager, appWidgetIds)
+            }
+        }
+    }
+
     override fun onReceive(context: Context, intent: Intent?) {
         super.onReceive(context, intent)
 
@@ -34,13 +66,38 @@ class TimesWidgetProvider: AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
 
-        for (appWidgetId in appWidgetIds) {
-            val views = RemoteViews(context.packageName, R.layout.widget_times)
+        handleUpdate(context, appWidgetManager, appWidgetIds)
+    }
 
-            views.setRemoteAdapter(android.R.id.list, Intent(context, TimesWidgetService::class.java))
-            views.setEmptyView(android.R.id.list, android.R.id.empty)
+    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+        super.onDeleted(context, appWidgetIds)
 
-            appWidgetManager.updateAppWidget(appWidgetId, views)
+        val database = DefaultAppLogic.with(context).database
+
+        Threads.database.execute {
+            try {
+                database.widgetCategory().deleteByWidgetIds(appWidgetIds)
+            } catch (ex: Exception) {
+                if (BuildConfig.DEBUG) {
+                    Log.d(LOG_TAG, "onDisabled", ex)
+                }
+            }
+        }
+    }
+
+    override fun onDisabled(context: Context) {
+        super.onDisabled(context)
+
+        val database = DefaultAppLogic.with(context).database
+
+        Threads.database.execute {
+            try {
+                database.widgetCategory().deleteAll()
+            } catch (ex: Exception) {
+                if (BuildConfig.DEBUG) {
+                    Log.d(LOG_TAG, "onDisabled", ex)
+                }
+            }
         }
     }
 }

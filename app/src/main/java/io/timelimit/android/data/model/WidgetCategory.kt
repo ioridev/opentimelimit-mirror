@@ -13,10 +13,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.ui.widget
+package io.timelimit.android.data.model
 
-sealed class TimesWidgetItem {
-    data class TextMessage(val textRessourceId: Int): TimesWidgetItem()
-    data class Category(val category: TimesWidgetContent.Categories.Item): TimesWidgetItem()
-    object DefaultUserButton: TimesWidgetItem()
-}
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+
+@Entity(
+    tableName = "widget_category",
+    primaryKeys = ["widget_id", "category_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = Category::class,
+            parentColumns = ["id"],
+            childColumns = ["category_id"],
+            onUpdate = ForeignKey.CASCADE,
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+data class WidgetCategory (
+    @ColumnInfo(name = "widget_id")
+    val widgetId: Int,
+    @ColumnInfo(name = "category_id", index = true)
+    val categoryId: String
+)

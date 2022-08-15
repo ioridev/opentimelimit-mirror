@@ -213,4 +213,11 @@ object DatabaseMigrations {
             database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_user_u2f_key_key_handle_public_key` ON `user_u2f_key` (`key_handle`, `public_key`)")
         }
     }
+
+    val MIGRATE_TO_V28 = object: Migration(27, 28) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `widget_category` (`widget_id` INTEGER NOT NULL, `category_id` TEXT NOT NULL, PRIMARY KEY(`widget_id`, `category_id`), FOREIGN KEY(`category_id`) REFERENCES `category`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )")
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_widget_category_category_id` ON `widget_category` (`category_id`)")
+        }
+    }
 }
