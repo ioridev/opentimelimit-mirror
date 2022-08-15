@@ -77,8 +77,11 @@ class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHe
 
                     while (events.loadNextEvent()) {
                         // check the consistency
-                        if (events.timestamp < lastEventTimestamp && !isFirstEvent) {
-                            throw InstanceIdException.EventsNotSortedByTimestamp()
+                        if (events.timestamp < lastEventTimestamp - TOLERANCE && !isFirstEvent) {
+                            throw InstanceIdException.EventsNotSortedByTimestamp(
+                                currentMin = lastEventTimestamp,
+                                eventTimestamp = events.timestamp
+                            )
                         }
 
                         // process the event
@@ -96,8 +99,8 @@ class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHe
                         }
 
                         // save values for the next iteration and the next query
+                        if (isFirstEvent || events.timestamp > lastEventTimestamp) lastEventTimestamp = events.timestamp
                         isFirstEvent = false
-                        lastEventTimestamp = events.timestamp
                     }
                 } finally {
                     events.free()
@@ -119,6 +122,8 @@ class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHe
     }
 
     sealed class InstanceIdException(message: String): RuntimeException(message) {
-        class EventsNotSortedByTimestamp: InstanceIdException("events not sorted by timestamp")
+        class EventsNotSortedByTimestamp(currentMin: Long, eventTimestamp: Long): InstanceIdException(
+            "events not sorted by timestamp; expected at least $currentMin but got $eventTimestamp"
+        )
     }
 }
