@@ -15,8 +15,10 @@
  */
 package io.timelimit.android.ui
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.SystemClock
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
@@ -41,14 +43,48 @@ import io.timelimit.android.ui.login.AuthTokenLoginProcessor
 import io.timelimit.android.ui.login.NewLoginFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
+import io.timelimit.android.ui.main.AuthenticatedUser
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.overview.main.MainFragment
 import io.timelimit.android.ui.parentmode.ParentModeFragment
 import io.timelimit.android.ui.setup.SetupTermsFragment
+import java.security.SecureRandom
 
 class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.DeviceFoundListener {
     companion object {
         private const val AUTH_DIALOG_TAG = "adt"
+        private const val EXTRA_AUTH_HANDOVER = "authHandover"
+
+        private var authHandover: Triple<Long, Long, AuthenticatedUser>? = null
+
+        fun getAuthHandoverIntent(context: Context, user: AuthenticatedUser): Intent {
+            val time = SystemClock.uptimeMillis()
+            val key = SecureRandom().nextLong()
+
+            authHandover = Triple(time, key, user)
+
+            return Intent(context, MainActivity::class.java)
+                .putExtra(EXTRA_AUTH_HANDOVER, key)
+        }
+
+        fun getAuthHandoverFromIntent(intent: Intent): AuthenticatedUser? {
+            val cachedHandover = authHandover
+            val time = SystemClock.uptimeMillis()
+
+            if (cachedHandover == null) return null
+
+            if (cachedHandover.first < time - 2000 || cachedHandover.first - 1000 > time) {
+                authHandover = null
+
+                return null
+            }
+
+            if (intent.getLongExtra(EXTRA_AUTH_HANDOVER, 0) != cachedHandover.second) return null
+
+            authHandover = null
+
+            return cachedHandover.third
+        }
     }
 
     private val currentNavigatorFragment = MutableLiveData<Fragment?>()
@@ -121,6 +157,13 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         }, false)
 
         title.observe(this, Observer { setTitle(it) })
+
+        // authentication
+        intent?.also {
+            getAuthHandoverFromIntent(intent)?.also { auth ->
+                getActivityViewModel().setAuthenticatedUser(auth)
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when {
@@ -155,6 +198,12 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                         .intents
                         .first()
         )
+
+        intent?.also {
+            getAuthHandoverFromIntent(intent)?.also { auth ->
+                getActivityViewModel().setAuthenticatedUser(auth)
+            }
+        }
     }
 
     override fun getActivityViewModel(): ActivityViewModel {

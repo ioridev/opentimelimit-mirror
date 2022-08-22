@@ -60,7 +60,17 @@ class LockActionFragment : Fragment() {
     private fun setupHandlers(deviceId: String, userRelatedData: UserRelatedData, blockedCategoryId: String?) {
         binding.handlers = object: Handlers {
             override fun openMainApp() {
-                startActivity(Intent(context, MainActivity::class.java))
+                val user = auth.getAuthenticatedUser()
+
+                startActivity(
+                    if (user == null)
+                        Intent(context, MainActivity::class.java)
+                    else
+                        MainActivity.getAuthHandoverIntent(
+                            requireContext(),
+                            user
+                        )
+                )
             }
 
             override fun allowTemporarily() {
