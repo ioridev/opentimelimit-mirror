@@ -95,7 +95,7 @@ class SetupSelectModeFragment : Fragment() {
                             Intent(
                                 Intent.ACTION_UNINSTALL_PACKAGE,
                                 Uri.parse("package:${requireContext().packageName}")
-                            )
+                            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         )
                     }
                 } catch (ex: Exception) {
