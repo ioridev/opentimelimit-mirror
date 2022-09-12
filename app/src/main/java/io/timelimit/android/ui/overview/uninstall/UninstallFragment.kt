@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
-import androidx.navigation.NavController
-import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.databinding.FragmentUninstallBinding
 import io.timelimit.android.livedata.liveDataFromNonNullValue
@@ -41,7 +39,6 @@ class UninstallFragment : Fragment(), FragmentWithCustomTitle {
     private val activity: ActivityViewModelHolder by lazy { getActivity() as ActivityViewModelHolder }
     private val auth: ActivityViewModel by lazy { activity.getActivityViewModel() }
     private var showBackdoorButton = false
-    private lateinit var navigation: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,8 +47,6 @@ class UninstallFragment : Fragment(), FragmentWithCustomTitle {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        navigation = Navigation.findNavController(container!!)
-
         val binding = FragmentUninstallBinding.inflate(inflater, container, false)
 
         binding.uninstall.isEnabled = binding.checkConfirm.isChecked
@@ -71,10 +66,6 @@ class UninstallFragment : Fragment(), FragmentWithCustomTitle {
         }
 
         binding.showBackdoorButton = showBackdoorButton
-
-        auth.logic.deviceId.observe(viewLifecycleOwner) {
-            if (it == null) { navigation.popBackStack() }
-        }
 
         AuthenticationFab.manageAuthenticationFab(
                 fab = binding.fab,

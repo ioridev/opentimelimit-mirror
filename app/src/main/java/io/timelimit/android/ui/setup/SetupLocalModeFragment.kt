@@ -30,13 +30,10 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.Navigation
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.databinding.FragmentSetupLocalModeBinding
-import io.timelimit.android.livedata.mergeLiveData
 import io.timelimit.android.livedata.mergeLiveDataWaitForValues
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.mustread.MustReadFragment
@@ -82,7 +79,6 @@ class SetupLocalModeFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = FragmentSetupLocalModeBinding.inflate(inflater, container, false)
-        val navigation = Navigation.findNavController(container!!)
 
         mergeLiveDataWaitForValues(binding.setPasswordView.passwordOk, model.status, notifyPermission)
             .observe(viewLifecycleOwner) { (passwordGood, modelStatus, notifyPermission) ->
@@ -102,8 +98,6 @@ class SetupLocalModeFragment : Fragment() {
         model.status.observe(this, Observer {
             if (it == SetupLocalModeModel.Status.Done) {
                 MustReadFragment.newInstance(R.string.must_read_child_manipulation).show(fragmentManager!!)
-
-                navigation.popBackStack(R.id.overviewFragment, false)
             }
         })
 

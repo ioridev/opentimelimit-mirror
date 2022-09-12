@@ -15,7 +15,6 @@
  */
 package io.timelimit.android.ui.setup
 
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -107,14 +106,6 @@ class SetupSelectModeFragment : Fragment() {
                     Toast.makeText(context, R.string.error_general, Toast.LENGTH_SHORT).show()
                 }
             }
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == REQUEST_SETUP_PARENT_MODE && resultCode == Activity.RESULT_OK) {
-            navigation.popBackStack(R.id.overviewFragment, false)
         }
     }
 }

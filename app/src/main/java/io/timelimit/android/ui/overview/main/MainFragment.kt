@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,29 +19,18 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import io.timelimit.android.R
-import io.timelimit.android.async.Threads
-import io.timelimit.android.coroutines.executeAndWait
-import io.timelimit.android.coroutines.runAsync
-import io.timelimit.android.data.model.UserType
 import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.livedata.*
-import io.timelimit.android.logic.AppLogic
-import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.fragment.SingleFragmentWrapper
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
-import io.timelimit.android.ui.obsolete.ObsoleteDialogFragment
 import io.timelimit.android.ui.overview.about.AboutFragmentParentHandlers
 import io.timelimit.android.ui.overview.overview.OverviewFragment
 import io.timelimit.android.ui.overview.overview.OverviewFragmentParentHandlers
 
 class MainFragment : SingleFragmentWrapper(), OverviewFragmentParentHandlers, AboutFragmentParentHandlers, FragmentWithCustomTitle {
-    private val logic: AppLogic by lazy { DefaultAppLogic.with(requireContext()) }
-    private var didRedirectToUserScreen = false
     override val showAuthButton: Boolean = true
 
     override fun createChildFragment(): Fragment = OverviewFragment()
@@ -52,60 +41,6 @@ class MainFragment : SingleFragmentWrapper(), OverviewFragmentParentHandlers, Ab
         setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        logic.isInitialized.switchMap { isInitialized ->
-            if (isInitialized) {
-                logic.database.config().getOwnDeviceId().map { it == null }
-            } else {
-                liveDataFromNonNullValue(false)
-            }
-        }.observe(viewLifecycleOwner, Observer { shouldShowSetup ->
-            if (shouldShowSetup == true) {
-                runAsync {
-                    val hasParentKey = Threads.database.executeAndWait { logic.database.config().getParentModeKeySync() != null }
-
-                    if (isAdded && !parentFragmentManager.isStateSaved) {
-                        if (hasParentKey) {
-                            logic.platformIntegration.disableDeviceAdmin()
-
-                            navigation.safeNavigate(
-                                    MainFragmentDirections.actionOverviewFragmentToParentModeFragment(),
-                                    R.id.overviewFragment
-                            )
-                        } else {
-                            navigation.safeNavigate(
-                                    MainFragmentDirections.actionOverviewFragmentToSetupTermsFragment(),
-                                    R.id.overviewFragment
-                            )
-                        }
-                    }
-                }
-            } else {
-                if (savedInstanceState == null && !didRedirectToUserScreen) {
-                    didRedirectToUserScreen = true
-
-                    runAsync {
-                        val user = logic.deviceUserEntry.waitForNullableValue()
-
-                        if (user?.type == UserType.Child) {
-                            if (isAdded && !parentFragmentManager.isStateSaved) {
-                                openManageChildScreen(user.id, fromRedirect = true)
-                            }
-                        }
-
-                        if (user != null) {
-                            if (isAdded && !parentFragmentManager.isStateSaved) {
-                                ObsoleteDialogFragment.show(requireActivity(), false)
-                            }
-                        }
-                    }
-                }
-            }
-        })
-    }
-
     override fun openAddUserScreen() {
         navigation.safeNavigate(
                 MainFragmentDirections.actionOverviewFragmentToAddUserFragment(),
@@ -113,11 +48,9 @@ class MainFragment : SingleFragmentWrapper(), OverviewFragmentParentHandlers, Ab
         )
     }
 
-    override fun openManageChildScreen(childId: String) = openManageChildScreen(childId = childId, fromRedirect = false)
-
-    private fun openManageChildScreen(childId: String, fromRedirect: Boolean) {
+    override fun openManageChildScreen(childId: String) {
         navigation.safeNavigate(
-                MainFragmentDirections.actionOverviewFragmentToManageChildFragment(childId = childId, fromRedirect = fromRedirect),
+                MainFragmentDirections.actionOverviewFragmentToManageChildFragment(childId = childId, fromRedirect = false),
                 R.id.overviewFragment
         )
     }
