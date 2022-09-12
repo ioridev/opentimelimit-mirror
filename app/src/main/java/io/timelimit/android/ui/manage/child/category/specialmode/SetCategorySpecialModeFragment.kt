@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
@@ -62,10 +63,12 @@ class SetCategorySpecialModeFragment: DialogFragment() {
     private val auth: ActivityViewModel by lazy { getActivityViewModel(requireActivity()) }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = object: BottomSheetDialog(requireContext(), theme) {
-        override fun onBackPressed() {
-            if (!model.goBack()) {
-                super.onBackPressed()
-            }
+        init {
+            onBackPressedDispatcher.addCallback(object: OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (!model.goBack()) dismissAllowingStateLoss()
+                }
+            })
         }
     }
 

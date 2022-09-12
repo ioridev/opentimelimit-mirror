@@ -26,6 +26,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
@@ -92,10 +93,12 @@ class NewLoginFragment: DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?) = object: BottomSheetDialog(requireContext(), theme) {
-        override fun onBackPressed() {
-            if (!model.goBack()) {
-                super.onBackPressed()
-            }
+        init {
+            onBackPressedDispatcher.addCallback(object: OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (!model.goBack()) dismissAllowingStateLoss()
+                }
+            })
         }
 
         override fun onAttachedToWindow() {
