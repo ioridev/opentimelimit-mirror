@@ -77,18 +77,18 @@ android {
 }
 
 dependencies {
-    def nav_version = "2.5.0"
-    def room_version = "2.4.2"
+    def nav_version = "2.5.2"
+    def room_version = "2.4.3"
     def paging_version = "3.1.1"
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.4.2'
-    implementation 'androidx.core:core:1.8.0'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'androidx.core:core:1.9.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation "com.google.android.material:material:1.6.1"
-    implementation 'androidx.fragment:fragment-ktx:1.5.0'
+    implementation 'androidx.fragment:fragment-ktx:1.5.2'
 
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui:$nav_version"
@@ -102,7 +102,7 @@ dependencies {
     implementation "androidx.paging:paging-runtime:$paging_version"
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
 
     implementation 'androidx.biometric:biometric:1.1.0'
 
