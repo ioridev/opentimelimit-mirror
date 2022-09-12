@@ -220,4 +220,10 @@ object DatabaseMigrations {
             database.execSQL("CREATE INDEX IF NOT EXISTS `index_widget_category_category_id` ON `widget_category` (`category_id`)")
         }
     }
+
+    val MIGRATE_TO_V29 = object: Migration(28, 29) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `widget_config` (`widget_id` INTEGER NOT NULL, `translucent` INTEGER NOT NULL, PRIMARY KEY(`widget_id`))")
+        }
+    }
 }

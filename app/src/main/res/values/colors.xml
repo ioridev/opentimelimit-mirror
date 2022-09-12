@@ -19,7 +19,9 @@
     <color name="colorPrimaryDark">#512da8</color>
     <color name="colorAccent">#4caf50</color>
     <color name="widgetBackground">#ffffff</color>
+    <color name="widgetBackgroundTranslucent">#33000000</color>
     <color name="widgetText">#000000</color>
+    <color name="widgetTextTranslucent">#ffffff</color>
 
     <color name="transparent">#00000000</color>
     <color name="gray">#9E9E9E</color>

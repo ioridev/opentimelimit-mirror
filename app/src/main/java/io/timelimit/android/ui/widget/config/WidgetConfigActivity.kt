@@ -56,6 +56,11 @@ class WidgetConfigActivity: FragmentActivity() {
                         WidgetConfigFilterDialogFragment().showSafe(supportFragmentManager, WidgetConfigFilterDialogFragment.DIALOG_TAG)
                     }
                 }
+                is WidgetConfigModel.State.ShowOtherOptions -> {
+                    if (supportFragmentManager.findFragmentByTag(WidgetConfigOtherDialogFragment.DIALOG_TAG) == null) {
+                        WidgetConfigOtherDialogFragment().showSafe(supportFragmentManager, WidgetConfigOtherDialogFragment.DIALOG_TAG)
+                    }
+                }
                 is WidgetConfigModel.State.Done -> {
                     setResult(
                         RESULT_OK,

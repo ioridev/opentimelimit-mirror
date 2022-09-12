@@ -36,10 +36,12 @@ import io.timelimit.android.ui.manage.child.category.CategoryItemLeftPadding
 class TimesWidgetService: RemoteViewsService() {
     companion object {
         private const val EXTRA_APP_WIDGET_ID = "appWidgetId"
+        private const val EXTRA_TRANSLUCENT = "translucent"
 
-        fun intent(context: Context, appWidgetId: Int) = Intent(context, TimesWidgetService::class.java)
-            .setData(Uri.parse("widget:$appWidgetId"))
+        fun intent(context: Context, appWidgetId: Int, translucent: Boolean) = Intent(context, TimesWidgetService::class.java)
+            .setData(Uri.parse("widget:$appWidgetId:$translucent"))
             .putExtra(EXTRA_APP_WIDGET_ID, appWidgetId)
+            .putExtra(EXTRA_TRANSLUCENT, translucent)
 
         fun notifyContentChanges(context: Context) {
             context.getSystemService<AppWidgetManager>()?.also { appWidgetManager ->
@@ -68,7 +70,7 @@ class TimesWidgetService: RemoteViewsService() {
         notifyContentChanges(this)
     }
 
-    private fun createFactory(appWidgetId: Int) = object : RemoteViewsFactory {
+    private fun createFactory(appWidgetId: Int, translucent: Boolean) = object : RemoteViewsFactory {
         private var currentItems: List<TimesWidgetItem> = emptyList()
 
         init { onDataSetChanged() }
@@ -98,11 +100,14 @@ class TimesWidgetService: RemoteViewsService() {
         override fun getCount(): Int = currentItems.size
 
         override fun getViewAt(position: Int): RemoteViews {
+            val categoryItemView = if (translucent) R.layout.widget_times_category_item_translucent
+            else R.layout.widget_times_category_item
+
             if (position >= currentItems.size) {
-                return RemoteViews(packageName, R.layout.widget_times_category_item)
+                return RemoteViews(packageName, categoryItemView)
             }
 
-            fun createCategoryItem(title: String?, subtitle: String, paddingLeft: Int) = RemoteViews(packageName, R.layout.widget_times_category_item).also { result ->
+            fun createCategoryItem(title: String?, subtitle: String, paddingLeft: Int) = RemoteViews(packageName, categoryItemView).also { result ->
                 result.setTextViewText(R.id.title, title ?: "")
                 result.setTextViewText(R.id.subtitle, subtitle)
 
@@ -161,6 +166,7 @@ class TimesWidgetService: RemoteViewsService() {
     }
 
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory = createFactory(
-        intent.getIntExtra(EXTRA_APP_WIDGET_ID, 0)
+        intent.getIntExtra(EXTRA_APP_WIDGET_ID, 0),
+        intent.getBooleanExtra(EXTRA_TRANSLUCENT, false)
     )
 }

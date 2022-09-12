@@ -26,6 +26,8 @@ import androidx.core.content.getSystemService
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
+import io.timelimit.android.coroutines.executeAndWait
+import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.integration.platform.android.BackgroundActionService
 import io.timelimit.android.logic.DefaultAppLogic
 
@@ -34,24 +36,48 @@ class TimesWidgetProvider: AppWidgetProvider() {
         private const val LOG_TAG = "TimesWidgetProvider"
 
         private fun handleUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-            for (appWidgetId in appWidgetIds) {
-                val views = RemoteViews(context.packageName, R.layout.widget_times)
+            runAsync {
+                val configs = Threads.database.executeAndWait {
+                    try {
+                        DefaultAppLogic.with(context).database.widgetConfig()
+                            .queryAll()
+                            .associateBy { it.widgetId }
+                    } catch (ex: Exception) {
+                        if (BuildConfig.DEBUG) {
+                            Log.d(LOG_TAG, "could not query database", ex)
+                        }
 
-                views.setRemoteAdapter(android.R.id.list, TimesWidgetService.intent(context, appWidgetId))
-                views.setPendingIntentTemplate(android.R.id.list, BackgroundActionService.getSwitchToDefaultUserIntent(context))
-                views.setEmptyView(android.R.id.list, android.R.id.empty)
+                        emptyMap()
+                    }
+                }
 
-                appWidgetManager.updateAppWidget(appWidgetId, views)
+                for (appWidgetId in appWidgetIds) {
+                    val config = configs[appWidgetId]
+                    val translucent = config?.translucent ?: false
+
+                    val views = RemoteViews(
+                        context.packageName,
+                        if (translucent) R.layout.widget_times_translucent
+                        else R.layout.widget_times
+                    )
+
+                    views.setRemoteAdapter(android.R.id.list, TimesWidgetService.intent(context, appWidgetId, translucent))
+                    views.setPendingIntentTemplate(android.R.id.list, BackgroundActionService.getSwitchToDefaultUserIntent(context))
+                    views.setEmptyView(android.R.id.list, android.R.id.empty)
+
+                    appWidgetManager.updateAppWidget(appWidgetId, views)
+                }
+
+                TimesWidgetService.notifyContentChanges(context)
             }
-
-            TimesWidgetService.notifyContentChanges(context)
         }
 
-        fun triggerUpdates(context: Context) {
+        fun triggerUpdates(context: Context, appWidgetIds: IntArray? = null) {
             context.getSystemService<AppWidgetManager>()?.also { appWidgetManager ->
-                val appWidgetIds = appWidgetManager.getAppWidgetIds(ComponentName(context, TimesWidgetProvider::class.java))
+                val usedAppWidgetIds = appWidgetIds
+                    ?: appWidgetManager.getAppWidgetIds(ComponentName(context, TimesWidgetProvider::class.java))
 
-                handleUpdate(context, appWidgetManager, appWidgetIds)
+                handleUpdate(context, appWidgetManager, usedAppWidgetIds)
             }
         }
     }
@@ -76,7 +102,10 @@ class TimesWidgetProvider: AppWidgetProvider() {
 
         Threads.database.execute {
             try {
-                database.widgetCategory().deleteByWidgetIds(appWidgetIds)
+                database.runInTransaction {
+                    database.widgetCategory().deleteByWidgetIds(appWidgetIds)
+                    database.widgetConfig().deleteByWidgetIds(appWidgetIds)
+                }
             } catch (ex: Exception) {
                 if (BuildConfig.DEBUG) {
                     Log.d(LOG_TAG, "onDisabled", ex)
@@ -92,7 +121,10 @@ class TimesWidgetProvider: AppWidgetProvider() {
 
         Threads.database.execute {
             try {
-                database.widgetCategory().deleteAll()
+                database.runInTransaction {
+                    database.widgetCategory().deleteAll()
+                    database.widgetConfig().deleteAll()
+                }
             } catch (ex: Exception) {
                 if (BuildConfig.DEBUG) {
                     Log.d(LOG_TAG, "onDisabled", ex)

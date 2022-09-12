@@ -27,8 +27,10 @@ import io.timelimit.android.data.extensions.sortedCategories
 import io.timelimit.android.data.model.Category
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.data.model.WidgetCategory
+import io.timelimit.android.data.model.WidgetConfig
 import io.timelimit.android.livedata.castDown
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.ui.widget.TimesWidgetProvider
 import kotlinx.coroutines.launch
 
 class WidgetConfigModel(application: Application): AndroidViewModel(application) {
@@ -83,11 +85,16 @@ class WidgetConfigModel(application: Application): AndroidViewModel(application)
 
         viewModelScope.launch {
             try {
-                Threads.database.executeAndWait {
+                val currentConfig = Threads.database.executeAndWait {
                     database.widgetCategory().deleteByWidgetId(oldState.appWidgetId)
+
+                    database.widgetConfig().queryByWidgetId(oldState.appWidgetId)
                 }
 
-                stateInternal.value = State.Done(appWidgetId = oldState.appWidgetId)
+                stateInternal.value = State.ShowOtherOptions(
+                    appWidgetId = oldState.appWidgetId,
+                    translucent = currentConfig?.translucent ?: false
+                )
             } catch (ex: Exception) {
                 if (BuildConfig.DEBUG) {
                     Log.d(LOG_TAG, "selectModeAll", ex)
@@ -117,7 +124,7 @@ class WidgetConfigModel(application: Application): AndroidViewModel(application)
 
         viewModelScope.launch {
             try {
-                Threads.database.executeAndWait {
+                val currentConfig = Threads.database.executeAndWait {
                     val userAndDeviceRelatedData = database.derivedDataDao().getUserAndDeviceRelatedDataSync()
                     val currentCategoryIds = userAndDeviceRelatedData!!.userRelatedData!!.categoryById.keys
 
@@ -135,12 +142,49 @@ class WidgetConfigModel(application: Application): AndroidViewModel(application)
                             categoriesToAdd.toList().map { WidgetCategory(oldState.appWidgetId, it) }
                         )
                     }
+
+                    database.widgetConfig().queryByWidgetId(oldState.appWidgetId)
                 }
 
-                stateInternal.value = State.Done(appWidgetId = oldState.appWidgetId)
+                stateInternal.value = State.ShowOtherOptions(
+                    appWidgetId = oldState.appWidgetId,
+                    translucent = currentConfig?.translucent ?: false
+                )
             } catch (ex: Exception) {
                 if (BuildConfig.DEBUG) {
                     Log.d(LOG_TAG, "selectModeAll", ex)
+                }
+
+                stateInternal.value = State.ErrorCancel
+            }
+        }
+    }
+
+    fun selectOtherOptions(translucent: Boolean) {
+        val oldState = state.value
+        if (!(oldState is State.ShowOtherOptions)) return
+        stateInternal.value = State.Working
+
+        viewModelScope.launch {
+            try {
+                Threads.database.executeAndWait {
+                    database.widgetConfig().upsert(
+                        WidgetConfig(
+                            widgetId = oldState.appWidgetId,
+                            translucent = translucent
+                        )
+                    )
+                }
+
+                TimesWidgetProvider.triggerUpdates(
+                    context = getApplication(),
+                    appWidgetIds = intArrayOf(oldState.appWidgetId)
+                )
+
+                stateInternal.value = State.Done(oldState.appWidgetId)
+            } catch (ex: Exception) {
+                if (BuildConfig.DEBUG) {
+                    Log.d(LOG_TAG, "selectOtherOptions", ex)
                 }
 
                 stateInternal.value = State.ErrorCancel
@@ -157,6 +201,7 @@ class WidgetConfigModel(application: Application): AndroidViewModel(application)
         object Working: State()
         data class ShowModeSelection(val appWidgetId: Int, val selectedFilterCategories: Set<String>, val categories: List<Category>): State()
         data class ShowCategorySelection(val appWidgetId: Int, val selectedFilterCategories: Set<String>, val categories: List<Category>): State()
+        data class ShowOtherOptions(val appWidgetId: Int, val translucent: Boolean): State()
         data class Done(val appWidgetId: Int): State()
         object Unconfigured: State()
         object UserCancel: State()

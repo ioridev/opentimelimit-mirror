@@ -51,8 +51,9 @@ import java.util.concurrent.TimeUnit
     ChildTask::class,
     CategoryTimeWarning::class,
     UserU2FKey::class,
-    WidgetCategory::class
-], version = 28)
+    WidgetCategory::class,
+    WidgetConfig::class
+], version = 29)
 abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database {
     companion object {
         private val lock = Object()
@@ -114,7 +115,8 @@ abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database 
                     DatabaseMigrations.MIGRATE_TO_V25,
                     DatabaseMigrations.MIGRATE_TO_V26,
                     DatabaseMigrations.MIGRATE_TO_V27,
-                    DatabaseMigrations.MIGRATE_TO_V28
+                    DatabaseMigrations.MIGRATE_TO_V28,
+                    DatabaseMigrations.MIGRATE_TO_V29
                 )
                 .setQueryExecutor(Threads.database)
                 .addCallback(object: Callback() {

@@ -16,7 +16,7 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:background="@color/widgetBackground"
+    tools:background="@color/widgetBackgroundTranslucent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingTop="4dp"
@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:textAppearanceLarge"
             android:textStyle="bold"
-            android:textColor="@color/widgetText"/>
+            android:textColor="@color/widgetTextTranslucent"/>
 
         <TextView
             tools:text="Erlaubte Apps"
@@ -49,7 +49,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:textAppearanceMedium"
-            android:textColor="@color/widgetText"/>
+            android:textColor="@color/widgetTextTranslucent"/>
 
         <FrameLayout
             android:id="@+id/bottomPadding"
