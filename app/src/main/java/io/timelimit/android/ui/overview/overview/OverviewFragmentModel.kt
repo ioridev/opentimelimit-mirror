@@ -136,7 +136,7 @@ class OverviewFragmentModel(application: Application): AndroidViewModel(applicat
 
                             add(OverviewFragmentHeaderUsers)
                             userEntries.forEach { if (it.user.type != UserType.Parent) add(it) }
-                            if (itemVisibility.showParentUsers) {
+                            if (itemVisibility.showParentUsers || userEntries.all { it.user.type == UserType.Parent }) {
                                 userEntries.forEach { if (it.user.type == UserType.Parent) add(it) }
                                 add(OverviewFragmentActionAddUser)
                             } else {
