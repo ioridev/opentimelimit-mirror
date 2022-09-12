@@ -21,6 +21,7 @@ import android.content.pm.ApplicationInfo
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import io.timelimit.android.BuildConfig
@@ -124,6 +125,10 @@ class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.D
                 logic.annoyLogic.doParentTempUnlock()
             }
         }
+
+        onBackPressedDispatcher.addCallback(object: OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {/* nothing to do */}
+        })
     }
 
     private fun shutdown() {
@@ -131,11 +136,6 @@ class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.D
             stopLockTask()
             finish()
         }
-    }
-
-    override fun onBackPressed() {
-        // super.onBackPressed()
-        // just ignore it
     }
 
     override fun onResume() {
