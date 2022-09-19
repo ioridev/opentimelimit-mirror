@@ -31,7 +31,6 @@ import io.timelimit.android.u2f.util.U2FException
 import io.timelimit.android.u2f.util.U2FThread
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.AuthenticatedUser
-import io.timelimit.android.ui.main.AuthenticationMethod
 import java.security.SecureRandom
 
 object AuthTokenLoginProcessor {
@@ -121,11 +120,8 @@ object AuthTokenLoginProcessor {
                             }
 
                             model.setAuthenticatedUser(
-                                AuthenticatedUser(
-                                    userId = key.userId,
-                                    passwordHash = userEntry.password,
-                                    isPasswordDisabled = false,
-                                    authenticatedBy = AuthenticationMethod.KeyCode
+                                AuthenticatedUser.LocalAuth.U2f(
+                                    userId = key.userId
                                 )
                             )
 

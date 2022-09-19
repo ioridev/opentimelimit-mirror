@@ -1185,7 +1185,7 @@
     <string name="manage_parent_u2f_status_done">Das Gerät wurde verknüpft</string>
 
     <string name="manage_parent_u2f_remove_key_text">Möchten sich diesen Schlüssel wirklich entfernen?</string>
-    <string name="manage_parent_u2f_remove_key_requires_password">Schlüssel können nur nach einer Anmeldung mittels Passwort entfernt werden</string>
+    <string name="manage_parent_u2f_remove_key_requires_password">Schlüssel können nur nach einer Anmeldung ohne Schlüssel entfernt werden</string>
 
     <string name="manage_parent_u2f_err_wrong_user">Nur der Benutzer selbst kann seine U2F-Schlüssel verwalten</string>
 

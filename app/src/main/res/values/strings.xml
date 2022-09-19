@@ -1239,7 +1239,7 @@
     <string name="manage_parent_u2f_status_done">The Device was linked</string>
 
     <string name="manage_parent_u2f_remove_key_text">Would you like to remove this key?</string>
-    <string name="manage_parent_u2f_remove_key_requires_password">You can only remove keys after signing in by password</string>
+    <string name="manage_parent_u2f_remove_key_requires_password">You can only remove keys after signing in without a key</string>
 
     <string name="manage_parent_u2f_err_wrong_user">Only the user itself can manage its U2F Keys</string>
 

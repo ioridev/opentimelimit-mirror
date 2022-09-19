@@ -37,7 +37,6 @@ import io.timelimit.android.sync.actions.ChildSignInAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.AuthenticatedUser
-import io.timelimit.android.ui.main.AuthenticationMethod
 import io.timelimit.android.ui.manage.parent.key.ScannedKey
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -177,11 +176,9 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
                     }
 
                     if (shouldSignIn) {
-                        model.setAuthenticatedUser(AuthenticatedUser(
+                        model.setAuthenticatedUser(AuthenticatedUser.Password(
                             userId = user.id,
-                            passwordHash = user.password,
-                            isPasswordDisabled = emptyPasswordValid,
-                            authenticatedBy = AuthenticationMethod.Password
+                            passwordHash = user.password
                         ))
 
                         isLoginDone.value = true
@@ -237,11 +234,8 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
                     val shouldSignIn = allowLoginStatus is AllowUserLoginStatus.Allow
 
                     if (shouldSignIn) {
-                        model.setAuthenticatedUser(AuthenticatedUser(
-                            userId = user.id,
-                            passwordHash = user.password,
-                            isPasswordDisabled = Threads.crypto.executeAndWait { PasswordHashing.validateSync("", user.password) },
-                            authenticatedBy = AuthenticationMethod.KeyCode
+                        model.setAuthenticatedUser(AuthenticatedUser.LocalAuth.ScanCode(
+                            userId = user.id
                         ))
 
                         isLoginDone.value = true
@@ -279,11 +273,9 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
                         return@runAsync
                     }
 
-                    val authenticatedUser = AuthenticatedUser(
+                    val authenticatedUser = AuthenticatedUser.Password(
                         userId = userEntry.id,
-                        passwordHash = userEntry.password,
-                        isPasswordDisabled = Threads.crypto.executeAndWait { PasswordHashing.validateSync("", userEntry.password) },
-                        authenticatedBy = AuthenticationMethod.Password
+                        passwordHash = userEntry.password
                     )
 
                     val allowLoginStatus = Threads.database.executeAndWait {
@@ -370,11 +362,8 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
                         return@runAsync
                     }
 
-                    activityViewModel.setAuthenticatedUser(AuthenticatedUser(
-                        userId = user.id,
-                        passwordHash = user.password,
-                        isPasswordDisabled = Threads.crypto.executeAndWait { PasswordHashing.validateSync("", user.password) },
-                        authenticatedBy = AuthenticationMethod.Biometric
+                    activityViewModel.setAuthenticatedUser(AuthenticatedUser.LocalAuth.Biometric(
+                        userId = user.id
                     ))
                     isLoginDone.value = true
                 }

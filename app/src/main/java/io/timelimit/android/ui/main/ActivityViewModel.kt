@@ -22,14 +22,13 @@ import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
-import io.timelimit.android.livedata.liveDataFromNullableValue
-import io.timelimit.android.livedata.map
-import io.timelimit.android.livedata.switchMap
+import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.ParentAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
@@ -47,27 +46,38 @@ class ActivityViewModel(application: Application): AndroidViewModel(application)
     private val authenticatedUserMetadata = MutableLiveData<AuthenticatedUser?>().apply { value = null }
     private val deviceUser = logic.deviceUserEntry
 
-    private val authenticatedChild: LiveData<User?> = deviceUser.map { user ->
+    private val authenticatedUserChecked = authenticatedUserMetadata.switchMap { user ->
+        val userEntryLive =
+            if (user == null) liveDataFromNullableValue(null)
+            else database.user().getUserByIdLive(user.userId)
+
+        userEntryLive.map { userEntry ->
+            if (userEntry == null) null
+            else {
+                val valid = when (user) {
+                    is AuthenticatedUser.Password -> user.passwordHash == userEntry.password
+                    is AuthenticatedUser.LocalAuth -> true
+                    null -> false
+                }
+
+                if (valid) userEntry
+                else null
+            }
+        }
+    }
+
+    private val authenticatedChildChecked: LiveData<User?> = deviceUser.map { user ->
         if (user?.type == UserType.Child && user.allowSelfLimitAdding) {
             user
         } else null
     }
 
-    val authenticatedUserOrChild: LiveData<User?> = authenticatedUserMetadata.switchMap {
-        authenticatedUser ->
-
-        if (authenticatedUser == null) {
-            authenticatedChild
-        } else {
-            database.user().getUserByIdLive(authenticatedUser.userId).switchMap {
-                if (it == null || it.password != authenticatedUser.passwordHash) {
-                    authenticatedChild
-                } else {
-                    liveDataFromNullableValue(it as User?)
-                }
+    val authenticatedUserOrChild: LiveData<User?> =
+        mergeLiveDataWaitForValues(authenticatedChildChecked, authenticatedUserChecked)
+            .map { (localChild, authenticatedUser) ->
+                authenticatedUser ?: localChild
             }
-        }
-    }
+            .ignoreUnchanged()
 
     val authenticatedUser = authenticatedUserOrChild.map { if (it?.type != UserType.Parent) null else it }
 
@@ -152,12 +162,17 @@ class ActivityViewModel(application: Application): AndroidViewModel(application)
     }
 }
 
-data class AuthenticatedUser(
-    val userId: String,
-    val passwordHash: String,
-    val isPasswordDisabled: Boolean,
-    val authenticatedBy: AuthenticationMethod
-)
-enum class AuthenticationMethod {
-    Password, KeyCode, Biometric
+sealed class AuthenticatedUser {
+    abstract val userId: String
+
+    data class Password(
+        override val userId: String,
+        val passwordHash: String
+    ): AuthenticatedUser()
+
+    sealed class LocalAuth: AuthenticatedUser() {
+        data class U2f(override val userId: String): LocalAuth()
+        data class ScanCode(override val userId: String): LocalAuth()
+        data class Biometric(override val userId: String): LocalAuth()
+    }
 }

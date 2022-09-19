@@ -77,14 +77,14 @@ class ManageParentU2FKeyFragment : Fragment(), FragmentWithCustomTitle {
 
             override fun onRemoveClicked(keyItem: U2FKeyListItem.KeyItem) {
                 if (isAuthValidOrShowMessage()) {
-                    if (activityModel.getAuthenticatedUser()?.authenticatedBy == AuthenticationMethod.Password) {
+                    if (activityModel.getAuthenticatedUser() is AuthenticatedUser.LocalAuth.U2f) {
+                        U2FRequiresPasswordForRemovalDialogFragment.newInstance().show(parentFragmentManager)
+                    } else {
                         RemoveU2FKeyDialogFragment.newInstance(
                             userId = params.userId,
                             keyHandle = keyItem.item.keyHandle,
                             publicKey = keyItem.item.publicKey
                         ).show(parentFragmentManager)
-                    } else {
-                        U2FRequiresPasswordForRemovalDialogFragment.newInstance().show(parentFragmentManager)
                     }
                 }
             }

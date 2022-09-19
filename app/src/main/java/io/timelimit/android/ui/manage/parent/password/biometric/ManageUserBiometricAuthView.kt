@@ -1,4 +1,5 @@
 /*
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  * TimeLimit Copyright <C> 2020 Marcel Voigt
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,7 +27,7 @@ import io.timelimit.android.databinding.ManageUserBiometricAuthViewBinding
 import io.timelimit.android.sync.actions.UpdateUserFlagsAction
 import io.timelimit.android.ui.extension.bindHelpDialog
 import io.timelimit.android.ui.main.ActivityViewModel
-import io.timelimit.android.ui.main.AuthenticationMethod
+import io.timelimit.android.ui.main.AuthenticatedUser
 
 object ManageUserBiometricAuthView {
     fun bind(
@@ -86,7 +87,7 @@ object ManageUserBiometricAuthView {
                             EnableBiometricAuthConfirmDialog.newInstance(userId = user.id, userName = user.name).show(fragmentManager)
                     }
                 } else {
-                    if (auth.getAuthenticatedUser()?.authenticatedBy == AuthenticationMethod.Password || auth.getAuthenticatedUser()?.isPasswordDisabled == true) {
+                    if (auth.getAuthenticatedUser() is AuthenticatedUser.Password) {
                         toggleUserFlag()
                     } else {
                         DisableBiometricAuthDeniedPasswordRequiredDialog.newInstance().show(fragmentManager)
