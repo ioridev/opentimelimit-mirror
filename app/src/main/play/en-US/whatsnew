@@ -1,1 +1,2 @@
-- improved Widget
+- settings stay unlocked when launching TimeLimit from the lockscreen after authentication
+- widget configuration allows enabling a translucent background for the Widget
