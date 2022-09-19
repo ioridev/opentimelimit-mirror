@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import io.timelimit.android.extensions.registerNotExportedReceiver
 
 object AppsChangeListener {
     private val changeFilter = IntentFilter()
@@ -35,7 +36,7 @@ object AppsChangeListener {
     }
 
     fun registerBroadcastReceiver(context: Context, listener: BroadcastReceiver) {
-        context.registerReceiver(listener, changeFilter)
-        context.registerReceiver(listener, externalFilter)
+        context.registerNotExportedReceiver(listener, changeFilter)
+        context.registerNotExportedReceiver(listener, externalFilter)
     }
 }

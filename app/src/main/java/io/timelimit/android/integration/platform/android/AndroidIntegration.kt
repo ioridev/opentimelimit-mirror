@@ -48,6 +48,7 @@ import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.runAsyncExpectForever
 import io.timelimit.android.data.model.App
 import io.timelimit.android.data.model.AppActivity
+import io.timelimit.android.extensions.registerNotExportedReceiver
 import io.timelimit.android.integration.platform.*
 import io.timelimit.android.integration.platform.android.foregroundapp.ForegroundAppHelper
 import io.timelimit.android.ui.homescreen.HomescreenActivity
@@ -99,7 +100,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
             }
         })
 
-        context.registerReceiver(object: BroadcastReceiver() {
+        context.registerNotExportedReceiver(object: BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 systemClockChangeListener?.run()
             }

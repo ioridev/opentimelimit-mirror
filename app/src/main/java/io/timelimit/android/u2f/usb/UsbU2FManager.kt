@@ -25,6 +25,7 @@ import android.hardware.usb.UsbManager
 import android.util.Log
 import androidx.core.content.getSystemService
 import io.timelimit.android.BuildConfig
+import io.timelimit.android.extensions.registerNotExportedReceiver
 import io.timelimit.android.integration.platform.android.PendingIntentIds
 import io.timelimit.android.u2f.U2fManager
 import io.timelimit.android.u2f.util.U2FId
@@ -85,9 +86,9 @@ class UsbU2FManager (val parent: U2fManager, context: Context) {
     })
 
     init {
-        context.registerReceiver(usbConnectionListener, IntentFilter(UsbManager.ACTION_USB_DEVICE_ATTACHED))
-        context.registerReceiver(usbConnectionListener, IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED))
-        context.registerReceiver(permissionResponseListener, IntentFilter(permissionResponseAction))
+        context.registerNotExportedReceiver(usbConnectionListener, IntentFilter(UsbManager.ACTION_USB_DEVICE_ATTACHED))
+        context.registerNotExportedReceiver(usbConnectionListener, IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED))
+        context.registerNotExportedReceiver(permissionResponseListener, IntentFilter(permissionResponseAction))
     }
 
     private fun handleAddedDevice(device: UsbDevice) {

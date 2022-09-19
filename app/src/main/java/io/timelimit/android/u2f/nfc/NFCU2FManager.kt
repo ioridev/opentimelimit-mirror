@@ -32,6 +32,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LiveData
 import io.timelimit.android.BuildConfig
+import io.timelimit.android.extensions.registerNotExportedReceiver
 import io.timelimit.android.integration.platform.android.PendingIntentIds
 import io.timelimit.android.livedata.liveDataFromFunction
 import io.timelimit.android.livedata.liveDataFromNonNullValue
@@ -77,7 +78,7 @@ class NFCU2FManager (val parent: U2fManager, context: Context) {
     else
         liveDataFromFunction { if (nfcAdapter.isEnabled) NfcStatus.Ready else NfcStatus.Disabled }
 
-    init { context.registerReceiver(nfcReceiver, IntentFilter(nfcReceiverAction)) }
+    init { context.registerNotExportedReceiver(nfcReceiver, IntentFilter(nfcReceiverAction)) }
 
     fun setupActivity(activity: FragmentActivity) {
         if (nfcAdapter != null) {
