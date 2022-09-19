@@ -105,13 +105,10 @@ class ManageChildCategoriesFragment : Fragment() {
                                 )
                         )
                     } else if (auth.isParentOrChildAuthenticated(params.childId) && category.mode is CategorySpecialMode.TemporarilyAllowed) {
-                        auth.tryDispatchParentAction(
-                                action = UpdateCategoryDisableLimitsAction(
-                                        categoryId = category.category.id,
-                                        endTime = 0,
-                                ),
-                                allowAsChild = true
-                        )
+                        ConfirmEnableLimitsAgainDialogFragment.newInstance(
+                            childId = params.childId,
+                            categoryId = category.category.id
+                        ).show(parentFragmentManager); false
                     } else if (
                             auth.isParentOrChildAuthenticated(params.childId) &&
                             (!(category.mode is CategorySpecialMode.TemporarilyBlocked && category.mode.endTime == null))

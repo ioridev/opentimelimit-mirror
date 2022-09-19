@@ -630,6 +630,9 @@
     <string name="manage_child_special_mode_wizard_disable_limits_title">Begrenzungen von %s deaktivieren</string>
     <string name="manage_child_special_mode_wizard_disable_limits_option">Begrenzungen vorübergehend deaktivieren</string>
 
+    <string name="manage_child_confirm_enable_limits_again_title">Begrenzungen aktivieren</string>
+    <string name="manage_child_confirm_enable_limits_again_text">Sollen die Begrenzungen für die Kategorie %s wirklich wieder aktiviert werden?</string>
+
     <string name="manage_device_activity_level_blocking_title">Sperren auf Activity-Ebene</string>
     <string name="manage_device_activity_level_blocking_text">
         Das ermöglicht es (abhänging von den Apps), einige Funktionen in Apps zu sperren.
