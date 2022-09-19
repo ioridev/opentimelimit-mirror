@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ object DayNameUtil {
             }
         }
 
-        return JoinUtil.join(dayGroups, context)
+        return if (dayGroups.isEmpty()) context.getString(R.string.util_day_no_day)
+            else JoinUtil.join(dayGroups, context)
     }
 }

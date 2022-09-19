@@ -1144,6 +1144,7 @@
     <string name="util_time_used">Used <xliff:g example="4 minutes" id="used time">%1$s</xliff:g></string>
 
     <string name="util_day_from_to">%s to %s</string>
+    <string name="util_day_no_day">at no days</string>
 
     <string name="widget_msg_unconfigured">This Widget only works on limited devices</string>
     <string name="widget_msg_no_child">This device is not used by a child right now</string>
