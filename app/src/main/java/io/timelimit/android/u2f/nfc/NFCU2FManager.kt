@@ -69,7 +69,7 @@ class NFCU2FManager (val parent: U2fManager, context: Context) {
         context,
         PendingIntentIds.U2F_NFC_DISCOVERY,
         Intent(nfcReceiverAction),
-        PendingIntent.FLAG_MUTABLE
+        PendingIntentIds.PENDING_INTENT_FLAGS_ALLOW_MUTATION
     )
 
     val status: LiveData<NfcStatus> = if (nfcAdapter == null)

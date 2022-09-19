@@ -77,7 +77,7 @@ class UsbU2FManager (val parent: U2fManager, context: Context) {
         context,
         PendingIntentIds.U2F_USB_RESPONSE,
         Intent(permissionResponseAction),
-        PendingIntent.FLAG_MUTABLE
+        PendingIntentIds.PENDING_INTENT_FLAGS_ALLOW_MUTATION
     )
 
     private val permissionRequestManager = UsbPermissionRequestManager(sendRequest = {
