@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ import io.timelimit.android.data.model.TimeLimitRule
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.databinding.FragmentEditTimeLimitRuleDialogBinding
 import io.timelimit.android.extensions.MinuteOfDay
+import io.timelimit.android.extensions.getParcelableCompat
 import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.CreateTimeLimitRuleAction
@@ -51,6 +52,7 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
     companion object {
         private const val PARAM_EXISTING_RULE = "a"
         private const val PARAM_CATEGORY_ID = "b"
+        private const val SELF_LIMIT_MODE = "c"
         private const val DIALOG_TAG = "t"
         private const val STATE_RULE = "c"
         private const val REQUEST_START_TIME_OF_DAY = "editRule:startTimeOfDay"
@@ -58,54 +60,47 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
         private const val REQUEST_EDIT_SESSION_LENGTH = "editRule:sessionLength"
         private const val REQUEST_EDIT_SESSION_PAUSE = "editRule:sessionPause"
 
-        fun newInstance(existingRule: TimeLimitRule, listener: Fragment) = EditTimeLimitRuleDialogFragment()
-                .apply {
-                    arguments = Bundle().apply {
-                        putParcelable(PARAM_EXISTING_RULE, existingRule)
-                    }
-
-                    setTargetFragment(listener, 0)
+        fun newInstance(existingRule: TimeLimitRule, selfLimitMode: Boolean, listener: Fragment) = EditTimeLimitRuleDialogFragment()
+            .apply {
+                arguments = Bundle().apply {
+                    putParcelable(PARAM_EXISTING_RULE, existingRule)
+                    putBoolean(SELF_LIMIT_MODE, selfLimitMode)
                 }
 
-        fun newInstance(categoryId: String, listener: Fragment) = EditTimeLimitRuleDialogFragment()
-                .apply {
-                    arguments = Bundle().apply {
-                        putString(PARAM_CATEGORY_ID, categoryId)
-                    }
+                setTargetFragment(listener, 0)
+            }
 
-                    setTargetFragment(listener, 0)
+        fun newInstance(categoryId: String, selfLimitMode: Boolean, listener: Fragment) = EditTimeLimitRuleDialogFragment()
+            .apply {
+                arguments = Bundle().apply {
+                    putString(PARAM_CATEGORY_ID, categoryId)
+                    putBoolean(SELF_LIMIT_MODE, selfLimitMode)
                 }
+
+                setTargetFragment(listener, 0)
+            }
     }
 
-    var existingRule: TimeLimitRule? = null
-    var savedNewRule: TimeLimitRule? = null
-    lateinit var newRule: TimeLimitRule
-    lateinit var view: FragmentEditTimeLimitRuleDialogBinding
+    private var existingRule: TimeLimitRule? = null
+    private var savedNewRule: TimeLimitRule? = null
+    private var selfLimitMode: Boolean = false
+    private lateinit var newRule: TimeLimitRule
+    private lateinit var view: FragmentEditTimeLimitRuleDialogBinding
 
-    private val categoryId: String by lazy {
-        if (existingRule != null) {
-            existingRule!!.categoryId
-        } else {
-            requireArguments().getString(PARAM_CATEGORY_ID)!!
-        }
-    }
     private val auth: ActivityViewModel by lazy { getActivityViewModel(requireActivity()) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        existingRule = savedInstanceState?.getParcelable(PARAM_EXISTING_RULE)
-                ?: arguments?.getParcelable<TimeLimitRule?>(PARAM_EXISTING_RULE)
+        selfLimitMode = requireArguments().getBoolean(SELF_LIMIT_MODE)
+        existingRule = savedInstanceState?.getParcelableCompat(PARAM_EXISTING_RULE)
+            ?: arguments?.getParcelableCompat(PARAM_EXISTING_RULE)
     }
 
-    fun bindRule() {
+    private fun bindRule() {
         savedNewRule = newRule
 
-        view.daySelection.selectedDays = BitSet.valueOf(
-                ByteBuffer.allocate(1).put(newRule.dayMask).apply {
-                    position(0)
-                }
-        )
+        view.daySelection.selectedDays = BitSet.valueOf(longArrayOf(newRule.dayMask.toLong()))
         view.applyToExtraTime = newRule.applyToExtraTimeUsage
 
         val affectedDays = (0..6).map { (newRule.dayMask.toInt() shr it) and 1 }.sum()
@@ -127,6 +122,11 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
         view.typePerWeek.isChecked = !newRule.perDay
 
         view.applyToZeroDays = newRule.dayMask.toInt() == 0
+
+        val existingRule = existingRule
+
+        view.blockCurrentSelfLimitationParams =
+            selfLimitMode && existingRule != null && !newRule.isAtLeastAsStrictAs(existingRule)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -136,7 +136,7 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
         view = FragmentEditTimeLimitRuleDialogBinding.inflate(layoutInflater, container, false)
 
         auth.authenticatedUserOrChild.observe(viewLifecycleOwner, Observer {
-            if (it == null || (it.type != UserType.Parent && existingRule != null)) {
+            if (it == null || (it.type != UserType.Parent && !selfLimitMode)) {
                 dismissAllowingStateLoss()
             }
         })
@@ -146,7 +146,7 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
 
             newRule = TimeLimitRule(
                     id = IdGenerator.generateId(),
-                    categoryId = categoryId,
+                    categoryId = requireArguments().getString(PARAM_CATEGORY_ID)!!,
                     applyToExtraTimeUsage = false,
                     dayMask = 0,
                     maximumTimeInMillis = 1000 * 60 * 60,
@@ -161,6 +161,8 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
 
             newRule = existingRule!!
         }
+
+        view.isSelfLimitMode = selfLimitMode
 
         run {
             val restoredRule = savedInstanceState?.getParcelable<TimeLimitRule>(STATE_RULE)
@@ -257,19 +259,19 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
 
                 if (existingRule != null) {
                     if (existingRule != newRule) {
-                        if (!auth.tryDispatchParentAction(
-                                        UpdateTimeLimitRuleAction(
-                                                ruleId = newRule.id,
-                                                maximumTimeInMillis = newRule.maximumTimeInMillis,
-                                                dayMask = newRule.dayMask,
-                                                applyToExtraTimeUsage = newRule.applyToExtraTimeUsage,
-                                                start = newRule.startMinuteOfDay,
-                                                end = newRule.endMinuteOfDay,
-                                                sessionDurationMilliseconds = newRule.sessionDurationMilliseconds,
-                                                sessionPauseMilliseconds = newRule.sessionPauseMilliseconds,
-                                                perDay = newRule.perDay
-                                        )
-                                )) {
+                        val updateAction = UpdateTimeLimitRuleAction(
+                            ruleId = newRule.id,
+                            maximumTimeInMillis = newRule.maximumTimeInMillis,
+                            dayMask = newRule.dayMask,
+                            applyToExtraTimeUsage = newRule.applyToExtraTimeUsage,
+                            start = newRule.startMinuteOfDay,
+                            end = newRule.endMinuteOfDay,
+                            sessionDurationMilliseconds = newRule.sessionDurationMilliseconds,
+                            sessionPauseMilliseconds = newRule.sessionPauseMilliseconds,
+                            perDay = newRule.perDay
+                        )
+
+                        if (!auth.tryDispatchParentAction(updateAction, allowAsChild = selfLimitMode)) {
                             return
                         }
                     }
@@ -339,7 +341,6 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
                             if (it != existingRule) {
                                 existingRule = it
                                 newRule = it
-
                                 bindRule()
                             }
                         }

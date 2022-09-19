@@ -114,22 +114,23 @@ abstract class CategoryAppsAndRulesFragment: Fragment(), Handlers, EditTimeLimit
 
     override fun notifyRuleUpdated(oldRule: TimeLimitRule, newRule: TimeLimitRule) {
         Snackbar.make(requireView(), R.string.category_time_limit_rules_snackbar_updated, Snackbar.LENGTH_SHORT)
-                .setAction(R.string.generic_undo) {
+            .also {
+                if (auth.isParentAuthenticated()) it.setAction(R.string.generic_undo) {
                     auth.tryDispatchParentAction(
-                            UpdateTimeLimitRuleAction(
-                                    ruleId = oldRule.id,
-                                    applyToExtraTimeUsage = oldRule.applyToExtraTimeUsage,
-                                    maximumTimeInMillis = oldRule.maximumTimeInMillis,
-                                    dayMask = oldRule.dayMask,
-                                    start = oldRule.startMinuteOfDay,
-                                    end = oldRule.endMinuteOfDay,
-                                    sessionDurationMilliseconds = oldRule.sessionDurationMilliseconds,
-                                    sessionPauseMilliseconds = oldRule.sessionPauseMilliseconds,
-                                    perDay = oldRule.perDay
-                            )
+                        UpdateTimeLimitRuleAction(
+                            ruleId = oldRule.id,
+                            applyToExtraTimeUsage = oldRule.applyToExtraTimeUsage,
+                            maximumTimeInMillis = oldRule.maximumTimeInMillis,
+                            dayMask = oldRule.dayMask,
+                            start = oldRule.startMinuteOfDay,
+                            end = oldRule.endMinuteOfDay,
+                            sessionDurationMilliseconds = oldRule.sessionDurationMilliseconds,
+                            sessionPauseMilliseconds = oldRule.sessionPauseMilliseconds,
+                            perDay = oldRule.perDay
+                        )
                     )
                 }
-                .show()
+            }.show()
     }
 
     override fun onAppClicked(app: AppAndRuleItem.AppEntry) {
@@ -174,14 +175,16 @@ abstract class CategoryAppsAndRulesFragment: Fragment(), Handlers, EditTimeLimit
     }
 
     override fun onTimeLimitRuleClicked(rule: TimeLimitRule) {
-        if (auth.requestAuthenticationOrReturnTrue()) {
-            EditTimeLimitRuleDialogFragment.newInstance(rule, this).show(parentFragmentManager)
-        }
+        if (auth.isParentAuthenticated()) {
+            EditTimeLimitRuleDialogFragment.newInstance(rule, false,  this).show(parentFragmentManager)
+        } else if (auth.isParentOrChildAuthenticated(childId)) {
+            EditTimeLimitRuleDialogFragment.newInstance(rule, true, this).show(parentFragmentManager)
+        } else auth.requestAuthentication()
     }
 
     override fun onAddTimeLimitRuleClicked() {
         if (auth.requestAuthenticationOrReturnTrueAllowChild(childId = childId)) {
-            EditTimeLimitRuleDialogFragment.newInstance(categoryId, this).show(parentFragmentManager)
+            EditTimeLimitRuleDialogFragment.newInstance(categoryId, true, this).show(parentFragmentManager)
         }
     }
 

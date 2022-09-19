@@ -298,6 +298,9 @@
     <string name="category_time_limit_rules_warning_zero_day_part">Sie haben keine Tage gewählt.
         Diese Regel würde Nichts begrenzen.
     </string>
+    <string name="category_time_limit_rules_error_self_limit_only_more_strict">Ohne Anmeldung
+        als Elternteil können Zeitbeschränkungsregeln nur strenger werden.
+    </string>
 
     <string name="time_warning_title">Zeitwarnung</string>
     <string name="time_warning_desc">Wenn weniger Zeit als ausgewählt übrig ist, dann wird eine Benachrichtigung angezeigt</string>

@@ -29,7 +29,8 @@ object LocalDatabaseParentActionDispatcher {
             val isSupportedAction = action is CreateTimeLimitRuleAction || action is CreateCategoryAction ||
                     action is UpdateCategoryBlockAllNotificationsAction || action is SetParentCategory ||
                     action is AddCategoryAppsAction || action is UpdateCategoryTemporarilyBlockedAction ||
-                    action is UpdateCategoryBlockedTimesAction || action is UpdateCategoryDisableLimitsAction
+                    action is UpdateCategoryBlockedTimesAction || action is UpdateCategoryDisableLimitsAction ||
+                    action is UpdateTimeLimitRuleAction
 
             if (!isSupportedAction) {
                 throw RuntimeException("unsupported action for the child limit self mode")
@@ -291,17 +292,31 @@ object LocalDatabaseParentActionDispatcher {
                 }
                 is UpdateTimeLimitRuleAction -> {
                     val oldRule = database.timeLimitRules().getTimeLimitRuleByIdSync(action.ruleId)!!
+                    val updatedRule = oldRule.copy(
+                        maximumTimeInMillis = action.maximumTimeInMillis,
+                        dayMask = action.dayMask,
+                        applyToExtraTimeUsage = action.applyToExtraTimeUsage,
+                        startMinuteOfDay = action.start,
+                        endMinuteOfDay = action.end,
+                        sessionDurationMilliseconds = action.sessionDurationMilliseconds,
+                        sessionPauseMilliseconds = action.sessionPauseMilliseconds,
+                        perDay = action.perDay
+                    )
 
-                    database.timeLimitRules().updateTimeLimitRule(oldRule.copy(
-                            maximumTimeInMillis = action.maximumTimeInMillis,
-                            dayMask = action.dayMask,
-                            applyToExtraTimeUsage = action.applyToExtraTimeUsage,
-                            startMinuteOfDay = action.start,
-                            endMinuteOfDay = action.end,
-                            sessionDurationMilliseconds = action.sessionDurationMilliseconds,
-                            sessionPauseMilliseconds = action.sessionPauseMilliseconds,
-                            perDay = action.perDay
-                    ))
+                    if (fromChildSelfLimitAddChildUserId != null) {
+                        val category = database.category().getCategoryByIdSync(oldRule.categoryId)
+                            ?: throw IllegalArgumentException("category with the specified id does not exist")
+
+                        if (fromChildSelfLimitAddChildUserId != category.childId) {
+                            throw IllegalArgumentException("can not modify rules of other users")
+                        }
+
+                        if (!updatedRule.isAtLeastAsStrictAs(oldRule)) {
+                            throw IllegalArgumentException("can not make rule less strict")
+                        }
+                    }
+
+                    database.timeLimitRules().updateTimeLimitRule(updatedRule)
                 }
                 is SetDeviceUserAction -> {
                     DatabaseValidation.assertDeviceExists(database, action.deviceId)

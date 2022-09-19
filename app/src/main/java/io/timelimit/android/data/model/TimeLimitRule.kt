@@ -1,5 +1,5 @@
 /*
- * Open TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * Open TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.map
 import kotlinx.parcelize.Parcelize
+import kotlin.experimental.and
 
 @Entity(tableName = "time_limit_rule")
 @TypeConverters(ImmutableBitmaskAdapter::class)
@@ -172,6 +173,19 @@ data class TimeLimitRule(
 
         writer.endObject()
     }
+
+    fun isAtLeastAsStrictAs(other: TimeLimitRule): Boolean =
+        this.categoryId == other.categoryId &&
+                this.maximumTimeInMillis <= other.maximumTimeInMillis &&
+                this.dayMask and other.dayMask == other.dayMask &&
+                (this.applyToExtraTimeUsage || !other.applyToExtraTimeUsage) &&
+                startMinuteOfDay <= other.startMinuteOfDay &&
+                endMinuteOfDay >= other.endMinuteOfDay &&
+                (!other.sessionDurationLimitEnabled || (
+                        this.sessionDurationMilliseconds <= other.sessionDurationMilliseconds &&
+                                this.sessionPauseMilliseconds >= other.sessionPauseMilliseconds
+                        )) &&
+                (!this.perDay || other.perDay || other.dayMask.countOneBits() <= 1)
 }
 
 fun List<TimeLimitRule>.getSlotSwitchMinutes(): Set<Int> {

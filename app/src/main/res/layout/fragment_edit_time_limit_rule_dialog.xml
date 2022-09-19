@@ -13,7 +13,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"applyToZeroDays
+    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="io.timelimit.android.ui.manage.category.timelimit_rules.edit.EditTimeLimitRuleDialogFragment">
 
@@ -32,6 +32,14 @@
 
         <variable
             name="applyToZeroDays"
+            type="boolean" />
+
+        <variable
+            name="isSelfLimitMode"
+            type="boolean" />
+
+        <variable
+            name="blockCurrentSelfLimitationParams"
             type="boolean" />
 
         <variable
@@ -257,6 +265,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+            <TextView
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:visibility="@{blockCurrentSelfLimitationParams ? View.VISIBLE : View.GONE}"
+                android:textAppearance="?android:textAppearanceSmall"
+                android:textColor="@color/text_red"
+                android:text="@string/category_time_limit_rules_error_self_limit_only_more_strict"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
@@ -271,7 +289,7 @@
                     android:layout_marginEnd="4dp"
                     style="?borderlessButtonStyle"
                     android:onClick="@{() -> handlers.onDeleteRule()}"
-                    android:visibility="@{safeUnbox(isNewRule) ? View.GONE : View.VISIBLE}"
+                    android:visibility="@{safeUnbox(isNewRule) || isSelfLimitMode ? View.GONE : View.VISIBLE}"
                     android:textColor="@color/text_red"
                     android:text="@string/generic_delete"
                     android:layout_width="wrap_content"
@@ -281,6 +299,7 @@
                     android:layout_marginEnd="4dp"
                     android:layout_marginStart="4dp"
                     android:onClick="@{() -> handlers.onSaveRule()}"
+                    android:enabled="@{!blockCurrentSelfLimitationParams}"
                     tools:text="@string/generic_create"
                     android:text="@{safeUnbox(isNewRule) ? @string/generic_create : @string/generic_save}"
                     android:layout_width="wrap_content"
